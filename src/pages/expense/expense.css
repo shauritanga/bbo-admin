@@ -1,0 +1,65 @@
+.expense{
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+}
+.expense-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 20px;
+    background-color: var(--color-background);
+}
+.expense-header > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.expense-header form {
+    display: flex;
+    gap: 16px;
+}
+.expense-header form > select{
+    width: 200px;
+}
+.expense-header form > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.expense-header-right{
+    display: flex;
+    gap: 16px;
+}
+.expense-header-right > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.expense-actions{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: white;
+    border-radius:7px;
+    box-shadow: var(--boxs-shadow);
+}
+.expense-actions_hiden{
+    display: flex;
+    gap: 10px;
+    visibility: hidden;
+}
+.expense-actions_hiden > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.expense-table{
+    margin-top:40px;
+    flex: 1;
+    background-color: var(--color-background);
+    box-shadow: var(--boxs-shadow);
+}

@@ -1,0 +1,64 @@
+.payment{
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+}
+.payment-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 20px;
+    background-color: var(--color-background);
+}
+.payment-header form {
+    display: flex;
+    gap: 16px;
+}
+.payment-header form > select{
+    width: 200px;
+}
+.payment-header form > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.payment-header-right{
+    display: flex;
+    gap: 16px;
+}
+.payment-header-right > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.payment-header > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.payment-actions{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: white;
+    border-radius: 7px;
+    box-shadow: var(--boxs-shadow);
+    margin-bottom: 20px;
+}
+.payment-actions_hiden{
+    display: flex;
+    gap: 10px;
+    visibility: hidden;
+}
+.payment-actions_hiden > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.payment-table{
+    flex: 1;
+    background-color: var(--color-background);
+}

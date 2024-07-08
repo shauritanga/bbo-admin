@@ -1,0 +1,23 @@
+  .collapse-container{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: var(--border-radius-1);
+        padding: 10px 20px;
+  }
+  .collapse-container .title{
+    display: flex;
+    gap:10px
+  }
+  .collapse-container:hover{
+    background-color: var(--color-background);
+  }
+.collapse {
+    transition-property: height;
+    transition-property: visibility;
+    transition-duration: 200ms;
+    overflow: hidden;
+    margin-left: 30px;
+    background-color: #FFF;
+  }

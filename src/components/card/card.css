@@ -1,0 +1,22 @@
+.card{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex:1;
+    background-color: var(--color-background);
+    padding: 10px;
+    color: var(--color-dark);
+    border-radius: 7px;
+    box-shadow: var(--box-shadow);
+}
+.card > p{
+    font-size: 1.3rem;
+}
+.card_title, .card_info{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.card_info span:first-of-type{
+    font-style: italic;
+}

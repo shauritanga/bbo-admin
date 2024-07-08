@@ -1,0 +1,66 @@
+.transaction{
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 20px;
+}
+.transaction-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 20px;
+    background-color: var(--color-background);
+}
+.transaction-header > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.transaction-header form {
+    display: flex;
+    gap: 16px;
+}
+.transaction-header form > select{
+    width: 200px;
+}
+.transaction-header form > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.transaction-header-right{
+    display: flex;
+    gap: 16px;
+}
+.transaction-header-right > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.transaction-actions{
+    display: flex;
+    align-items: center;
+    gap:30px;
+    padding: 15px 20px;
+    background-color: white;
+    border-radius: 7px;
+    box-shadow: var(--boxs-shadow);
+}
+.transaction-actions_hiden{
+    display: flex;
+    gap: 10px;
+    visibility: hidden;
+}
+.transaction-actions_hiden > button{
+    padding: 10px 20px;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.transaction-table{
+    flex: 1;
+    background-color: white;
+    padding:20px;
+    border-radius: 7px;
+    box-shadow: var(--boxs-shadow);
+}

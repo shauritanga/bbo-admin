@@ -1,0 +1,93 @@
+:root{
+--color-button:hsl(243deg 50% 21%);
+--color-approve:#61C478;
+--color-disapprove:#F2A356;
+--color-reject:#D95E5A;
+--color-primary:#6c9bcf;
+--color-danger:#ff0060;
+--color-success: #1b9c85;
+--color-warning:#f7d060;
+--color-white:#fff;
+--color-info-dark:#7d8da1;
+--color-dark:#363949;
+--color-light:rgba(132, 139,200,0.18);
+--color-dark-variant:#677483;
+--color-background:hsl(250deg 20% 90%);
+/* --color-background:#f6f6f9; */
+--card-border-radius:0.87rem;
+--border-radius-1:0.4rem;
+--border-radius-2:1.2rem;
+--card-padding:1.8rem;
+--padding-1:1.2rem;
+--box-shadow:0 2rem 3rem var(--color-light);
+}
+
+[dark-theme="dark"]{
+    --color-background:#181a1e;
+    --color-white:#202528;
+    --color-dark:#edeffd;
+    --color-dark-variant:#a3dbcc;
+    --color-light:rgba(0,0,0,0.4);
+    --box-shadow:0 2rem 3rem var(--color-light);
+}
+*{
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    border:none;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+html{
+    font-size: 16px;
+}
+html,
+body,
+#root{
+    height: 100%;
+    width: 100%;
+}
+
+body{
+    width: 100vw;
+    height: 100vh;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.88rem;
+    user-select: none;
+    overflow-x: hidden;
+    color: var(--color-dark);
+    background-color: var(--color-background);
+}
+
+/* img{
+    display: block;
+    width: 100%;
+    object-fit: cover;
+} */
+h1{
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+
+h2{
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+h3{
+    font-weight: 500;
+    font-size: 0.87rem;
+}
+
+small{
+    font-size: 0.76rem;
+}
+p{
+    color: var(--color-dark-variant);
+}
+.text-muted{
+    color:var(--color-info-dark)
+}
+.primary{
+    color:var(--color-primary);
+}

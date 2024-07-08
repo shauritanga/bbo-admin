@@ -1,0 +1,65 @@
+.header{
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: hsl(243deg, 50%, 21%);
+    color:#fff;
+    z-index: 999;
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius-1);
+}
+.logo{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.header-icon{
+    font-size: 1.6rem;
+    cursor: pointer;
+}
+.links{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.notify{
+    position:relative;
+}
+.notify span{
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: -2px;
+    right: -2px;
+    height: 12px;
+    width: 12px;
+    background-color: red;
+    border-radius: 50%;
+    padding: 2px;
+    font-size: 8px;
+    color: var(--color-white);
+}
+.links img{
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+}
+.user{
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.user-name{
+    display: flex;
+    flex-direction: column;
+    align-items:flex-end;
+}
+.user-name h3{
+    font-weight: 600;
+    line-height:10px;
+}

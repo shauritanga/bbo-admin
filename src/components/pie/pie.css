@@ -1,0 +1,29 @@
+.pie{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    height: 150px;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius-1);
+    box-shadow: var(--box-shadow);
+}
+.pie-details{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.pie-details-text{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pie-details-text > p{
+    font-weight: 200;
+    font-size: 0.7rem;
+    color: var(--color-info-dark);
+}
+.pie-details-graph{
+    height: 150px;
+    width: 150px;
+}
+
