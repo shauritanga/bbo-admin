@@ -18,7 +18,9 @@ export const fetchOrders = createAsyncThunk(
   async (query) => {
     const { currentPage, itemsPerPage } = query;
     const response = await axios.get(
-      `https://api.alphafunds.co.tz/api/v1/orders/all/?page=${currentPage}&limit=${itemsPerPage}`
+      `${
+        import.meta.env.VITE_BASE_URL
+      }/orders/all/?page=${currentPage}&limit=${itemsPerPage}`
     );
     return response.data;
   }
@@ -26,7 +28,7 @@ export const fetchOrders = createAsyncThunk(
 
 export const addOrder = createAsyncThunk("orders/addOrder", async (order) => {
   const response = await axios.post(
-    "https://api.alphafunds.co.tz/api/v1/orders",
+    `${import.meta.env.VITE_BASE_URL}/orders`,
     order
   );
   return response.data;

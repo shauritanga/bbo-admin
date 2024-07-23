@@ -37,7 +37,7 @@ const EmailWithPDF = () => {
 
     try {
       await axios.post(
-        "https://api.alphafunds.co.tz/api/v1/emails/send-email-with-pdf",
+        `${import.meta.env.VITE_BASE_URL}/emails/send-email-with-pdf`,
         formData,
         {
           headers: {

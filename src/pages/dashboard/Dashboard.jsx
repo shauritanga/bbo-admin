@@ -10,6 +10,7 @@ import MyPieChart from "../../components/pie/trial";
 import axios from "axios";
 import { getMonthName } from "../../utils/getMonthName";
 import { useAuth } from "../../provider/AuthProvider";
+import { RotatingLines } from "react-loader-spinner";
 
 const pieData = [
   [
@@ -129,10 +130,10 @@ const Dashboard = () => {
           customerResponse,
           orderResponse,
         ] = await Promise.all([
-          axios.get("https://api.alphafunds.co.tz/api/v1/brokerage"),
-          axios.get("https://api.alphafunds.co.tz/api/v1/expenses/all"),
-          axios.get("https://api.alphafunds.co.tz/api/v1/customers"),
-          axios.get("https://api.alphafunds.co.tz/api/v1/orders"),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/brokerage`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/expenses/all`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
         ]);
 
         if (incomeResponse.status !== 200) {
@@ -148,8 +149,6 @@ const Dashboard = () => {
         if (orderResponse.status !== 200) {
           throw new Erroe("Failed to fetch orders");
         }
-
-        console.log(orderResponse.data);
 
         setIncomes(incomeResponse.data);
         setCustomers(customerResponse.data);
@@ -168,11 +167,22 @@ const Dashboard = () => {
     expenses === null ||
     orders === null
   ) {
-    return <div>Loading</div>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flex: 1,
+        }}
+      >
+        <RotatingLines width="22" />
+      </div>
+    );
   }
 
-  const totalIncome = incomes.reduce((prev, curr) => prev + curr.value, 0);
-  const activeCustomers = customers.filter(
+  const totalIncome = incomes?.reduce((prev, curr) => prev + curr.value, 0);
+  const activeCustomers = customers?.filter(
     (customer) => customer.status === "active"
   ).length;
 
@@ -208,7 +218,6 @@ const Dashboard = () => {
   );
   const lastMonthName = getMonthName(startOfLastMonth.getMonth());
   const currentMonthName = getMonthName(startOfCurrentMonth.getMonth());
-  console.log(currentMonthName);
 
   const totalLastMonthExpenses = expenses
     .filter((expense) => {
@@ -235,7 +244,6 @@ const Dashboard = () => {
 
   //CALCULATION FOR LINE CHART
   //01 January
-  console.log(incomes);
   const startOfJanuary = new Date(today.getFullYear(), 0, 1);
   const endOfJanuary = new Date(today.getFullYear(), 1, 0, 23.59, 59);
   const totalJanuaryExpenses = incomes

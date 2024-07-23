@@ -25,7 +25,7 @@ function Expense() {
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
       const response = await fetch(
-        `https://api.alphafunds.co.tz/api/v1/expenses/${selected[item]._id}`,
+        `${import.meta.env.VITE_BASE_URL}/expenses/${selected[item]._id}`,
         {
           method: "POST",
           headers: {
@@ -59,7 +59,9 @@ function Expense() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `https://api.alphafunds.co.tz/api/v1/expenses/?page=${currentPage}&limit=${itemsPerPage}`
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/expenses/?page=${currentPage}&limit=${itemsPerPage}`
         );
         const data = await response.json();
         setExpenses(data.data); // Assuming API returns { items: [...], totalPages: ... }
@@ -74,7 +76,7 @@ function Expense() {
   }, [currentPage]);
 
   useEffect(() => {
-    fetch("https://api.alphafunds.co.tz/api/v1/customers")
+    fetch(`${import.meta.env.VITE_BASE_URL}/customers`)
       .then((response) => response.json())
       .then((data) => setClients(data))
       .catch((error) => console.log(error));
@@ -91,7 +93,7 @@ function Expense() {
   const exportToExcel = async () => {
     try {
       const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/expenses/all"
+        `${import.meta.env.VITE_BASE_URL}/expenses/all`
       );
       const data = response.data;
 

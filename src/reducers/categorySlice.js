@@ -14,7 +14,7 @@ export const fetchCategories = createAsyncThunk(
   "categories/fetchCategories",
   async () => {
     const response = await axios.get(
-      "https:admin.alphafunds.co.tz/api/v1/categories"
+      `${import.meta.env.VITE_BASE_URL}/categories`
     );
     return response.data;
   }
@@ -24,7 +24,7 @@ export const addCategory = createAsyncThunk(
   "categories/addCategory",
   async (category) => {
     const response = await axios.post(
-      "https:admin.alphafunds.co.tz/api/v1/categories",
+      `${import.meta.env.VITE_BASE_URL}/categories`,
       category
     );
     return response.data;

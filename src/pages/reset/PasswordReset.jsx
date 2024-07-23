@@ -17,7 +17,7 @@ const PasswordReset = () => {
     }
     try {
       const response = await axios.post(
-        "https://api.alphafunds.co.tz/api/v1/auth/employees/reset-password",
+        `${import.meta.env.VITE_BASE_URL}/auth/employees/reset-password`,
         {
           email,
           password: values.password,

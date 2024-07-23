@@ -28,7 +28,7 @@ const RoleForm = ({ open, setOpen }) => {
       name,
       permissions,
     };
-    const response = await fetch(`https://api.alphafunds.co.tz/api/v1/roles`, {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/roles`, {
       mode: "cors",
       headers: {
         "Content-Type": "application/json",

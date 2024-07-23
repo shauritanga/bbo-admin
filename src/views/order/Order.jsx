@@ -18,14 +18,14 @@ const OrderView = () => {
   const { state } = useLocation();
   const [client, setClient] = useState(null);
   const [clients, setClients] = useState([]);
-  const [customer, setCustomer] = useState(state.customer?.name);
-  const [volume, setVolume] = useState(state.volume);
-  const [price, setPrice] = useState(state.price);
-  const [amount, setAmount] = useState(state.price * state.volume);
-  const [action, setAction] = useState(state.type);
-  const [type, setType] = useState(state.action);
-  // const [holding, setHolding] = useState(null);
-  const [security, setSecurity] = useState(state.security?.name);
+  const [customer, setCustomer] = useState(state.client?.name);
+  const [volume, setVolume] = useState(state.order?.volume);
+  const [price, setPrice] = useState(state.order?.price);
+  const [amount, setAmount] = useState(state.order?.amount);
+  const [action, setAction] = useState("");
+  const [date, setDate] = useState(state.order?.date);
+  const [type, setType] = useState(state.order?.type);
+  const [security, setSecurity] = useState("");
   const [securities, setSecurities] = useState(null);
   const [openExecutionForm, setOpenExecutionForm] = useState(false);
   const [executions, setExecutions] = useState(null);
@@ -37,19 +37,12 @@ const OrderView = () => {
       try {
         const [clientResponse, securityResponse, executionResponse] =
           await Promise.all([
-            axios.get("https://api.alphafunds.co.tz/api/v1/customers"),
-            axios.get("https://api.alphafunds.co.tz/api/v1/securities"),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
             axios.get(
-              `https://api.alphafunds.co.tz/api/v1/executions/${state._id}`
+              `${import.meta.env.VITE_BASE_URL}/executions/${state.order?.uid}`
             ),
           ]);
-
-        if (!clientResponse.statusText === "OK")
-          throw new Error("Failed to fetch customers");
-        if (!securityResponse.statusText === "OK")
-          throw new Error("Failed to fetch customers");
-        if (!executionResponse.statusText === "OK")
-          throw new Error("Failed to fetch customers");
 
         const clientResult = clientResponse.data;
         const securityResult = securityResponse.data;
@@ -65,14 +58,14 @@ const OrderView = () => {
     fetchData();
   }, []);
 
-  if (clients === null && securities === null && executions === null) {
+  if (clients === null || securities === null) {
     return <div>Loading...</div>;
   }
   return (
     <Wrapper>
       <Main>
         <Balance>
-          Order Balance: {state.balance}
+          Order Balance: {state.order?.volume - state.order?.executed}
           <Form>
             <FormGroup>
               <FormController>
@@ -91,10 +84,14 @@ const OrderView = () => {
               </FormController>
               <FormController>
                 <label htmlFor="date">Order Date</label>
-                <DatePicker
+                <Input
                   style={{ width: "100%" }}
                   id="date"
-                  defaultValue={new Date(state.date)}
+                  type="date"
+                  value={date}
+                  onChange={(e) => {
+                    console.log(e);
+                  }}
                 />
               </FormController>
             </FormGroup>
@@ -215,7 +212,6 @@ const OrderView = () => {
                     <ExecutionAction>approved</ExecutionAction>
                     <ExecutionAction
                       onClick={() => {
-                        console.log(execution);
                         const url = `/contract?execution=${JSON.stringify(
                           execution
                         )}`;
@@ -253,7 +249,7 @@ const OrderView = () => {
               </tr>
               <tr>
                 <TableDataCell colSpan={2} style={{ textAlign: "center" }}>
-                  {state.customer?.name}
+                  {state.client?.name}
                 </TableDataCell>
               </tr>
               <tr>
@@ -262,7 +258,7 @@ const OrderView = () => {
               </tr>
               <tr>
                 <TableDataCell>Balance</TableDataCell>
-                <TableDataCell>{state.amount}</TableDataCell>
+                {}
               </tr>
               <tr>
                 <TableDataCell>Shares</TableDataCell>
@@ -276,13 +272,13 @@ const OrderView = () => {
                       backgroundColor: "hsl(0deg 0% 95%",
                       padding: "3px 6px",
                       color:
-                        state.customer?.status === "pending"
+                        state.client?.status.toLowerCase() === "pending"
                           ? "#f2a356"
                           : "#000",
                       borderRadius: "999px",
                     }}
                   >
-                    {state.customer?.status}
+                    {state.client?.status}
                   </span>
                 </TableDataCell>
               </tr>
@@ -307,10 +303,11 @@ const OrderView = () => {
         </Actions>
       </Aside>
       <ExecutionForm
+        balance={state.order?.volume - state.order?.executed}
         open={openExecutionForm}
         setOpen={setOpenExecutionForm}
-        customerId={state.customer._id}
-        orderId={state._id}
+        customerId={state.order?.client_id}
+        orderId={state.order?.uid}
       />
     </Wrapper>
   );

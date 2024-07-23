@@ -1,7 +1,13 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import dayjs from "dayjs";
 import React from "react";
 
 const Statement = ({ data }) => {
+  let formatter = new Intl.NumberFormat("sw-TZ", {
+    style: "currency",
+    currency: "TZS",
+  });
+  console.log(data);
   return (
     <Document pageMode="full-screen">
       <Page size="A4" orientation="landscape">
@@ -31,18 +37,29 @@ const Statement = ({ data }) => {
               <Text style={styles.tableHeaderCell}>credit</Text>
               <Text style={styles.tableHeaderCell}>balance</Text>
             </View>
-            {/* <View style={styles.tableData}>
-              <Text style={styles.tableDataCell}></Text>
-              <Text style={styles.tableDataCell}>{item.type}</Text>
-              <Text style={styles.tableDataCell}>{item.category}</Text>
-              <Text style={[styles.tableDataCell, { flex: 2 }]}></Text>
-              <Text style={[styles.tableDataCell, { flex: 2 }]}></Text>
-              <Text style={styles.tableDataCell}></Text>
-              <Text style={styles.tableDataCell}></Text>
-              <Text style={styles.tableDataCell}></Text>
-              <Text style={styles.tableDataCell}></Text>
-              <Text style={styles.tableDataCell}></Text>
-            </View> */}
+            {data.map((item) => (
+              <View style={styles.tableData}>
+                <Text style={styles.tableDataCell}>
+                  {dayjs(item.transaction_date).format("MM/DD/YYYY")}
+                </Text>
+                <Text style={styles.tableDataCell}>{item.action}</Text>
+                <Text style={styles.tableDataCell}>{item.reference}</Text>
+                <Text style={[styles.tableDataCell, { flex: 2 }]}></Text>
+                <Text style={[styles.tableDataCell, { flex: 2 }]}>
+                  {item.description}
+                </Text>
+                <Text style={styles.tableDataCell}></Text>
+                <Text style={styles.tableDataCell}></Text>
+                <Text style={styles.tableDataCell}>{item.debit}</Text>
+                <Text style={styles.tableDataCell}>{item.credit}</Text>
+                <Text style={styles.tableDataCell}>
+                  {new Intl.NumberFormat("sw-TZ", {
+                    style: "currency",
+                    currency: "TZS",
+                  }).format(item.balance)}
+                </Text>
+              </View>
+            ))}
           </View>
         </View>
       </Page>
@@ -79,7 +96,7 @@ const styles = StyleSheet.create({
   },
   tableDataCell: {
     flex: 1,
-    fontSize: 8.5,
+    fontSize: 7.5,
     paddingHorizontal: 4,
     paddingVertical: 4,
     textAlign: "left",

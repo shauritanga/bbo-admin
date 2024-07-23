@@ -8,7 +8,7 @@ const initialState = {
 };
 
 export const fetchRoles = createAsyncThunk("roles/fetchRoles", async () => {
-  const response = await axios.get("https://api.alphafunds.co.tz/api/v1/roles");
+  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/roles`);
   return response.data;
 });
 

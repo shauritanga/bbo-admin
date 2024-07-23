@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Notification, toaster } from "rsuite";
 import "./pay.css";
+import axios from "axios";
 
 const PaymentForm = ({ open, setOpen }) => {
-  const [transactionDate, settransactionDate] = useState("");
+  const [transactionDate, setTransactionDate] = useState("");
   const [amount, setAmount] = useState(0);
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
@@ -11,83 +12,53 @@ const PaymentForm = ({ open, setOpen }) => {
   const [paymentMethodId, setPaymentMethodId] = useState("");
   const [payee, setPayee] = useState(null);
   const [category, setCategory] = useState(null);
-  const [realAccount, setRealAccount] = useState(null);
+  const [realAccount, setRealAccount] = useState("");
+  const [accounts, setAccounts] = useState([]);
   const [customers, setCustomers] = useState(null);
 
   const payment = {
-    transactionDate,
+    transaction_date: transactionDate,
     amount,
     reference,
     description,
-    method: paymentMethodId,
-    payee,
-    category,
-    realAccount,
-    status: "pending",
+    payment_method_id: paymentMethodId,
+    client_id: payee,
+    category: "payment",
+    account_id: realAccount,
+    status: "new",
   };
 
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
-
   useEffect(() => {
-    const fetchPaymentMethods = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          "https://api.alphafunds.co.tz/api/v1/paymethods"
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setPaymentMethod(data);
+        const [paymethodResponse, clientRespponse, accountResponse] =
+          await Promise.all([
+            axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
+          ]);
+
+        setPaymentMethod(paymethodResponse.data);
+        setCustomers(clientRespponse.data);
+        setAccounts(accountResponse.data);
       } catch (error) {
-        console.error("Error fetching payment methods:", error);
-        // Consider displaying an error message to the user
-      } finally {
-        setIsLoading(false); // Data loaded, set isLoading to false
+        console.log(error);
       }
     };
-    fetchPaymentMethods();
+    fetchData();
   }, []); // Empty dependency array ensures this runs once on component mount
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await fetch(
-          "https://api.alphafunds.co.tz/api/v1/customers"
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setCustomers(data);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-        // Consider displaying an error message to the user
-      }
-    };
-
-    fetchCustomers();
-  }, []);
-
+  if (paymentMethod === null || customers === null || realAccount === null) {
+  }
+  console.log(realAccount);
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    try {
-      const response = await fetch(
-        "https://api.alphafunds.co.tz/api/v1/payments",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payment),
-        }
-      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/payments`,
+        payment
+      );
       toaster.push(
         <Notification header="success" type="success">
           Your payment has been successfully processed
@@ -118,11 +89,11 @@ const PaymentForm = ({ open, setOpen }) => {
             <div className="payment-modal-form-control">
               <label htmlFor="transaction-date">Transaction Date</label>
               <input
-                type="text"
+                type="date"
                 placeholder="dd-mm-yyyy"
                 id="transaction-date"
                 value={transactionDate}
-                onChange={(event) => settransactionDate(event.target.value)}
+                onChange={(event) => setTransactionDate(event.target.value)}
               />
             </div>
             <div className="payment-modal-form-control">
@@ -162,11 +133,14 @@ const PaymentForm = ({ open, setOpen }) => {
                 value={realAccount}
                 onChange={(event) => setRealAccount(event.target.value)}
               >
-                <option value="">Real Account</option>
-                <optgroup label="Accounts">
-                  <option value="purchases">purchase</option>
-                  <option value="expenses">expense</option>
-                </optgroup>
+                <option value="" selected disabled>
+                  Select Account
+                </option>
+                {accounts.map((account) => (
+                  <option value={account.id} key={account._id}>
+                    {account.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -181,7 +155,7 @@ const PaymentForm = ({ open, setOpen }) => {
               >
                 <option value="">Select payee</option>
                 {customers?.map((method) => (
-                  <option value={method._id}>{method.name}</option>
+                  <option value={method.id}>{method.name}</option>
                 ))}
               </select>
             </div>
@@ -202,7 +176,7 @@ const PaymentForm = ({ open, setOpen }) => {
           </div>
           <div className="row">
             <div className="payment-modal-form-control">
-              <label htmlFor="cheque">Cheque Number</label>
+              <label htmlFor="cheque">Reference Number</label>
               <input
                 type="text"
                 placeholder="Chque Number"

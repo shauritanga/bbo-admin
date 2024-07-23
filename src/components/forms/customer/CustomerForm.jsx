@@ -9,7 +9,7 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const response = await axios.post(
-        "https://api.alphafunds.co.tz/api/v1/customers/admin",
+        `${import.meta.env.VITE_BASE_URL}/customers/admin`,
         values
       );
       setSubmitting(false);

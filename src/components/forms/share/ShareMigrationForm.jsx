@@ -24,7 +24,7 @@ const ShareMigrationForm = ({ open, setOpen }) => {
   };
 
   useEffect(() => {
-    fetch("https://api.alphafunds.co.tz/api/v1/securities")
+    fetch(`${import.meta.env.VITE_BASE_URL}/securities`)
       .then((response) => response.json())
       .then((data) => setSecurities(data))
       .catch((error) => console.log(error));

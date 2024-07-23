@@ -32,36 +32,12 @@ import Breadcrumbs from "../../components/breadcrumbs/Breadcrumbs";
 import OrderForm from "../../components/forms/order/OrderForm";
 import FilterButton from "../../components/fiterButton/FilterButton";
 import axios from "axios";
-
-const summary = [
-  {
-    name: "New orders",
-    total: 34,
-    icon: <IoTimerOutline color="#000" />,
-    backgroundColor: "#000",
-  },
-  {
-    name: "Processing",
-    total: 74,
-    icon: <VscServerProcess color="#e71f27" />,
-    backgroundColor: "#e71f27",
-  },
-  {
-    name: "Completed",
-    total: 12,
-    icon: <BsExclamationOctagon color="#33336a" />,
-    backgroundColor: "#33336a",
-  },
-  {
-    name: "All orders",
-    total: 349,
-    icon: <FiShoppingBag color="#656281" />,
-    backgroundColor: "#656281",
-  },
-];
+import * as XLSX from "xlsx";
+import { Pagination, Stack } from "@mui/material";
+import { RotatingLines } from "react-loader-spinner";
 
 const Orders = () => {
-  const [clients, setClients] = useState([]);
+  const [clients, setClients] = useState(null);
   const [dateRange, setDateRange] = useState([]);
   const [open, setOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -74,12 +50,23 @@ const Orders = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
+  const [securities, setSecurities] = useState(null);
+  const [allOrders, setAllOrders] = useState(null);
   const { orders, status, error, filters } = useSelector(
     (state) => state.orders
   );
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const itemsPerPage = 10; // Number of items to show per page
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
+  function toTitleCase(str) {
+    return str.toLocaleLowerCase().replace(/\b\w/g, function (char) {
+      return char.toUpperCase();
+    });
+  }
 
   useEffect(() => {
     dispatch(fetchOrders({ currentPage, itemsPerPage }));
@@ -88,13 +75,16 @@ const Orders = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const clientResponse = await axios.get(
-          "https://api.alphafunds.co.tz/api/v1/customers"
-        );
+        const [clientResponse, orderResponse, securityResponse] =
+          await Promise.all([
+            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
+          ]);
 
-        if (clientResponse.statusText === "OK") {
-          setClients(clientResponse.data);
-        }
+        setAllOrders(orderResponse.data);
+        setClients(clientResponse.data);
+        setSecurities(securityResponse.data);
       } catch (err) {
         toaster.push(
           <Notification header="Error">
@@ -109,50 +99,112 @@ const Orders = () => {
 
     fetchData();
   }, []);
-
-  if (status === "loading") {
-    return <div>Loading</div>;
+  if (clients === null || securities === null || allOrders === null) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flex: 1,
+        }}
+      >
+        <RotatingLines width="22" />
+      </div>
+    );
   }
+  // if (status === "loading") {
+  //   return (
+  //     <div
+  //       style={{
+  //         display: "flex",
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         flex: 1,
+  //       }}
+  //     >
+  //       <RotatingLines width="22" />
+  //     </div>
+  //   );
+  // }
   if (status === "failed") {
     return <div>{error}</div>;
   }
 
-  const receivedOrders = orders.data || [];
+  const totalOrders = allOrders?.length;
+  const newOrders = allOrders?.filter(
+    (order) => order.status.toLowerCase() === "new"
+  ).length;
 
-  const filteredOrders = receivedOrders.filter((order) => {
-    if (filters.date === "today") {
-      const today = dayjs();
-      return dayjs(order.date).isSame(today, "day");
-    } else if (filters.date === "weekly") {
-      const startOfWeek = dayjs().startOf("week");
-      const endOfWeek = dayjs().endOf("week");
-      const orderDate = dayjs(order.date);
-      return orderDate.isAfter(startOfWeek) && orderDate.isBefore(endOfWeek);
-    } else if (filters.date === "monthly") {
-      const startOfMonth = dayjs().startOf("month");
-      const endOfMonth = dayjs().endOf("month");
-      const orderDate = dayjs(order.date);
-      return orderDate.isAfter(startOfMonth) && orderDate.isBefore(endOfMonth);
-    } else if (filters.date === "annually") {
-      const startOfYear = dayjs().startOf("year");
-      const endOfYear = dayjs().endOf("year");
-      const orderDate = dayjs(order.date);
-      return orderDate.isAfter(startOfYear) && orderDate.isBefore(endOfYear);
-    } else if (filters.date === "custom" && dateRange) {
-      const [startDate, endDate] = dateRange;
-      const orderDate = dayjs(order.date);
-      return (
-        orderDate.isSame(startDate, "day") ||
-        (orderDate.isAfter(startDate) && orderDate.isBefore(endDate)) ||
-        orderDate.isSame(endDate, "day")
-      );
-    } else if (filters.nameSearch) {
-      return (
-        order.customer?.name.toLowerCase() === filters.nameSearch.toLowerCase()
-      );
-    }
-    return true;
-  });
+  const processingOrders = allOrders?.filter(
+    (order) => order.status.toLowerCase() === "processing"
+  ).length;
+
+  const completeOrders = allOrders?.filter(
+    (order) => order.status.toLowerCase() === "completed"
+  ).length;
+
+  const summary = [
+    {
+      name: "New orders",
+      total: newOrders,
+      icon: <IoTimerOutline color="#000" />,
+      backgroundColor: "#000",
+    },
+    {
+      name: "Processing",
+      total: processingOrders,
+      icon: <VscServerProcess color="#e71f27" />,
+      backgroundColor: "#e71f27",
+    },
+    {
+      name: "Completed",
+      total: completeOrders,
+      icon: <BsExclamationOctagon color="#33336a" />,
+      backgroundColor: "#33336a",
+    },
+    {
+      name: "All orders",
+      total: totalOrders,
+      icon: <FiShoppingBag color="#656281" />,
+      backgroundColor: "#656281",
+    },
+  ];
+
+  // const filteredOrders = receivedOrders.filter((order) => {
+  //   if (filters.date === "today") {
+  //     const today = dayjs();
+  //     return dayjs(order.date).isSame(today, "day");
+  //   } else if (filters.date === "weekly") {
+  //     const startOfWeek = dayjs().startOf("week");
+  //     const endOfWeek = dayjs().endOf("week");
+  //     const orderDate = dayjs(order.date);
+  //     return orderDate.isAfter(startOfWeek) && orderDate.isBefore(endOfWeek);
+  //   } else if (filters.date === "monthly") {
+  //     const startOfMonth = dayjs().startOf("month");
+  //     const endOfMonth = dayjs().endOf("month");
+  //     const orderDate = dayjs(order.date);
+  //     return orderDate.isAfter(startOfMonth) && orderDate.isBefore(endOfMonth);
+  //   } else if (filters.date === "annually") {
+  //     const startOfYear = dayjs().startOf("year");
+  //     const endOfYear = dayjs().endOf("year");
+  //     const orderDate = dayjs(order.date);
+  //     return orderDate.isAfter(startOfYear) && orderDate.isBefore(endOfYear);
+  //   } else if (filters.date === "custom" && dateRange) {
+  //     const [startDate, endDate] = dateRange;
+  //     const orderDate = dayjs(order.date);
+  //     return (
+  //       orderDate.isSame(startDate, "day") ||
+  //       (orderDate.isAfter(startDate) && orderDate.isBefore(endDate)) ||
+  //       orderDate.isSame(endDate, "day")
+  //     );
+  //   } else if (filters.nameSearch) {
+  //     return (
+  //       order.customer?.name.toLowerCase() === filters.nameSearch.toLowerCase()
+  //     );
+  //   }
+  //   return true;
+  // });
 
   const renderButton = (props, ref) => {
     return (
@@ -174,15 +226,26 @@ const Orders = () => {
   let orderData = null;
   switch (q) {
     case "all":
-      orderData = filteredOrders;
+      orderData = orders;
       break;
     case "pending":
-      orderData = filteredOrders.filter((order) => order.status === "new");
+      orderData = orders.data?.filter((order) => order.status === "approved");
       break;
     case "complete":
-      orderData = filteredOrders.filter((order) => order.balance === 0);
+      orderData = orders.data?.filter((order) => order.status === "complete");
       break;
   }
+
+  const exportToExcel = async () => {
+    //const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/vat`);
+    const data = orderData;
+
+    //xlsx
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, "Orders.xlsx");
+  };
 
   return (
     <Wrapper>
@@ -245,25 +308,10 @@ const Orders = () => {
           placeholder="Select Client"
           onChange={(value) => dispatch(setNameSearch(value))}
         />
-        {/* <Input
-          size="small"
-          placeholder="ID Client"
-          style={{ width: "300px" }}
-          onChange={(value) => console.log(value)}
-        /> */}
-        {/* <Button
-          style={{
-            marginRight: "auto",
-            color: "#fff",
-            backgroundColor: "hsl(243deg, 50%, 50%)",
-          }}
-          onClick={() => console.log("Hello world")}
-        >
-          Filter
-        </Button> */}
+
         <Dropdown renderToggle={renderButton}>
           <Dropdown.Item>Export PDF</Dropdown.Item>
-          <Dropdown.Item>Export EXCELL</Dropdown.Item>
+          <Dropdown.Item onClick={exportToExcel}>Export EXCELL</Dropdown.Item>
         </Dropdown>
         <Button
           style={{
@@ -288,40 +336,87 @@ const Orders = () => {
             <TableHeaderCell>balance</TableHeaderCell>
             <TableHeaderCell>status</TableHeaderCell>
           </TableHeaderRow>
-          {orderData?.map((order, index) => (
-            <TableDataRow key={index}>
-              <TableDataCell>{order.orderId}</TableDataCell>
-              <TableDataCell>
-                {dayjs(order.date).format("DD-MM-YYYY")}
-              </TableDataCell>
-              <TableDataCell
-                onClick={() => {
-                  navigate(`/customers/${order.customer?._id}`, {
-                    state: order.customer,
-                  });
-                }}
-              >
-                {order.customer?.name}
-              </TableDataCell>
-              <TableDataCell>{order.security?.name}</TableDataCell>
-              <TableDataCell>{order.type}</TableDataCell>
-              <TableDataCell>{order.amount}</TableDataCell>
-              <TableDataCell>{order.volume}</TableDataCell>
-              <TableDataCell>{order.balance}</TableDataCell>
-              <TableDataCell
-                onClick={() =>
-                  navigate(`/orders/${order.customer?._id}`, {
-                    state: order,
-                  })
-                }
-              >
-                {order.status}
+          {status === "loading" ? (
+            <TableDataRow>
+              <TableDataCell colSpan={9} rowSpan={10}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    flex: 1,
+                  }}
+                >
+                  <RotatingLines width="22" />
+                </div>
               </TableDataCell>
             </TableDataRow>
-          ))}
+          ) : (
+            orderData.data?.map((order, index) => {
+              const orderSecurity = securities?.filter(
+                (security) =>
+                  (security.id || security._id) === order.security_id
+              );
+
+              const orderClient = clients?.filter(
+                (client) => client.id === order.client_id
+              );
+
+              return (
+                <TableDataRow key={index}>
+                  <TableDataCell>{order.uid}</TableDataCell>
+                  <TableDataCell>
+                    {dayjs(order.date).format("DD-MM-YYYY")}
+                  </TableDataCell>
+                  <TableDataCell
+                    onClick={() => {
+                      navigate(`/customers/${orderClient[0]._id}`, {
+                        state: orderClient[0],
+                      });
+                    }}
+                  >
+                    {orderClient[0].name}
+                  </TableDataCell>
+                  <TableDataCell>{orderSecurity[0]?.name}</TableDataCell>
+                  <TableDataCell>{toTitleCase(order.type)}</TableDataCell>
+                  <TableDataCell>{order.amount}</TableDataCell>
+                  <TableDataCell>{order.volume}</TableDataCell>
+                  <TableDataCell>{order.volume - order.executed}</TableDataCell>
+                  <TableDataCell
+                    onClick={() =>
+                      navigate(`/orders/${order._id}`, {
+                        state: {
+                          order: order,
+                          client: orderClient[0],
+                          security: orderSecurity[0],
+                        },
+                      })
+                    }
+                  >
+                    {toTitleCase(order.status)}
+                  </TableDataCell>
+                </TableDataRow>
+              );
+            })
+          )}
         </Table>
-        <Pagination>
+        <PaginationWrapper>
           <Counter>{orders.totalDocuments} total orders</Counter>
+          <Stack spacing={2}>
+            {/* <Pagination count={10} shape="rounded" /> */}
+            <Pagination
+              count={orders.totalPages}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              page={currentPage}
+              onChange={handleChange}
+            />
+          </Stack>
+        </PaginationWrapper>
+
+        {/* <Pagination>
+          
           <ButtonToolbar>
             <Button
               onClick={() =>
@@ -359,7 +454,7 @@ const Orders = () => {
               Next
             </Button>
           </ButtonToolbar>
-        </Pagination>
+        </Pagination> */}
       </TableWrapper>
       <ModalView
         title="Select Date Range"
@@ -441,7 +536,7 @@ const TableDataCell = styled.td`
     cursor: pointer;
   }
 `;
-const Pagination = styled.div`
+const PaginationWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -451,59 +546,3 @@ const Counter = styled.p``;
 const Pages = styled.div``;
 
 export default Orders;
-
-// const filterOrders = useCallback(() => {
-//   let filteredOrders = data ?? []; // Start with all data
-
-//   if (activeFilter === "today") {
-//     const today = dayjs();
-//     filteredOrders = filteredOrders.filter((order) =>
-//       dayjs(order.date).isSame(today, "day")
-//     );
-//   } else if (activeFilter === "weekly") {
-//     const startOfWeek = dayjs().startOf("week");
-//     const endOfWeek = dayjs().endOf("week");
-//     filteredOrders = filteredOrders.filter((order) => {
-//       const orderDate = dayjs(order.date);
-//       return orderDate.isAfter(startOfWeek) && orderDate.isBefore(endOfWeek);
-//     });
-//   } else if (activeFilter === "monthly") {
-//     const startOfMonth = dayjs().startOf("month");
-//     const endOfMonth = dayjs().endOf("month");
-//     filteredOrders = filteredOrders.filter((order) => {
-//       const orderDate = dayjs(order.date);
-//       return (
-//         orderDate.isAfter(startOfMonth) && orderDate.isBefore(endOfMonth)
-//       );
-//     });
-//   } else if (activeFilter === "annually") {
-//     const startOfYear = dayjs().startOf("year");
-//     const endOfYear = dayjs().endOf("year");
-//     filteredOrders = filteredOrders.filter((order) => {
-//       const orderDate = dayjs(order.date);
-//       return orderDate.isAfter(startOfYear) && orderDate.isBefore(endOfYear);
-//     });
-//   } else if (activeFilter === "custom" && dateRange) {
-//     const [startDate, endDate] = dateRange;
-//     return orders.filter((order) => {
-//       const orderDate = dayjs(order.date);
-//       return (
-//         orderDate.isSame(startDate, "day") ||
-//         (orderDate.isAfter(startDate) && orderDate.isBefore(endDate)) ||
-//         orderDate.isSame(endDate, "day")
-//       );
-//     });
-//   }
-//   if (filter) {
-//     filteredOrders = filteredOrders.filter(
-//       (order) => order.customer?.name === filter
-//     );
-//   }
-
-//   return filteredOrders;
-// }, [data, filter, activeFilter, dateRange]);
-
-// useEffect(() => {
-//   const filteredOrders = filterOrders();
-//   // setOrders(filteredOrders);
-// }, [filterOrders]);

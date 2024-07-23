@@ -58,6 +58,10 @@
     cursor: pointer;
 }
 .transaction-table{
+    display:flex;
+    height: 900px;
+    flex-direction: column;
+    justify-content: space-between;
     flex: 1;
     background-color: white;
     padding:20px;

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button } from "rsuite";
+import { Modal, Button, toaster, Notification } from "rsuite";
 import "./receipt.css";
+import axios from "axios";
+import { Field, Form, Formik } from "formik";
+import styled from "styled-components";
 
 const ReceiptForm = ({ open, setOpen }) => {
   const [transactionDate, settransactionDate] = useState("");
@@ -12,22 +15,12 @@ const ReceiptForm = ({ open, setOpen }) => {
   const [payee, setPayee] = useState(null);
   const [clients, setClients] = useState([]);
   const [category, setCategory] = useState(null);
-  const [realAccount, setRealAccount] = useState(null);
-
-  const receipt = {
-    transactionDate,
-    amount,
-    reference,
-    description,
-    method: paymentMethodId,
-    payee,
-    category,
-    realAccount,
-  };
+  const [realAccount, setRealAccount] = useState([]);
+  const [accountId, setAccountId] = useState("");
 
   useEffect(() => {
     const fetchPayees = () => {
-      fetch("https://api.alphafunds.co.tz/api/v1/customers", {
+      fetch(`${import.meta.env.VITE_BASE_URL}/customers`, {
         mode: "cors",
         headers: {
           "Access-Control-Allow-Origin": "*",
@@ -42,18 +35,21 @@ const ReceiptForm = ({ open, setOpen }) => {
   }, []);
 
   useEffect(() => {
-    const fetchPaymentMethods = () => {
-      fetch("https://api.alphafunds.co.tz/api/v1/paymethods", {
-        mode: "cors",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => setPaymentMethod(data))
-        .catch((error) => console.log(error));
+    const fetchPaymentMethods = async () => {
+      try {
+        const [paymentMethodResponse, clientResponse, accountResponse] =
+          await Promise.all([
+            axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
+          ]);
+
+        setClients(clientResponse.data);
+        setPaymentMethod(paymentMethodResponse.data);
+        setRealAccount(accountResponse.data);
+      } catch (error) {}
     };
+
     fetchPaymentMethods();
   }, []);
 
@@ -64,158 +60,176 @@ const ReceiptForm = ({ open, setOpen }) => {
     return;
   }
 
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
-    const response = await fetch(
-      "https://api.alphafunds.co.tz/api/v1/receipts",
-      {
-        mode: "cors",
-        method: "post",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(receipt),
-      }
-    );
-    const res = await response.json();
-    console.log(res);
-    setOpen(false);
-  };
-
-  const handleCancelFormSubmit = async (event) => {
-    event.preventDefault();
-    setOpen(false);
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setSubmitting(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/receipts`,
+        values
+      );
+      setSubmitting(false);
+      await toaster.push(
+        <Notification header="Success" type="success">
+          {response.data.message}
+        </Notification>,
+        {
+          duration: 4000,
+          placement: "topCenter",
+        }
+      );
+      setOpen(false);
+    } catch (error) {
+      toaster.push(
+        <Notification header="Error" type="error">
+          {error.response.data.message}
+        </Notification>,
+        {
+          duration: 4000,
+          placement: "topCenter",
+        }
+      );
+    }
   };
   return (
-    <Modal backdrop="static" open={open} onClose={() => setOpen(false)}>
+    <Modal
+      backdrop="static"
+      open={open}
+      onClose={() => setOpen(false)}
+      size={700}
+    >
       <Modal.Header>
         <Modal.Title>New Receipt</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <form action="" className="receipt-modal-form">
-          <div className="row">
-            <div className="receipt-modal-form-control">
-              <label htmlFor="transaction-date">Transaction Date</label>
-              <input
-                type="text"
-                placeholder="dd-mm-yyyy"
-                id="transaction-date"
-                value={transactionDate}
-                onChange={(event) => settransactionDate(event.target.value)}
-              />
-            </div>
-            <div className="receipt-modal-form-control">
-              <label htmlFor="amount">Amount</label>
-              <input
-                type="text"
-                placeholder="Amount"
-                id="amount"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-              />
-            </div>
-          </div>
-          <div className="row">
-            <div className="receipt-modal-form-control">
-              <label htmlFor="category">Category</label>
-              <select
-                id="category"
-                required
-                className="select"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-              >
-                <option value="">Select Category</option>
-                <optgroup label="Categories">
-                  <option value="sale">Sale</option>
-                  <option value="buy">Buy</option>
-                </optgroup>
-              </select>
-            </div>
-            <div className="receipt-modal-form-control">
-              <label htmlFor="real-account">Real Account</label>
-              <select
-                id="real-account"
-                required
-                className="select"
-                value={realAccount}
-                onChange={(event) => setRealAccount(event.target.value)}
-              >
-                <option value="">Real Account</option>
-                <optgroup label="Accounts">
-                  <option value="purchases">purchase</option>
-                  <option value="expenses">expense</option>
-                </optgroup>
-              </select>
-            </div>
-          </div>
-          <div className="row">
-            <div className="receipt-modal-form-control">
-              <label htmlFor="payee">Payee</label>
-              <select
-                required
-                className="select"
-                value={payee}
-                onChange={(event) => setPayee(event.target.value)}
-              >
-                <option value="">Select payee</option>
-                {clients?.map((payee) => (
-                  <option value={payee._id}>{payee.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="receipt-modal-form-control">
-              <label htmlFor="pay-method">Payement Method</label>
-              <select
-                className="select"
-                required
-                value={paymentMethodId}
-                onChange={(event) => setPaymentMethodId(event.target.value)}
-              >
-                <option value="">Select Payment Method</option>
-                {paymentMethod.map((method) => (
-                  <option value={method._id}>{method.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="row">
-            <div className="receipt-modal-form-control">
-              <label htmlFor="reference">Reference</label>
-              <input
-                type="text"
-                placeholder="Reference"
-                id="reference"
-                value={reference}
-                onChange={(event) => setReference(event.target.value)}
-              />
-            </div>
-          </div>
-          <div className="row">
-            <div className="receipt-modal-form-control">
-              <label htmlFor="Description">Reference</label>
-              <textarea
-                name="text"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-              >
-                Description
-              </textarea>
-            </div>
-          </div>
-        </form>
+        <Formik
+          initialValues={{
+            date: "",
+            amount: "",
+            reference: "",
+            category: "receipt",
+            client_id: "",
+            account_id: "",
+            payment_method_id: "",
+            status: "new",
+            description: "",
+          }}
+          onSubmit={handleSubmit}
+        >
+          {({ values, isSubmitting }) => (
+            <Form>
+              <Row>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="transaction-date">Transaction Date</label>
+                  <Field
+                    type="date"
+                    placeholder="dd-mm-yyyy"
+                    id="transaction-date"
+                    name="date"
+                  />
+                </div>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="amount">Amount</label>
+                  <Field
+                    type="text"
+                    placeholder="Amount"
+                    id="amount"
+                    name="amount"
+                  />
+                </div>
+              </Row>
+              <Row>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="category">Category</label>
+                  <Field
+                    as="select"
+                    id="category"
+                    name="category"
+                    className="select"
+                  >
+                    <option value="" selected disabled>
+                      Select Category
+                    </option>
+                    <option value="buy">Buy</option>
+                  </Field>
+                </div>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="real-account">Real Account</label>
+                  <Field as="select" name="account_id" className="select">
+                    <option value="" selected disabled>
+                      Select account
+                    </option>
+                    {realAccount.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.name}
+                      </option>
+                    ))}
+                  </Field>
+                </div>
+              </Row>
+              <Row>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="payee">Payee</label>
+                  <Field as="select" className="select" name="client_id">
+                    <option value="" disabled>
+                      Select payee
+                    </option>
+                    {clients?.map((payee) => (
+                      <option value={payee.id}>{payee.name}</option>
+                    ))}
+                  </Field>
+                </div>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="pay-method">Payement Method</label>
+                  <Field
+                    as="select"
+                    className="select"
+                    name="payment_method_id"
+                  >
+                    <option value="" disabled>
+                      Select Payment Method
+                    </option>
+                    {paymentMethod.map((method) => (
+                      <option value={method._id}>{method.name}</option>
+                    ))}
+                  </Field>
+                </div>
+              </Row>
+              <Row>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="reference">Reference</label>
+                  <Field type="text" id="reference" name="reference" />
+                </div>
+              </Row>
+              <Row>
+                <div className="receipt-modal-form-control">
+                  <label htmlFor="Description">Description</label>
+                  <Field type="text" as="textarea" name="description">
+                    Description
+                  </Field>
+                </div>
+              </Row>
+              <div className="row">
+                <Button type="submit" appearance="primary">
+                  Ok
+                </Button>
+                <Button onClick={() => setOpen(false)} appearance="subtle">
+                  Cancel
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
       </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={handleFormSubmit} appearance="primary">
-          Ok
-        </Button>
-        <Button onClick={() => setOpen(false)} appearance="subtle">
-          Cancel
-        </Button>
-      </Modal.Footer>
+      <Modal.Footer></Modal.Footer>
     </Modal>
   );
 };
+
+const Row = styled.div`
+  display: flex;
+  flex: 1;
+  gap: 20px;
+  margin-bottom: 10px;
+`;
 
 export default ReceiptForm;

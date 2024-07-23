@@ -20,7 +20,7 @@ const PaymentReport = () => {
   useEffect(() => {
     const fetchReceipts = async () => {
       const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/payments/all"
+        `${import.meta.env.VITE_BASE_URL}/payments/all`
       );
       setReceipts(response.data);
     };
@@ -35,7 +35,7 @@ const PaymentReport = () => {
   const exportToExcel = async () => {
     try {
       const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/payments/all"
+        `${import.meta.env.VITE_BASE_URL}/payments/all`
       );
       const data = response.data;
 
@@ -90,7 +90,7 @@ const PaymentReport = () => {
         break;
     }
     const response = await axios.get(
-      `https://api.alphafunds.co.tz/api/v1/payments/monthly/?month=${month}`
+      `${import.meta.env.VITE_BASE_URL}/payments/monthly/?month=${month}`
     );
     const data = response.data;
     const worksheet = XLSX.utils.json_to_sheet(data);

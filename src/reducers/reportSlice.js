@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { add } from "date-fns";
 
 const initialState = {
   reports: [],
@@ -15,7 +14,7 @@ export const fetchReports = createAsyncThunk(
   "reports/fetchReports",
   async () => {
     const response = await axios.get(
-      "https://api.alphafunds.co.tz/api/v1/reports"
+      `${import.meta.env.VITE_BASE_URL}/reports`
     );
     return response.data;
   }
@@ -25,7 +24,7 @@ export const addReport = createAsyncThunk(
   "reports/addReport",
   async (report) => {
     const response = await axios.post(
-      "https://api.alphafunds.co.tz/api/v1/emails/send-report-email",
+      `${import.meta.env.VITE_BASE_URL}/emails/send-report-email`,
       report
     );
     return response.data;
@@ -35,9 +34,7 @@ export const addReport = createAsyncThunk(
 export const deleteReport = createAsyncThunk(
   "reports/deleteReport",
   async (reportId) => {
-    await axios.delete(
-      `https://api.alphafunds.co.tz/api/v1/reports/${reportId}`
-    );
+    await axios.delete(`${import.meta.env.VITE_BASE_URL}/reports/${reportId}`);
     return reportId;
   }
 );

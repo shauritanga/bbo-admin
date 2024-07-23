@@ -19,7 +19,7 @@ const Otp = () => {
         initialValues={{ otp: "", email: state.email }}
         onSubmit={async (values, { setSubmitting }) => {
           const result = await axios.post(
-            "https://api.alphafunds.co.tz/api/v1/auth/verify-otp",
+            `${import.meta.env.VITE_BASE_URL}/auth/verify-otp`,
             values
           );
           if (result.status === 200) {

@@ -11,7 +11,7 @@ function EmployeeForm({ setOpenForm }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/roles")
+    fetch(`${import.meta.env.VITE_BASE_URL}/roles`)
       .then((response) => response.json())
       .then((data) => setRoles(data))
       .catch((error) => console.log(error));
@@ -27,7 +27,7 @@ function EmployeeForm({ setOpenForm }) {
     };
     console.log(postData);
 
-    fetch("http://localhost:5001/api/employees", {
+    fetch(`${import.meta.env.VITE_BASE_URL}/employees`, {
       method: "POST",
       headers: {
         "Access-Control-Allow-Origin": "*",

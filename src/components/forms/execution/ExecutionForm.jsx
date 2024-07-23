@@ -4,14 +4,13 @@ import styled from "styled-components";
 import axios from "axios";
 import { calculateFees } from "../../../utils/getFees";
 
-const ExecutionForm = ({ open, setOpen, orderId, customerId }) => {
+const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
   const [state, setState] = useState({
     date: Date.now,
     slip: "",
     price: 0,
     executed: 0,
   });
-
   const amount = state.price * state.executed;
   const fees = calculateFees(amount);
 
@@ -19,6 +18,12 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId }) => {
     e.preventDefault();
     const { name, value } = e.target;
     setState((prev) => {
+      if (name === "executed") {
+        return {
+          ...prev,
+          [name]: balance >= value ? value : balance,
+        };
+      }
       return {
         ...prev,
         [name]: value,
@@ -68,16 +73,13 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId }) => {
       value: Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
     };
     const { executionResponse, dseResponse } = await Promise.all([
-      axios.post(`https://api.alphafunds.co.tz/api/v1/executions`, postData),
-      axios.post(`https://api.alphafunds.co.tz/api/v1/dse`, dseData),
-      axios.post(`https://api.alphafunds.co.tz/api/v1/vat`, vatData),
-      axios.post(`https://api.alphafunds.co.tz/api/v1/cds`, cdsData),
-      axios.post(`https://api.alphafunds.co.tz/api/v1/csma`, csmaData),
-      axios.post(`https://api.alphafunds.co.tz/api/v1/fidelity`, fidelityData),
-      axios.post(
-        `https://api.alphafunds.co.tz/api/v1/brokerage`,
-        brokerageData
-      ),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/executions`, postData),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/dse`, dseData),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/vat`, vatData),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/cds`, cdsData),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/csma`, csmaData),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/fidelity`, fidelityData),
+      axios.post(`${import.meta.env.VITE_BASE_URL}/brokerage`, brokerageData),
     ]);
 
     setOpen(false);

@@ -14,7 +14,7 @@ const AuthProvider = ({ children }) => {
     };
     try {
       const response = await fetch(
-        "https://api.alphafunds.co.tz/api/v1/auth/login/employees",
+        `${import.meta.env.VITE_BASE_URL}/auth/login/employees`,
         {
           method: "post",
           body: JSON.stringify(postData),
@@ -25,15 +25,13 @@ const AuthProvider = ({ children }) => {
       );
       if (!response.ok) throw new Error("Error fetching orders");
       const result = await response.json();
-      console.log(result);
+
       setUser(result.user);
       setToken(result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
       localStorage.setItem("token", result.token);
       navigate("/dashboard");
-    } catch (error) {
-      console.log("Hello world!");
-    }
+    } catch (error) {}
   };
 
   const logOut = () => {

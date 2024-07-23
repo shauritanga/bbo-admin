@@ -1,13 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import axios from "axios";
 
 const TransactionView = () => {
   const { state } = useLocation();
+  const [methods, setMethods] = useState([]);
   const navigate = useNavigate();
-  console.log();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [paymethodResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
+        ]);
+
+        setMethods(paymethodResponse.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (methods.length === 0) {
+    return <div>Loading</div>;
+  }
+
+  const paymentMethod = methods.filter(
+    (method) => method._id === state.transaction.payment_method_id
+  );
+  console.log(paymentMethod);
   return (
     <TransactionWrapper>
       <TransanctionDetails>
@@ -28,7 +53,7 @@ const TransactionView = () => {
                 <Label htmlFor="payee">Payee</Label>
                 <TextInput
                   disabled
-                  value={state.payee?.name}
+                  value={state.payee[0]?.name}
                   type="text"
                   id="payee"
                 />
@@ -39,14 +64,19 @@ const TransactionView = () => {
                 <Label htmlFor="reference">Reference</Label>
                 <TextInput
                   disabled
-                  value={state.referenceNumber}
+                  value={state.transaction.reference}
                   type="text"
                   id="reference"
                 />
               </FormControl>
               <FormControl>
                 <Label htmlFor="category">Category</Label>
-                <TextInput disabled type="text" id="category" />
+                <TextInput
+                  disabled
+                  type="text"
+                  id="category"
+                  value={state.transaction.category}
+                />
               </FormControl>
             </FormGroup>
             <FormGroup>
@@ -54,7 +84,7 @@ const TransactionView = () => {
                 <Label htmlFor="paymethod">Payment Method</Label>
                 <TextInput
                   disabled
-                  value={state.method?.name}
+                  value={paymentMethod[0].name}
                   type="text"
                   id="paymethod"
                 />
@@ -63,7 +93,7 @@ const TransactionView = () => {
                 <Label htmlFor="status">Status</Label>
                 <TextInput
                   disabled
-                  value={state.status}
+                  value={state.transaction.status}
                   type="text"
                   id="status"
                 />
@@ -74,7 +104,7 @@ const TransactionView = () => {
                 <Label htmlFor="description">Description</Label>
                 <TextArea
                   disabled
-                  value={state.description}
+                  value={state.transaction.description}
                   id="paymethod"
                 ></TextArea>
               </FormControl>
@@ -123,7 +153,7 @@ const TransactionView = () => {
                       })
                     }
                   >
-                    {state.payee?.name}
+                    {state.payee[0]?.name}
                   </span>
                 </TableDataCell>
               </TableDataRow>
@@ -133,7 +163,7 @@ const TransactionView = () => {
               </TableDataRow>
               <TableDataRow>
                 <TableDataCell>Balance</TableDataCell>
-                <TableDataCell>0</TableDataCell>
+                <TableDataCell>{state.payee[0]?.wallet}</TableDataCell>
               </TableDataRow>
               <TableDataRow>
                 <TableDataCell>Shares</TableDataCell>
@@ -142,7 +172,7 @@ const TransactionView = () => {
               <TableDataRow>
                 <TableDataCell>Status</TableDataCell>
                 <TableDataCell>
-                  <span>Active</span>
+                  <span>{state.payee[0]?.status}</span>
                 </TableDataCell>
               </TableDataRow>
             </tbody>

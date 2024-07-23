@@ -28,7 +28,7 @@ function Payment() {
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
       const response = await fetch(
-        `https://api.alphafunds.co.tz/api/v1/payments/${selected[item]._id}`,
+        `${import.meta.env.VITE_BASE_URL}/payments/${selected[item]._id}`,
         {
           mode: "cors",
           method: "POST",
@@ -46,7 +46,7 @@ function Payment() {
   const exportToExcel = async () => {
     try {
       const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/payments/all"
+        `${import.meta.env.VITE_BASE_URL}/payments/all`
       );
       const data = response.data;
 
@@ -80,7 +80,9 @@ function Payment() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `https://api.alphafunds.co.tz/api/v1/payments/?page=${currentPage}&limit=${itemsPerPage}`
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/payments/?page=${currentPage}&limit=${itemsPerPage}`
         );
         const data = await response.json();
         setPayments(data.data); // Assuming API returns { items: [...], totalPages: ... }
@@ -99,7 +101,7 @@ function Payment() {
       try {
         setIsLoading(true);
         const customersResponse = await fetch(
-          "https://api.alphafunds.co.tz/api/v1/customers"
+          `${import.meta.env.VITE_BASE_URL}/customers`
         );
 
         if (!customersResponse.ok) throw new Error("Error fetching customers");
@@ -123,7 +125,7 @@ function Payment() {
   if (!payments) {
     return <div>Loading...</div>;
   }
-  console.log(totalPages);
+  console.log(payments);
 
   const filtered = payments?.filter((payment) =>
     payment.payee?.name.toLowerCase().includes(query.toLowerCase())
@@ -139,30 +141,6 @@ function Payment() {
           New Payment
         </button>
         <div className="payment-header-right">
-          {/* <form>
-            <Select
-              required
-              value={clientId}
-              width={340}
-              selected={selected}
-              onChange={(event) => setClientId(event.target.value)}
-            >
-              <option value="" disabled>
-                Select Client
-              </option>
-
-              {clients.map((client) => (
-                <option key={client._id} value={client._id}>
-                  {client.name}
-                </option>
-              ))}
-            </Select>
-            <button
-              style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-            >
-              Filter
-            </button>
-          </form> */}
           <button
             style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
             onClick={exportToExcel}

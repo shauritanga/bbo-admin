@@ -35,102 +35,65 @@ import Category from "./pages/category/Category";
 import Otp from "./pages/otp/Otp";
 import PrintContractPDF from "./components/pdf/PrintContractPDF";
 import PasswordReset from "./pages/reset/PasswordReset";
-import { RotatingLines } from "react-loader-spinner";
+import RequestPassword from "./pages/request/RequesrPassword";
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 5000);
-  }, []);
   return (
     <>
-      {isLoading === true ? (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            left: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <RotatingLines
-            visible={true}
-            height="100"
-            width="100"
-            color="grey"
-            strokeWidth="5"
-            animationDuration="0.75"
-            ariaLabel="rotating-lines-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
-          />
-        </div>
-      ) : (
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="login" element={<Register />} />
-              <Route path="/otp" element={<Otp />} />
-              <Route path="/reset-password" element={<PasswordReset />} />
-              <Route element={<Layout />}>
-                <Route
-                  path="/"
-                  element={<Navigate to="/dashboard" replace />}
-                />
-                <Route path="/accounting/expenses" element={<Expense />} />
-                <Route path="/accounting/payments" element={<Payment />} />
-                <Route path="/accounting/receipts" element={<Receipt />} />
-                <Route
-                  path="/accounting/reports"
-                  element={<AccountingReports />}
-                />
-                <Route
-                  path="/accounting/transactions"
-                  element={<Transaction />}
-                />
-                <Route path="/business" element={<Business />} />
-                <Route path="/categories" element={<Category />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route
-                  path="/customers/:customerId"
-                  element={<CustomerView />}
-                />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dealing" element={<DealingSheet />} />
-                <Route path="/dealing/:dealingId" element={<DealingView />} />
-                <Route path="/departments" element={<Department />} />
-                <Route path="/employees" element={<Employee />} />
-                <Route
-                  path="/employees/:employeeId"
-                  element={<EmployeeView />}
-                />
-                <Route path="/files" element={<Files />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/orders/:orderId" element={<OrderView />} />
-                <Route path="/reports" element={<MarketReports />} />
-                <Route path="/resources" element={<HumanResource />} />
-                <Route path="/roles" element={<Role />} />
-                <Route
-                  path="/securities"
-                  element={<Security backgroundColor="var(--color-white)" />}
-                />
-                <Route
-                  path="/transactions/:transactionId"
-                  element={<TransactionView />}
-                />
-              </Route>
-              <Route path="/contract" element={<PrintContractPDF />} />
-              <Route path="/statement" element={<PDF />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      )}
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="login" element={<Register />} />
+            <Route path="/otp" element={<Otp />} />
+            <Route
+              path="/reset-password-request"
+              element={<RequestPassword />}
+            />
+            <Route path="/reset-password" element={<PasswordReset />} />
+            <Route element={<Layout />}>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/accounting/expenses" element={<Expense />} />
+              <Route path="/accounting/payments" element={<Payment />} />
+              <Route path="/accounting/receipts" element={<Receipt />} />
+              <Route
+                path="/accounting/reports"
+                element={<AccountingReports />}
+              />
+              <Route
+                path="/accounting/transactions"
+                element={<Transaction />}
+              />
+              <Route path="/business" element={<Business />} />
+              <Route path="/categories" element={<Category />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/customers/:customerId" element={<CustomerView />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dealing" element={<DealingSheet />} />
+              <Route path="/dealing/:dealingId" element={<DealingView />} />
+              <Route path="/departments" element={<Department />} />
+              <Route path="/employees" element={<Employee />} />
+              <Route path="/employees/:employeeId" element={<EmployeeView />} />
+              <Route path="/files" element={<Files />} />
+              <Route path="/orders" element={<Orders />} />
+              <Route path="/orders/:orderId" element={<OrderView />} />
+              <Route path="/reports" element={<MarketReports />} />
+              <Route path="/resources" element={<HumanResource />} />
+              <Route path="/roles" element={<Role />} />
+              <Route
+                path="/securities"
+                element={<Security backgroundColor="var(--color-white)" />}
+              />
+              <Route
+                path="/transactions/:transactionId"
+                element={<TransactionView />}
+              />
+            </Route>
+            <Route path="/contract" element={<PrintContractPDF />} />
+            <Route path="/statement" element={<PDF />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+      )
     </>
   );
 }

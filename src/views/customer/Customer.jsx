@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFilePicker } from "use-file-picker";
 import {
   FileAmountLimitValidator,
@@ -22,6 +22,7 @@ import ShareMigrationForm from "../../components/forms/share/ShareMigrationForm"
 import Select from "../../components/select";
 import { Delete } from "@mui/icons-material";
 import { CiTrash } from "react-icons/ci";
+import { Notification, toaster } from "rsuite";
 
 const CustomerView = () => {
   const { openFilePicker, filesContent, loading, errors } = useFilePicker({
@@ -44,6 +45,8 @@ const CustomerView = () => {
       setFiles((prevFiles) => [...prevFiles, ...filesContent]);
     },
   });
+  const [transactions, setTransactions] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [fileType, setFileType] = useState("");
   const [isActive, setIsActive] = useState("account");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,16 +56,55 @@ const CustomerView = () => {
   const navigate = useNavigate();
   const customer = location.state;
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [transactionResponse, orderResponse] = await Promise.all([
+          axios.get(
+            `${import.meta.env.VITE_BASE_URL}/transactions/${customer.id}`
+          ),
+          axios.get(
+            `${import.meta.env.VITE_BASE_URL}/orders/client/${customer.id}`
+          ),
+        ]);
+        setTransactions(transactionResponse.data);
+        setOrders(orderResponse.data);
+      } catch (error) {}
+    };
+    fetchData();
+  }, []);
+
   const sendActivationEmail = async (email) => {
     try {
-      await axios.post(
-        "https://admin.alphafunds.co.tz/api/v1/emails/send-activation-email",
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/emails/send-activation-email`,
         { email }
       );
-      alert("Activation email sent successfully!");
     } catch (error) {
-      console.error("Error sending activation email:", error);
       alert("Failed to send activation email. Please try again later.");
+    }
+  };
+
+  const sendResetPasswordEmail = async (email) => {
+    console.log(email);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/auth/clients/request-reset-password`,
+        { email }
+      );
+      await toaster.push(
+        <Notification header="Success" type="success">
+          {response.data.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+    } catch (error) {
+      await toaster.push(
+        <Notification header="Error" type="error">
+          {error.response.data.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
     }
   };
 
@@ -73,7 +115,7 @@ const CustomerView = () => {
     });
 
     try {
-      const response = await fetch("YOUR_API_ENDPOINT", {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/uploads`, {
         method: "POST",
         body: formData,
       });
@@ -97,13 +139,45 @@ const CustomerView = () => {
         return <Contract id={customer._id} />;
         break;
       case "statement":
-        return <Statement id={customer._id} />;
+        return (
+          <Statement
+            id={customer.id}
+            transactions={transactions}
+            orders={orders}
+          />
+        );
         break;
       case "security":
         return <Security email={customer.email} />;
         break;
     }
   };
+  //
+  const updatedTransactions = transactions?.filter(
+    (trans) => trans.account_id === "62"
+  );
+
+  let globalBalance = 0;
+
+  const displayedTransactions = updatedTransactions.map((transaction) => {
+    const credit = parseFloat(transaction.credit);
+    const debit = parseFloat(transaction.debit);
+
+    // Update the global balance
+    globalBalance += credit - debit;
+
+    // Add the balance to the transaction
+    return {
+      ...transaction,
+      balance: globalBalance,
+    };
+  });
+
+  // const totalShares = customer.shares.reduce(
+  //   (accumulator, currentValue) => accumulator + currentValue.volume,
+  //   0
+  // );
+  // console.log(totalShares);
   return (
     <Wrapper>
       <Main>
@@ -238,11 +312,11 @@ const CustomerView = () => {
               </TableDataRow>
               <TableDataRow>
                 <TableRowCell>CDS</TableRowCell>
-                <TableRowCell>647482</TableRowCell>
+                <TableRowCell>{customer?.dse_account}</TableRowCell>
               </TableDataRow>
               <TableDataRow>
                 <TableRowCell>Shares</TableRowCell>
-                <TableRowCell>56</TableRowCell>
+                <TableRowCell>{}</TableRowCell>
               </TableDataRow>
               <TableDataRow>
                 <TableRowCell>Status</TableRowCell>
@@ -288,8 +362,18 @@ const CustomerView = () => {
             Send Activation Email
           </Button>
           <Button
+            onClick={() =>
+              sendResetPasswordEmail("leah.gabriel@alphacapital.co.tz")
+            }
+            style={{ backgroundColor: "var(--color-reject)" }}
+          >
+            Send reset password email
+          </Button>
+          <Button
             style={{ backgroundColor: "var(--color-button)" }}
-            onClick={() => navigate("/statement", { state: customer })}
+            onClick={() =>
+              navigate("/statement", { state: displayedTransactions })
+            }
           >
             Print Statement (PDF)
           </Button>

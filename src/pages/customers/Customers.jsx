@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { DateRangePicker } from "rsuite";
+import { DateRangePicker, toaster, Notification } from "rsuite";
 import useSWR from "swr";
 import format from "date-fns/format";
 import "rsuite/DateRangePicker/styles/index.css";
@@ -16,37 +16,13 @@ import { BsExclamationOctagon } from "react-icons/bs";
 import { FiShoppingBag } from "react-icons/fi";
 import SummaryCard from "../../components/summary-card/SummaryCard";
 import CustomerForm from "../../components/forms/customer/CustomerForm";
+import axios from "axios";
+import { RotatingLines } from "react-loader-spinner";
 const fetcher = (url) => fetch(url).then((res) => res.json());
-
-const summary = [
-  {
-    name: "New",
-    total: 14,
-    icon: <IoTimerOutline color="#000" />,
-    backgroundColor: "#000",
-  },
-  {
-    name: "Pending",
-    total: 3,
-    icon: <VscServerProcess color="#33336a" />,
-    backgroundColor: "#33336a",
-  },
-  {
-    name: "Total",
-    total: 712,
-    icon: <BsExclamationOctagon color="#656281" />,
-    backgroundColor: "#656281",
-  },
-  {
-    name: "issues",
-    total: 250,
-    icon: <FiShoppingBag color="#e71f27" />,
-    backgroundColor: "#e71f27",
-  },
-];
 
 function Customers() {
   const [customers, setCustomers] = useState(null);
+  const [profiles, setProfiles] = useState(null);
   const [customerFilter, setCustomerFilter] = useState("all");
   const [active, setActive] = useState("today");
   const [dateRage, setDateRage] = useState(false);
@@ -57,7 +33,7 @@ function Customers() {
   const navigate = useNavigate();
 
   const { data, error, loading } = useSWR(
-    `https://api.alphafunds.co.tz/api/v1/statements?startDate=${new Date(
+    `${import.meta.env.VITE_BASE_URL}/statements?startDate=${new Date(
       dateSelected.startDate
     ).toISOString()}&endDate=${new Date(dateSelected.endDate).toISOString()}`,
     fetcher
@@ -70,15 +46,74 @@ function Customers() {
   }
 
   useEffect(() => {
-    fetch("https://api.alphafunds.co.tz/api/v1/customers")
-      .then((response) => response.json())
-      .then((data) => setCustomers(data))
-      .catch((error) => console.log(error));
+    const fetchData = async () => {
+      try {
+        const [profileResponse, customerResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BASE_URL}/profiles`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+        ]);
+
+        setProfiles(profileResponse.data);
+        setCustomers(customerResponse.data);
+      } catch (error) {
+        toaster.push(<Notification></Notification>, {
+          duration: 4000,
+          placement: "topCenter",
+        });
+      }
+    };
+    fetchData();
   }, []);
 
-  if (!customers) {
-    return <div>Loading ...</div>;
+  if (!customers || !profiles) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <RotatingLines width="25" />
+      </div>
+    );
   }
+
+  const newCustomers = customers?.filter(
+    (customer) => customer.status.toLowerCase() === "new"
+  ).length;
+  const pendingCustomers = customers?.filter(
+    (customer) => customer.status.toLowerCase() === "pending"
+  ).length;
+  const totalCustomers = customers.length;
+  const summary = [
+    {
+      name: "New",
+      total: newCustomers,
+      icon: <IoTimerOutline color="#000" />,
+      backgroundColor: "#000",
+    },
+    {
+      name: "Pending",
+      total: pendingCustomers,
+      icon: <VscServerProcess color="#33336a" />,
+      backgroundColor: "#33336a",
+    },
+    {
+      name: "Total",
+      total: totalCustomers,
+      icon: <BsExclamationOctagon color="#656281" />,
+      backgroundColor: "#656281",
+    },
+    {
+      name: "issues",
+      total: 0,
+      icon: <FiShoppingBag color="#e71f27" />,
+      backgroundColor: "#e71f27",
+    },
+  ];
+
   return (
     <Wrapper>
       <TopFilters>
@@ -177,36 +212,42 @@ function Customers() {
             <TableHeaderRow>
               <TableHeaderCell>name</TableHeaderCell>
               <TableHeaderCell>contact</TableHeaderCell>
-              <TableHeaderCell>category</TableHeaderCell>
+              <TableHeaderCell>country</TableHeaderCell>
               <TableHeaderCell>status</TableHeaderCell>
               <TableHeaderCell>action</TableHeaderCell>
             </TableHeaderRow>
           </thead>
           <tbody>
-            {customers.map((customer) => (
-              <tr key={customer._id}>
-                <TableDataCell>
-                  <p>{customer.name}</p>
-                </TableDataCell>
-                <TableDataCell>
-                  <p>{customer.email}</p>
-                  <p>{customer.phone}</p>
-                </TableDataCell>
-                <TableDataCell>{customer.country}</TableDataCell>
-                <TableDataCell>{customer.status}</TableDataCell>
-                <TableDataCell>
-                  <ViewButton
-                    onClick={() =>
-                      navigate(`/customers/${customer._id}`, {
-                        state: customer,
-                      })
-                    }
-                  >
-                    view
-                  </ViewButton>
-                </TableDataCell>
-              </tr>
-            ))}
+            {customers?.map((customer) => {
+              const profile = profiles?.filter(
+                (profile) => profile.user_id === customer.id
+              );
+
+              return (
+                <TableDataRow key={customer._id}>
+                  <TableDataCell>
+                    <p>{customer.name}</p>
+                  </TableDataCell>
+                  <TableDataCell>
+                    <p>{customer.email}</p>
+                    <p>{profile[0]?.mobile}</p>
+                  </TableDataCell>
+                  <TableDataCell>{profile[0]?.nationality}</TableDataCell>
+                  <TableDataCell>{customer.status}</TableDataCell>
+                  <TableDataCell>
+                    <ViewButton
+                      onClick={() =>
+                        navigate(`/customers/${customer.id}`, {
+                          state: customer,
+                        })
+                      }
+                    >
+                      view
+                    </ViewButton>
+                  </TableDataCell>
+                </TableDataRow>
+              );
+            })}
           </tbody>
         </Table>
       </TableWrapper>
@@ -288,6 +329,9 @@ const Table = styled.table`
   width: 100%;
 `;
 const TableHeaderRow = styled.tr``;
+const TableDataRow = styled.tr`
+  border-bottom: 0.04px solid #ddd;
+`;
 const TableHeaderCell = styled.th`
   padding: 14px 20px;
   text-transform: uppercase;
@@ -296,7 +340,7 @@ const TableHeaderCell = styled.th`
   border: none;
 `;
 const TableDataCell = styled.td`
-  padding: 14px 20px;
+  padding: 8px 10px;
 `;
 const ViewButton = styled.button`
   background-color: hsl(243deg 20% 90%);

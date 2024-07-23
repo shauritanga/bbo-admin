@@ -10,7 +10,7 @@ const CreateEmployeeForm = ({ open, setOpen }) => {
   useEffect(() => {
     const fetchRoles = async () => {
       const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/roles"
+        `${import.meta.env.VITE_BASE_URL}/roles`
       );
       setRoles(response.data);
       console.log(response.data);
@@ -21,7 +21,7 @@ const CreateEmployeeForm = ({ open, setOpen }) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const response = await axios.post(
-        "https://api.alphafunds.co.tz/api/v1/employees",
+        `${import.meta.env.VITE_BASE_URL}/employees`,
         values
       );
       setSubmitting(false);

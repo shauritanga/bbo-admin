@@ -16,7 +16,7 @@ export const fetchSecurities = createAsyncThunk(
   "securities/fetchSecurities",
   async () => {
     const response = await axios.get(
-      "https://api.alphafunds.co.tz/api/v1/securities"
+      `${import.meta.env.VITE_BASE_URL}/securities`
     );
     return response.data; // Assuming your API returns an array of orders
   }
@@ -26,7 +26,7 @@ export const addSecurity = createAsyncThunk(
   "securities/addSecurity",
   async (security) => {
     const response = await axios.post(
-      "https://api.alphafunds.co.tz/api/v1/securities",
+      `${import.meta.env.VITE_BASE_URL}/securities`,
       security
     );
     return response.data; // Assuming your backend returns the new order

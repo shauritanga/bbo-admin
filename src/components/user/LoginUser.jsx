@@ -13,7 +13,7 @@ const LoginUser = () => {
   const { user, logOut } = useAuth();
   const userObject = typeof user === "string" ? JSON.parse(user) : user;
   return (
-    <Dropdown renderToggle={renderToggle}>
+    <Dropdown renderToggle={renderToggle} placement="bottomEnd">
       <Dropdown.Item
         panel
         style={{ padding: 10, width: 160, color: "#656281" }}

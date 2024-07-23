@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal, Notification, toaster } from "rsuite";
 import "./expense.css";
+import axios from "axios";
 
 function generateExpenseReference() {
   const timestamp = Date.now().toString().slice(-7); // Last 7 digits of timestamp
@@ -12,6 +13,7 @@ function generateExpenseReference() {
 
 const ExpenseForm = ({ open, setOpen }) => {
   const [transactionDate, settransactionDate] = useState("");
+  const [accounts, setAccounts] = useState([]);
   const [amount, setAmount] = useState(0);
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
@@ -24,16 +26,17 @@ const ExpenseForm = ({ open, setOpen }) => {
   const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   useEffect(() => {
-    const fetchPaymentMethods = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          "https://api.alphafunds.co.tz/api/v1/paymethods"
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setPaymentMethod(data);
+        const [paymentMethodResponse, customerResponse, accountResponse] =
+          await Promise.all([
+            axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+            axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
+          ]);
+        setCustomers(customerResponse.data);
+        setPaymentMethod(paymentMethodResponse.data);
+        setAccounts(accountResponse.data);
       } catch (error) {
         console.error("Error fetching payment methods:", error);
         // Consider displaying an error message to the user
@@ -41,29 +44,8 @@ const ExpenseForm = ({ open, setOpen }) => {
         setIsLoading(false); // Data loaded, set isLoading to false
       }
     };
-    fetchPaymentMethods();
+    fetchData();
   }, []); // Empty dependency array ensures this runs once on component mount
-
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await fetch(
-          "https://api.alphafunds.co.tz/api/v1/customers"
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setCustomers(data);
-      } catch (error) {
-        console.error("Error fetching customers:", error);
-        // Consider displaying an error message to the user
-      }
-    };
-
-    fetchCustomers();
-  }, []);
 
   if (!paymentMethod) {
     return;
@@ -102,7 +84,7 @@ const ExpenseForm = ({ open, setOpen }) => {
 
     try {
       const [expenseResponse, transactionResponse] = await Promise.all([
-        fetch("http://localhost:5001/api/expenses", {
+        fetch(`${import.meta.env.VITE_BASE_URL}/expenses`, {
           method: "post",
           headers: {
             "Access-Control-Allow-Origin": "*",
@@ -110,7 +92,7 @@ const ExpenseForm = ({ open, setOpen }) => {
           },
           body: JSON.stringify(payment),
         }),
-        fetch("http://localhost:5001/api/transactions", {
+        fetch(`${import.meta.env.VITE_BASE_URL}/transactions`, {
           method: "post",
           headers: {
             "Access-Control-Allow-Origin": "*",
@@ -146,11 +128,16 @@ const ExpenseForm = ({ open, setOpen }) => {
     }
   };
   return (
-    <Modal backdrop="static" open={open} onClose={() => setOpen(false)}>
+    <Modal
+      backdrop="static"
+      open={open}
+      onClose={() => setOpen(false)}
+      size={700}
+    >
       <Modal.Header>
         <Modal.Title>New Expense</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{ width: "100%" }}>
         <form action="" className="payment-modal-form">
           <div className="row">
             <div className="payment-modal-form-control">
@@ -198,9 +185,12 @@ const ExpenseForm = ({ open, setOpen }) => {
                 value={realAccount}
                 onChange={(event) => setRealAccount(event.target.value)}
               >
-                <option value="" disabled>
-                  Real Account
+                <option value="" disabled selected>
+                  Select Account
                 </option>
+                {accounts.map((account) => (
+                  <option value={account.id}>{account.name}</option>
+                ))}
                 <option value="purchases">purchase</option>
                 <option value="expenses">expense</option>
               </select>

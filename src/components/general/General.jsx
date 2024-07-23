@@ -5,7 +5,7 @@ const General = () => {
   const [companyName, setCompanyName] = useState("Alpha Capital");
   const [address, setAddress] = useState("P.O.Box 70166 Dar es salaam");
   const [email, setEmail] = useState("info@alphacapital.co.tz");
-  const [website, setWebsite] = useState("https://www.alphafunds.co.tz");
+  const [website, setWebsite] = useState("https://www.alphacapital.co.tz");
   const [fax, setFax] = useState("");
   const [telephone, setTelephone] = useState("0763631999");
   const [about, setAbout] = useState("A blokerage company in east africa");

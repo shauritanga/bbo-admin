@@ -44,12 +44,7 @@
     flex-wrap: wrap;
     gap: 15px;
 }
-.receipt-modal-form .row{
-    display: flex;
-    flex: 1;
-    gap:20px;
-    margin-bottom: 10px;
-}
+
 .receipt-modal-form-control{
     display: flex;
     flex-direction: column;

@@ -6,6 +6,7 @@ import Select from "../../components/select";
 import { DateRangePicker, toaster, Notification } from "rsuite";
 import styled from "styled-components";
 import dayjs from "dayjs";
+import { Pagination, Stack } from "@mui/material";
 
 function Transaction() {
   const [query, setQuery] = useState("");
@@ -21,6 +22,10 @@ function Transaction() {
   const itemsPerPage = 10; // Number of items to show per page
 
   const navigate = useNavigate();
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const customStyles = {
     control: (base) => ({
@@ -39,7 +44,7 @@ function Transaction() {
     try {
       for (let item in selected) {
         const response = await fetch(
-          `https://api.alphafunds.co.tz/api/v1/transactions/${selected[item]._id}`,
+          `${import.meta.env.VITE_BASE_URL}/transactions/${selected[item]._id}`,
           {
             mode: "cors",
             method: "PATCH",
@@ -93,7 +98,9 @@ function Transaction() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `https://api.alphafunds.co.tz/api/v1/transactions/?page=${currentPage}&limit=${itemsPerPage}`
+          `${
+            import.meta.env.VITE_BASE_URL
+          }/transactions/?page=${currentPage}&limit=${itemsPerPage}`
         );
         const data = await response.json();
         setTransactions(data.data); // Assuming API returns { items: [...], totalPages: ... }
@@ -108,7 +115,7 @@ function Transaction() {
   }, [currentPage]);
 
   useEffect(() => {
-    fetch("https://api.alphafunds.co.tz/api/v1/customers", {
+    fetch(`${import.meta.env.VITE_BASE_URL}/customers`, {
       mode: "cors",
       headers: {
         "Access-Control-Allow-Origin": "*",
@@ -120,10 +127,7 @@ function Transaction() {
       .catch((error) => console.log(error));
   }, []);
 
-  if (!clients) {
-    return;
-  }
-  if (!transactions) {
+  if (!clients || !transactions) {
     return <div>Loading...</div>;
   }
 
@@ -131,9 +135,6 @@ function Transaction() {
     return { lable: client.name, value: client.name };
   });
 
-  if (!transactions) {
-    return <div>Loading...</div>;
-  }
   const filtered = transactions?.filter((expense) =>
     expense.payee?.name.toLowerCase().includes(query.toLowerCase())
   );
@@ -220,59 +221,80 @@ function Transaction() {
             </TableHeaderRow>
           </thead>
           <tbody>
-            {data.map((transaction) => (
-              <TableDataRow key={transaction._id}>
-                <TableDataCell>
-                  <CheckBox
-                    name={transaction}
-                    value={selected.includes(transaction)}
-                    visible={visible}
-                    setVisible={setVisible}
-                    updateValue={handleSelect}
-                  />
-                </TableDataCell>
-                <TableDataCell>{transaction.transactionId}</TableDataCell>
-                <TableDataCell>{transaction.payee?.name}</TableDataCell>
-                <TableDataCell>{transaction.description}</TableDataCell>
-                <TableDataCell>
-                  <div>
-                    <p>{transaction.amount}</p>
-                    <p>Ref:{transaction.referenceNumber}</p>
-                  </div>
-                </TableDataCell>
-                <TableDataCell>
-                  <div>
-                    <p>{dayjs(transaction.date).format("DD-MM-YYYY")}</p>
-                    <p>{transaction.type}</p>
-                  </div>
-                </TableDataCell>
-                <TableDataCell>
-                  <span
-                    style={{
-                      backgroundColor:
-                        transaction.status === "approved"
-                          ? "var(--color-approve)"
-                          : transaction.status === "disapproved"
-                          ? "var(--color-disapprove)"
-                          : "none",
-                      padding: "6px 10px",
-                      borderRadius: "999px",
-                      color: "white",
-                      cursor: "pointer",
-                    }}
-                    onClick={() =>
-                      navigate(`/transactions/${transaction._id}`, {
-                        state: transaction,
-                      })
-                    }
-                  >
-                    {transaction.status}
-                  </span>
-                </TableDataCell>
-              </TableDataRow>
-            ))}
+            {data.map((transaction) => {
+              const payee = clients.filter(
+                (client) => client.id === transaction.client_id
+              );
+              const payMethod = clients.filter(
+                (client) => client.id === transaction.client_id
+              );
+              return (
+                <TableDataRow key={transaction._id}>
+                  <TableDataCell>
+                    <CheckBox
+                      name={transaction}
+                      value={selected.includes(transaction)}
+                      visible={visible}
+                      setVisible={setVisible}
+                      updateValue={handleSelect}
+                    />
+                  </TableDataCell>
+                  <TableDataCell>{transaction.uid}</TableDataCell>
+                  <TableDataCell>{payee[0]?.name}</TableDataCell>
+                  <TableDataCell>{transaction.description}</TableDataCell>
+                  <TableDataCell>
+                    <div>
+                      <p>{transaction.amount}</p>
+                      <p>Ref:{transaction.reference}</p>
+                    </div>
+                  </TableDataCell>
+                  <TableDataCell>
+                    <div>
+                      <p>{dayjs(transaction.date).format("DD-MM-YYYY")}</p>
+                      <p>{transaction.type}</p>
+                    </div>
+                  </TableDataCell>
+                  <TableDataCell>
+                    <span
+                      style={{
+                        backgroundColor:
+                          transaction.status === "approved"
+                            ? "var(--color-approve)"
+                            : transaction.status === "disapproved"
+                            ? "var(--color-disapprove)"
+                            : "none",
+                        padding: "6px 10px",
+                        borderRadius: "999px",
+                        color: "black",
+                        cursor: "pointer",
+                      }}
+                      onClick={() =>
+                        navigate(`/transactions/${transaction._id}`, {
+                          state: { transaction, payee },
+                        })
+                      }
+                    >
+                      {transaction.status}
+                    </span>
+                  </TableDataCell>
+                </TableDataRow>
+              );
+            })}
           </tbody>
         </table>
+        <PaginationWrapper>
+          <Counter>{totalDocuments} total orders</Counter>
+          <Stack spacing={2}>
+            {/* <Pagination count={10} shape="rounded" /> */}
+            <Pagination
+              count={totalPages}
+              variant="outlined"
+              shape="rounded"
+              page={currentPage}
+              onChange={handleChange}
+            />
+          </Stack>
+        </PaginationWrapper>
       </div>
     </div>
   );
@@ -305,4 +327,13 @@ const TableDataCell = styled.td`
   text-align: left;
   padding: 8px;
 `;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30px;
+`;
+
+const Counter = styled.p``;
 export default Transaction;

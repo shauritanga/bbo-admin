@@ -15,7 +15,7 @@ export const fetchEmployees = createAsyncThunk(
   "employees/fetchEmployees",
   async () => {
     const response = await axios.get(
-      "https://api.alphafunds.co.tz/api/v1/employees"
+      `${import.meta.env.VITE_BASE_URL}/employees`
     );
     return response.data;
   }

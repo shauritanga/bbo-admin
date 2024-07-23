@@ -15,7 +15,7 @@ const SelectionModal = () => {
   const navigate = useNavigate();
 
   const { data, error, loading } = useSWR(
-    `https://api.alphafunds.co.tz/api/v1/statements?startDate=${new Date(
+    `${import.meta.env.VITE_BASE_URL}/statements?startDate=${new Date(
       dateSelected.startDate
     ).toISOString()}&endDate=${new Date(dateSelected.endDate).toISOString()}`,
     fetcher

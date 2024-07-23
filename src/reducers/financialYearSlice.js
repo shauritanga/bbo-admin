@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { set } from "date-fns";
 
 const initialState = {
   financialYears: [],
@@ -16,7 +15,7 @@ export const fetchFinancialYears = createAsyncThunk(
   "financialYears/fetchFinancialYears",
   async () => {
     const response = await axios.get(
-      "https://api.alphafunds.co.tz/api/v1/financial-years"
+      `${import.meta.env.VITE_BASE_URL}/financial-years`
     );
     return response.data;
   }
@@ -25,7 +24,7 @@ export const addFinancialYear = createAsyncThunk(
   "financialYears/addFinancialYear",
   async (financialYear) => {
     const response = await axios.post(
-      "https://api.alphafunds.co.tz/api/v1/financial-years",
+      `${import.meta.env.VITE_BASE_URL}/financial-years`,
       financialYear
     );
     return response.data;
@@ -35,7 +34,7 @@ export const deleteFinancialYear = createAsyncThunk(
   "financialYears/deleteFinancialYear",
   async (financialYearId) => {
     const response = await axios.delete(
-      `https://api.alphafunds.co.tz/api/v1/financial-years/${financialYearId}`
+      `${import.meta.env.VITE_BASE_URL}financial-years/${financialYearId}`
     );
     return response.data;
   }

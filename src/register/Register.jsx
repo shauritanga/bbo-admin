@@ -13,30 +13,24 @@ const Login = () => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const response = await axios.post(
-        "https://api.alphafunds.co.tz/api/v1/auth/otp",
+        `${import.meta.env.VITE_BASE_URL}/auth/otp`,
         values
       );
-      if (response.status === 200) {
-        navigate("/otp", { state: { email: values.email } });
-      } else if (response.status === 404) {
-        toaster.push(
-          <Notification header="Error" type="error">
-            Invalid Credentials
-          </Notification>,
-          { duration: 5000, placement: "topCenter" }
-        );
-      } else {
-        toaster.push(
-          <Notification header="Error" type="error">
-            {response.data.message}
-          </Notification>,
-          { duration: 5000, placement: "topCenter" }
-        );
-      }
+      toaster.push(
+        <Notification header="Success" type="success">
+          <p style={{ color: "green" }}>Please check your email for an OTP</p>
+        </Notification>,
+        { duration: 5000, placement: "topCenter" }
+      );
+
+      setTimeout(
+        () => navigate("/otp", { state: { email: values.email } }),
+        5000
+      );
     } catch (error) {
       toaster.push(
         <Notification header="Error" type="error">
-          {error.message}
+          {error.response.data.message}
         </Notification>,
         { duration: 5000, placement: "topCenter" }
       );
@@ -81,7 +75,7 @@ const Login = () => {
               <Form
                 style={{
                   display: "flex",
-                  width: "100%",
+                  width: "50%",
                   flexDirection: "column",
                   marginTop: "20px",
                   alignItems: "center",
@@ -161,7 +155,7 @@ const fieldStyles = {
 const Wrapper = styled.div`
   height: 100vh;
   display: flex;
-  background-image: url("../../bg.png");
+  background-image: url("../../background.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -177,9 +171,9 @@ const FormContainer = styled.div`
   width: 35%;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 10px;
   padding: 20px;
-
   border-radius: 4px;
   justify-content: center;
   height: 100%;

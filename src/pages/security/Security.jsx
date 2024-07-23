@@ -8,14 +8,30 @@ import {
   setQueryFilter,
   setCounterFilter,
 } from "../../reducers/securitySlice";
-import { CiEdit } from "react-icons/ci";
+import { CiEdit, CiTrash } from "react-icons/ci";
+import EditSecurityForm from "../../components/forms/security/EditSecurityForm";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 
 function Security({ backgroundColor }) {
+  const [data, setData] = useState({
+    id: "",
+    name: "",
+    price: "",
+  });
+  console.log(data);
   const dispatch = useDispatch();
   const { securities, status, error, filters } = useSelector(
     (state) => state.securities
   );
   const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
 
   useEffect(() => {
     dispatch(fetchSecurities());
@@ -72,9 +88,21 @@ function Security({ backgroundColor }) {
                   <TableDataRowCell>{security.name}</TableDataRowCell>
                   <TableDataRowCell>{security.number}</TableDataRowCell>
                   <TableDataRowCell>{security.price}</TableDataRowCell>
-                  <TableDataRowCell>
+                  <TableDataRowCell style={{ display: "flex", gap: "20px" }}>
                     <span style={{ cursor: "pointer" }}>
-                      <CiEdit />
+                      <CiEdit
+                        onClick={() => {
+                          setData({
+                            id: security._id,
+                            name: security.name,
+                            price: security.price,
+                          });
+                          setOpenEdit(true);
+                        }}
+                      />
+                    </span>
+                    <span style={{ cursor: "pointer" }}>
+                      <CiTrash color="red" onClick={() => setIsOpen(true)} />
                     </span>
                   </TableDataRowCell>
                 </TableDataRow>
@@ -83,6 +111,26 @@ function Security({ backgroundColor }) {
           </Table>
         </TableWrapper>
         <SecurityForm open={open} setOpen={setOpen} />
+        <EditSecurityForm open={openEdit} setOpen={setOpenEdit} data={data} />
+        <Dialog
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Are you sure?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Let Google help apps determine location.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsOpen(false)}>No</Button>
+            <Button onClick={() => setIsOpen(true)} autoFocus>
+              Yes
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Wrapper>
     );
   }

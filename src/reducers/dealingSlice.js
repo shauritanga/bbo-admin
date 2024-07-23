@@ -12,10 +12,14 @@ const initialState = {
 
 export const fetchDealings = createAsyncThunk(
   "dealings/fetchDealings",
-  async () => {
+  async (query) => {
+    const { currentPage, itemsPerPage } = query;
     const response = await axios.get(
-      "https://admin.alphafunds.co.tz/api/v1/orders/dealing"
+      `${
+        import.meta.env.VITE_BASE_URL
+      }/orders/dealing?page=${currentPage}&limit=${itemsPerPage}`
     );
+    console.log(response);
     return response.data;
   }
 );

@@ -40,16 +40,17 @@ export function calculateFees(consideration) {
   const totalConsideration = consideration + totalCharges;
 
   return {
-    commissionTier1,
-    commissionTier2,
-    commissionTier3,
-    totalCommission,
-    vat,
-    dseFee,
-    cmsaFee,
-    fidelityFee,
-    cdsFee,
-    totalCharges,
-    totalConsideration,
+    commissionTier1: Math.round((commissionTier1 + Number.EPSILON) * 100) / 100,
+    commissionTier2: Math.round((commissionTier2 + Number.EPSILON) * 100) / 100,
+    commissionTier3: Math.round((commissionTier3 + Number.EPSILON) * 100) / 100,
+    totalCommission: Math.round((totalCommission + Number.EPSILON) * 100) / 100,
+    vat: Math.round((vat + Number.EPSILON) * 100) / 100,
+    dseFee: Math.round((dseFee + Number.EPSILON) * 100) / 100,
+    cmsaFee: Math.round((cmsaFee + Number.EPSILON) * 100) / 100,
+    fidelityFee: Math.round((fidelityFee + Number.EPSILON) * 100) / 100,
+    cdsFee: Math.round((cdsFee + Number.EPSILON) * 100) / 100,
+    totalCharges: Math.round((totalCharges + Number.EPSILON) * 100) / 100,
+    totalConsideration:
+      Math.round((totalConsideration + Number.EPSILON) * 100) / 100,
   };
 }

@@ -1,33 +1,70 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const Statement = ({ id }) => {
-  const [transactions, setTransactions] = React.useState([]);
+const Statement = ({ id, transactions, orders }) => {
+  // const [transactions, setTransactions] = useState([]);
+  // const [orders, setOrders] = useState([]);
 
   let formatter = new Intl.NumberFormat("sw-TZ", {
     style: "currency",
     currency: "TZS",
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.alphafunds.co.tz/api/v1/transactions/customer/${id}`
-        );
-        if (response.status === 200) {
-          setTransactions(response.data);
-        }
-      } catch (error) {}
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [transactionResponse, orderResponse] = await Promise.all([
+  //         axios.get(`${import.meta.env.VITE_BASE_URL}/transactions/${id}`),
+  //         axios.get(`${import.meta.env.VITE_BASE_URL}/orders/client/${id}`),
+  //       ]);
+  //       setTransactions(transactionResponse.data);
+  //       setOrders(orderResponse.data);
+  //     } catch (error) {}
+  //   };
+  //   fetchData();
+  // }, []);
 
-  if (!transactions) {
-    return <p>Loading...</p>;
-  }
+  // if (!transactions) {
+  //   return <p>Loading...</p>;
+  // }
+  // let globalBalance = 0;
+
+  // const updatedTransactions = transactions.map((transaction) => {
+  //   const credit = parseFloat(transaction.credit);
+  //   const debit = parseFloat(transaction.debit);
+
+  //   // Update the global balance
+  //   globalBalance += credit - debit;
+
+  //   // Add the balance to the transaction
+  //   return {
+  //     ...transaction,
+  //     balance: globalBalance,
+  //   };
+  // });
+
+  const updatedTransactions = transactions?.filter(
+    (trans) => trans.account_id === "62"
+  );
+
+  let globalBalance = 0;
+
+  const displayedTransactions = updatedTransactions.map((transaction) => {
+    const credit = parseFloat(transaction.credit);
+    const debit = parseFloat(transaction.debit);
+
+    // Update the global balance
+    globalBalance += credit - debit;
+
+    // Add the balance to the transaction
+    return {
+      ...transaction,
+      balance: globalBalance,
+    };
+  });
+
   return (
     <Wrapper>
       <p>Statement</p>
@@ -43,21 +80,30 @@ const Statement = ({ id }) => {
           <TableHeaderCell>credit</TableHeaderCell>
           <TableHeaderCell>balance</TableHeaderCell>
         </TableHeaderRow>
-        {transactions.map((transaction) => {
+        {displayedTransactions.map((transaction) => {
+          const order = orders?.filter(
+            (order) => order.id === transaction.order_id
+          )[0];
+
           return (
             <TableDataRow key={transaction._id}>
               <TableDataCell>
-                {dayjs(transaction.date).format("DD-MM-YYYY")}
+                {dayjs(transaction.transaction_date).format("DD-MM-YYYY")}
               </TableDataCell>
-              <TableDataCell>{transaction.type}</TableDataCell>
-              <TableDataCell>{transaction.referenceNumber}</TableDataCell>
-              <TableDataCell>{transaction.description}</TableDataCell>
-              <TableDataCell>{}</TableDataCell>
-              <TableDataCell>500</TableDataCell>
-              <TableDataCell>0</TableDataCell>
-              <TableDataCell>5500</TableDataCell>
+              <TableDataCell>{transaction.action}</TableDataCell>
               <TableDataCell>
-                {formatter.format(transaction.amount)}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span>{transaction.reference}</span>
+                  {transaction.category}
+                </div>
+              </TableDataCell>
+              <TableDataCell>{transaction.description}</TableDataCell>
+              <TableDataCell>{order?.volume}</TableDataCell>
+              <TableDataCell>{order?.price}</TableDataCell>
+              <TableDataCell>{transaction.debit}</TableDataCell>
+              <TableDataCell>{transaction.credit}</TableDataCell>
+              <TableDataCell>
+                {formatter.format(transaction.balance)}
               </TableDataCell>
             </TableDataRow>
           );

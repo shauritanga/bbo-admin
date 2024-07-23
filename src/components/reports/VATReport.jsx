@@ -116,9 +116,7 @@ const VATReport = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/vat"
-      );
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/vat`);
       setData(response.data);
     };
 
@@ -129,19 +127,13 @@ const VATReport = () => {
     return <div>Loading...</div>;
   }
 
-  console.log({ data });
-
   const totalVAT = data.reduce((acc, item) => acc + item.value, 0);
   // const totalPaid = data.reduce((acc, item) => acc + item.paid, 0);
   // const balance = totalVAT - totalPaid;
 
-  console.log({ totalVAT });
-
   const exportToExcel = async () => {
     try {
-      const response = await axios.get(
-        "https://api.alphafunds.co.tz/api/v1/vat"
-      );
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/vat`);
       const data = response.data;
 
       //xlsx
