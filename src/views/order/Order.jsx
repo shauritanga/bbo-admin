@@ -18,18 +18,33 @@ const OrderView = () => {
   const { state } = useLocation();
   const [client, setClient] = useState(null);
   const [clients, setClients] = useState([]);
-  const [customer, setCustomer] = useState(state.client?.name);
-  const [volume, setVolume] = useState(state.order?.volume);
-  const [price, setPrice] = useState(state.order?.price);
-  const [amount, setAmount] = useState(state.order?.amount);
   const [action, setAction] = useState("");
-  const [date, setDate] = useState(state.order?.date);
-  const [type, setType] = useState(state.order?.type);
-  const [security, setSecurity] = useState("");
+  const [security, setSecurity] = useState(state.security?.name);
   const [securities, setSecurities] = useState(null);
   const [openExecutionForm, setOpenExecutionForm] = useState(false);
   const [executions, setExecutions] = useState(null);
   const navigate = useNavigate();
+<<<<<<< Updated upstream
+=======
+
+  //
+  const [formData, setFormData] = useState({
+    customer: state?.client?.name ?? "",
+    date: state?.order?.date ? new Date(state?.order?.date) : "", // Convert to Date object
+    volume: state?.order?.volume ?? 0,
+    price: state?.order?.price ?? 0,
+    amount: state?.order?.amount ?? 0,
+    type: state?.order?.type.toLowerCase() ?? "",
+    security: state.security?.name ?? "",
+  });
+
+  const handleChange = (value, name) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+>>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,8 +87,9 @@ const OrderView = () => {
               <FormController>
                 <label htmlFor="customer">Customer</label>
                 <Select
-                  value={customer}
-                  onChange={(e) => setCustomer(e.target.value)}
+                  value={formData.customer}
+                  name="customer"
+                  onChange={(e) => handleChange(e.target.value, "customer")}
                 >
                   <option value="">Select Customer</option>
                   {clients?.map((item, index) => (
@@ -85,48 +101,60 @@ const OrderView = () => {
               </FormController>
               <FormController>
                 <label htmlFor="date">Order Date</label>
-                <Input
-                  style={{ width: "100%" }}
+
+                <DatePicker
                   id="date"
+<<<<<<< Updated upstream
                   type="date"
                   value={"4/7/2024"}
                   onChange={(e) => {
                     console.log(e);
                   }}
+=======
+                  format="yyyy-MM-dd" // Format for date input
+                  value={formData.date}
+                  onChange={(date) => handleChange(date, "date")}
+>>>>>>> Stashed changes
                 />
               </FormController>
             </FormGroup>
             <FormGroup>
               <FormController>
-                <label htmlFor="customer">Volume</label>
+                <label htmlFor="volume">Volume</label>
                 <TextInput
-                  value={volume}
+                  value={formData.volume}
                   type="number"
-                  onChange={(e) => setVolume(e.target.value)}
+                  name="volume"
+                  onChange={(e) => handleChange(e.target.value, "volume")}
                 />
               </FormController>
               <FormController>
-                <label htmlFor="date">Price</label>
+                <label htmlFor="price">Price</label>
                 <TextInput
-                  value={price}
+                  value={formData.price}
                   type="number"
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => handleChange(e.target.value, "price")}
                 />
               </FormController>
             </FormGroup>
             <FormGroup>
               <FormController>
-                <label htmlFor="customer">Amount(TZS)</label>
+                <label htmlFor="amount">Amount(TZS)</label>
                 <TextInput
                   disabled
-                  value={amount}
+                  value={formData.amount}
+                  name="amount"
                   type="number"
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => handleChange(e.target.value, "amount")}
                 />
               </FormController>
               <FormController>
                 <label htmlFor="date">Order Type</label>
-                <Select value={type} onChange={(e) => setType(e.target.value)}>
+                <Select
+                  value={formData.type}
+                  name="type"
+                  onChange={(e) => handleChange(e.target.value, "type")}
+                >
                   <option value="">Select Type</option>
                   <option value="buy">Buy</option>
                   <option value="sell">Sell</option>
@@ -135,19 +163,21 @@ const OrderView = () => {
             </FormGroup>
             <FormGroup>
               <FormController>
-                <label htmlFor="security">Security/Bond</label>
+                <label htmlFor="holding">Security/Bond</label>
                 <InputPicker
                   data={data}
                   defaultValue={{ lable: action, value: action }}
                   style={{ width: "100%" }}
-                  id="security"
+                  id="holding"
+                  name="holding"
+                  onChange={(security) => handleChange(security, "holding")}
                 />
               </FormController>
               <FormController>
-                <label htmlFor="date">Security</label>
+                <label htmlFor="security">Security</label>
                 <Select
-                  value={security}
-                  onChange={(e) => setSecurity(e.target.value)}
+                  value={formData.security}
+                  onChange={(e) => handleChange(e.target.value, "security")}
                 >
                   <option value="">Select Security</option>
                   {securities?.map((security, index) => (

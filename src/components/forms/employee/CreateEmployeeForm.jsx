@@ -36,7 +36,7 @@ const CreateEmployeeForm = ({ open, setOpen }) => {
       setSubmitting(false);
       await toaster.push(
         <Notification header="Error" type="error">
-          Failed to add an employee, try again
+          {error.response.data.message}
         </Notification>,
         { duration: 5000, placement: "topCenter" }
       );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./dashboard.css";
 import { FiShoppingBag } from "react-icons/fi";
 import { VscServerProcess } from "react-icons/vsc";
@@ -113,13 +113,18 @@ const Dashboard = () => {
   const [customers, setCustomers] = useState(null);
   const [orders, setOrders] = useState(null);
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   const userObject = typeof user === "string" ? JSON.parse(user) : user;
 
-  let formater = Intl.NumberFormat("sw-TZ", {
-    style: "currency",
-    currency: "TZS",
-  });
+  let formater = useMemo(
+    () =>
+      Intl.NumberFormat("sw-TZ", {
+        style: "currency",
+        currency: "TZS",
+      }),
+    []
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,37 +141,20 @@ const Dashboard = () => {
           axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
         ]);
 
-        if (incomeResponse.status !== 200) {
-          throw new Error("failed to fetch incomes");
-        }
-
-        if (expenseResponse.status !== 200) {
-          throw new Error("failed to fetch epenses");
-        }
-        if (customerResponse.status !== 200) {
-          throw new Error("failed to fetch customers");
-        }
-        if (orderResponse.status !== 200) {
-          throw new Erroe("Failed to fetch orders");
-        }
-
         setIncomes(incomeResponse.data);
         setCustomers(customerResponse.data);
         setExpenses(expenseResponse.data);
         setOrders(orderResponse.data);
       } catch (error) {
         console.log(error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  if (
-    incomes === null ||
-    customers === null ||
-    expenses === null ||
-    orders === null
-  ) {
+  if (isLoading) {
     return (
       <div
         style={{
@@ -182,6 +170,7 @@ const Dashboard = () => {
   }
 
   const totalIncome = incomes?.reduce((prev, curr) => prev + curr.value, 0);
+
   const activeCustomers = customers?.filter(
     (customer) => customer.status === "active"
   ).length;
@@ -253,7 +242,7 @@ const Dashboard = () => {
     })
     .reduce((acc, curr) => acc + curr.value, 0);
 
-  //02 January
+  //02 February
   const startOfFebruary = new Date(today.getFullYear(), 1, 1);
   const endOfFebruary = new Date(today.getFullYear(), 2, 0, 23.59, 59);
   const totalFebruaryExpenses = incomes
