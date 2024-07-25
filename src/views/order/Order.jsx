@@ -30,7 +30,6 @@ const OrderView = () => {
   const [openExecutionForm, setOpenExecutionForm] = useState(false);
   const [executions, setExecutions] = useState(null);
   const navigate = useNavigate();
-  console.log(state);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +60,8 @@ const OrderView = () => {
   if (clients === null || securities === null) {
     return <div>Loading...</div>;
   }
+
+  console.log(state.orders);
   return (
     <Wrapper>
       <Main>
@@ -88,7 +89,7 @@ const OrderView = () => {
                   style={{ width: "100%" }}
                   id="date"
                   type="date"
-                  value={date}
+                  value={"4/7/2024"}
                   onChange={(e) => {
                     console.log(e);
                   }}
@@ -307,7 +308,7 @@ const OrderView = () => {
         open={openExecutionForm}
         setOpen={setOpenExecutionForm}
         customerId={state.order?.client_id}
-        orderId={state.order?.uid}
+        order={state.order}
       />
     </Wrapper>
   );

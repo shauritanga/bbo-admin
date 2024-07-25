@@ -4,6 +4,7 @@ import { useLocation } from "react-router";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import axios from "axios";
 import { useAuth } from "../../provider/AuthProvider";
+import { Notification, toaster } from "rsuite";
 
 const Otp = () => {
   const { state } = useLocation();
@@ -18,21 +19,30 @@ const Otp = () => {
       <Formik
         initialValues={{ otp: "", email: state.email }}
         onSubmit={async (values, { setSubmitting }) => {
-          const result = await axios.post(
-            `${import.meta.env.VITE_BASE_URL}/auth/verify-otp`,
-            values
-          );
-          if (result.status === 200) {
+          try {
+            const result = await axios.post(
+              `${import.meta.env.VITE_BASE_URL}/auth/verify-otp`,
+              values
+            );
+            await toaster.push(
+              <Notification header="Success" type="success"></Notification>,
+              { duration: 3000, placement: "topCenter" }
+            );
             loginAction(result.data.email);
-          } else {
-            alert("Invalid OTP");
+            setSubmitting(false);
+          } catch (error) {
+            await toaster.push(
+              <Notification header="Success" type="success">
+                {error.response.data.message}
+              </Notification>,
+              { duration: 3000, placement: "topCenter" }
+            );
           }
-          setSubmitting(false);
         }}
       >
         {({ values, handleSubmit, handleChange }) => (
           <Form
-            onSubmit={handleSubmit}
+            // onSubmit={handleSubmit}
             style={{ display: "flex", flexDirection: "column" }}
           >
             <Field

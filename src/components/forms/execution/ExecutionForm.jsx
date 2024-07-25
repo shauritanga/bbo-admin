@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { Modal, Button } from "rsuite";
+import { Modal, Button, toaster, Notification } from "rsuite";
 import styled from "styled-components";
 import axios from "axios";
 import { calculateFees } from "../../../utils/getFees";
 
-const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
+const ExecutionForm = ({ open, setOpen, order, customerId, balance }) => {
+  console.log(order);
   const [state, setState] = useState({
-    date: Date.now,
+    settlement_date: null,
+    trading_date: Date.now,
     slip: "",
     price: 0,
     executed: 0,
+    type: order?.type,
   });
   const amount = state.price * state.executed;
   const fees = calculateFees(amount);
@@ -32,57 +35,80 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
   };
 
   const handleSubmit = async () => {
-    const postData = {
-      ...state,
-      customer: customerId,
-      order: orderId,
-      amount,
-      totalFees: Math.round((fees.totalCharges + Number.EPSILON) * 100) / 100,
-      total: Math.round((fees.totalConsideration + Number.EPSILON) * 100) / 100,
-      dse: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
-      cds: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
-      csma: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
-      fidelity: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
-      vat: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
-      brokerage:
-        Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
-    };
+    try {
+      const postData = {
+        ...state,
+        customer: customerId,
+        order_id: order?.uid,
+        amount,
+        totalFees: Math.round((fees.totalCharges + Number.EPSILON) * 100) / 100,
+        total:
+          Math.round((fees.totalConsideration + Number.EPSILON) * 100) / 100,
+        dse: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
+        cds: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
+        csma: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
+        fidelity: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
+        vat: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
+        brokerage:
+          Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
+      };
 
-    const dseData = {
-      reference: state.slip,
-      value: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
-    };
-    const cdsData = {
-      reference: state.slip,
-      value: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
-    };
-    const csmaData = {
-      reference: state.slip,
-      value: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
-    };
-    const vatData = {
-      reference: state.slip,
-      value: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
-    };
-    const fidelityData = {
-      reference: state.slip,
-      value: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
-    };
-    const brokerageData = {
-      reference: state.slip,
-      value: Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
-    };
-    const { executionResponse, dseResponse } = await Promise.all([
-      axios.post(`${import.meta.env.VITE_BASE_URL}/executions`, postData),
-      axios.post(`${import.meta.env.VITE_BASE_URL}/dse`, dseData),
-      axios.post(`${import.meta.env.VITE_BASE_URL}/vat`, vatData),
-      axios.post(`${import.meta.env.VITE_BASE_URL}/cds`, cdsData),
-      axios.post(`${import.meta.env.VITE_BASE_URL}/csma`, csmaData),
-      axios.post(`${import.meta.env.VITE_BASE_URL}/fidelity`, fidelityData),
-      axios.post(`${import.meta.env.VITE_BASE_URL}/brokerage`, brokerageData),
-    ]);
+      console.log(postData);
 
-    setOpen(false);
+      const dseData = {
+        reference: state.slip,
+        value: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
+      };
+      const cdsData = {
+        reference: state.slip,
+        value: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
+      };
+      const csmaData = {
+        reference: state.slip,
+        value: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
+      };
+      const vatData = {
+        reference: state.slip,
+        value: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
+      };
+      const fidelityData = {
+        reference: state.slip,
+        value: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
+      };
+      const brokerageData = {
+        reference: state.slip,
+        value: Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
+      };
+      const { executionResponse, dseResponse } = await Promise.all([
+        axios.post(`${import.meta.env.VITE_BASE_URL}/executions`, postData),
+        axios.post(`${import.meta.env.VITE_BASE_URL}/dse`, dseData),
+        axios.post(`${import.meta.env.VITE_BASE_URL}/vat`, vatData),
+        axios.post(`${import.meta.env.VITE_BASE_URL}/cds`, cdsData),
+        axios.post(`${import.meta.env.VITE_BASE_URL}/csma`, csmaData),
+        axios.post(`${import.meta.env.VITE_BASE_URL}/fidelity`, fidelityData),
+        axios.post(`${import.meta.env.VITE_BASE_URL}/brokerage`, brokerageData),
+      ]);
+      await toaster.push(
+        <Notification header="Success" type="success">
+          Data Saved Successfully
+        </Notification>,
+        {
+          duration: 3000,
+          placement: "topCenter",
+        }
+      );
+      setOpen(false);
+    } catch (error) {
+      await toaster.push(
+        <Notification header="Error" type="error">
+          Data was not saved, try again
+        </Notification>,
+        {
+          duration: 3000,
+          placement: "topCenter",
+        }
+      );
+    }
   };
 
   return (
@@ -94,17 +120,29 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
         <Form>
           <FormGroup>
             <FormControl>
-              <label htmlFor="date">Date</label>
+              <label htmlFor="trading_date">Trading Date</label>
               <TextInput
-                name="date"
+                name="trading_date"
                 value={state.date}
                 onChange={handleChange}
                 type="date"
-                id="date"
+                id="trading_date"
               />
             </FormControl>
             <FormControl>
-              <label htmlFor="date">Slip No</label>
+              <label htmlFor="settlement_date">Settlement Date</label>
+              <TextInput
+                name="settlement_date"
+                value={state.date}
+                onChange={handleChange}
+                type="date"
+                id="settlement_date"
+              />
+            </FormControl>
+          </FormGroup>
+          <FormGroup>
+            <FormControl>
+              <label htmlFor="slip">Slip No</label>
               <TextInput
                 value={state.slip}
                 name="slip"
@@ -114,8 +152,6 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
                 placeholder="slip number"
               />
             </FormControl>
-          </FormGroup>
-          <FormGroup>
             <FormControl>
               <label htmlFor="price">Price</label>
               <TextInput
@@ -128,6 +164,8 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
                 min={0}
               />
             </FormControl>
+          </FormGroup>
+          <FormGroup>
             <FormControl>
               <label htmlFor="volume">Executed</label>
               <TextInput
@@ -140,8 +178,6 @@ const ExecutionForm = ({ open, setOpen, orderId, customerId, balance }) => {
                 min={0}
               />
             </FormControl>
-          </FormGroup>
-          <FormGroup>
             <FormControl>
               <label htmlFor="amount">Amount</label>
               <TextInput
