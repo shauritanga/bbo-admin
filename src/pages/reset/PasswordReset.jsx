@@ -79,6 +79,7 @@ const PasswordReset = () => {
               padding: "30px",
             }}
           >
+            <h5 style={{ color: "#aaa" }}>Password Reset</h5>
             <div
               style={{ display: "flex", flexDirection: "column", gap: "4px" }}
             >
@@ -93,7 +94,11 @@ const PasswordReset = () => {
                 name="password"
                 placeholder="Password"
               />
-              <ErrorMessage name="password" style={errorStyle} />
+              <ErrorMessage
+                name="password"
+                component="div"
+                style={errorStyle}
+              />
             </div>
             <Field
               style={{
@@ -106,7 +111,7 @@ const PasswordReset = () => {
               name="confirm"
               placeholder="Confirm password"
             />
-            <ErrorMessage name="confirm" style={errorStyle} />
+            <ErrorMessage name="confirm" component="div" style={errorStyle} />
             <div
               style={{
                 display: "flex",
@@ -148,7 +153,10 @@ const errorStyle = {
 
 const Wrapper = styled.div`
   display: flex;
-  background: linear-gradient(to left #ccc red);
+  background-image: url("../../gradient.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   background-color: #f5f5f5;
   height: 100vh;
   align-items: center;

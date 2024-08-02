@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FiGift } from "react-icons/fi";
 import "./card.css";
 
-const Card = ({ title, icon, size, percent }) => {
+const Card = useMemo(({ title, icon, size, percent }) => {
   return (
     <div className="card">
       <div className="card_title">
@@ -16,6 +16,6 @@ const Card = ({ title, icon, size, percent }) => {
       </div>
     </div>
   );
-};
+});
 
 export default Card;

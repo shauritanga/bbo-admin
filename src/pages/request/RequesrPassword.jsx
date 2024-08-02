@@ -19,7 +19,7 @@ const RequestPassword = () => {
               const response = await axios.post(
                 `${
                   import.meta.env.VITE_BASE_URL
-                }/auth/admin/request-reset-password`,
+                }/auth/employees/request-reset-password`,
                 values
               );
 
@@ -60,7 +60,13 @@ const RequestPassword = () => {
               <p>Enter your email to reset password</p>
               <Field
                 name="email"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px" }}
+                placeholder="Enter Your Email"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "0.12px solid grey",
+                }}
               />
               <ErrorMessage name="email" />
               <Button type="submit">
@@ -89,6 +95,10 @@ const RequestPassword = () => {
 };
 
 const Wrapper = styled.div`
+  background-image: url("../../gradient.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   justify-content: center;
   width: 100vw;

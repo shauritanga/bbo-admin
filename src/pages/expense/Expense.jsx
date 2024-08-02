@@ -8,6 +8,8 @@ import { Button, ButtonGroup, ButtonToolbar } from "rsuite";
 import ExpenseForm from "../../components/forms/expense/ExpenseForm";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import { Pagination, Stack } from "@mui/material";
+import dayjs from "dayjs";
 
 function Expense() {
   const [query, setQuery] = useState("");
@@ -21,6 +23,10 @@ function Expense() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalDocuments, setTotalDocuments] = useState(0);
   const itemsPerPage = 10; // Number of items to show per page
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
@@ -58,14 +64,14 @@ function Expense() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_BASE_URL
-          }/expenses/?page=${currentPage}&limit=${itemsPerPage}`
-        );
-        const data = await response.json();
-        setExpenses(data.data); // Assuming API returns { items: [...], totalPages: ... }
+        const [expenseResponse, clientResponse] = await Promise.all([
+          axios(`${import.meta.env.VITE_BASE_URL}/expenses`),
+          axios(`${import.meta.env.VITE_BASE_URL}/customers`),
+        ]);
+        const data = expenseResponse.data;
+        setExpenses(data?.data); // Assuming API returns { items: [...], totalPages: ... }
         setTotalPages(data.totalPages);
+        setClients(clientResponse.data);
         setTotalDocuments(data.totalDocuments);
       } catch (error) {
         // Handle error
@@ -74,13 +80,6 @@ function Expense() {
 
     fetchData();
   }, [currentPage]);
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/customers`)
-      .then((response) => response.json())
-      .then((data) => setClients(data))
-      .catch((error) => console.log(error));
-  }, []);
 
   if (!clients) {
     return;
@@ -120,29 +119,6 @@ function Expense() {
           New Expense
         </button>
         <div className="expense-header-right">
-          {/* <form>
-            <Select
-              required
-              value={clientId}
-              width={340}
-              onChange={(event) => setClientId(event.target.value)}
-            >
-              <option value="" disabled>
-                Select Client
-              </option>
-
-              {clients.map((client) => (
-                <option key={client._id} value={client._id}>
-                  {client.name}
-                </option>
-              ))}
-            </Select>
-            <button
-              style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-            >
-              Filter
-            </button>
-          </form> */}
           <button
             style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
             onClick={exportToExcel}
@@ -206,53 +182,48 @@ function Expense() {
             </TableHeaderRow>
           </thead>
           <tbody>
-            {data.map((expense) => (
-              <TableDataRow key={expense._id}>
-                <TableDataCell>
-                  <CheckBox
-                    name={expense}
-                    value={selected.includes(expense)}
-                    visible={visible}
-                    setVisible={setVisible}
-                    updateValue={handleSelect}
-                  />
-                </TableDataCell>
-                <TableDataCell>{expense.expenseId}</TableDataCell>
-                <TableDataCell>{expense.payee?.name}</TableDataCell>
-                <TableDataCell>{expense.description}</TableDataCell>
-                <TableDataCell>{expense.amount}</TableDataCell>
-                <TableDataCell>{expense.date}</TableDataCell>
-                <TableDataCell>{expense.status}</TableDataCell>
-              </TableDataRow>
-            ))}
+            {data.map((expense) => {
+              const payee = clients?.filter(
+                (client) => client.id === expense.client_id
+              )[0];
+              return (
+                <TableDataRow key={expense._id}>
+                  <TableDataCell>
+                    <CheckBox
+                      name={expense}
+                      value={selected.includes(expense)}
+                      visible={visible}
+                      setVisible={setVisible}
+                      updateValue={handleSelect}
+                    />
+                  </TableDataCell>
+                  <TableDataCell>{expense.uid}</TableDataCell>
+                  <TableDataCell>{payee?.name}</TableDataCell>
+                  <TableDataCell>{expense.description}</TableDataCell>
+                  <TableDataCell>{expense.amount}</TableDataCell>
+                  <TableDataCell>
+                    {dayjs(expense.transaction_date).format("DD-MM-YYYY")}
+                  </TableDataCell>
+                  <TableDataCell>{expense.status}</TableDataCell>
+                </TableDataRow>
+              );
+            })}
           </tbody>
         </Table>
-        <Pagination>
+        <PaginationWrapper>
           <Counter>{totalDocuments} total orders</Counter>
-          <ButtonToolbar>
-            <Button
-              onClick={() =>
-                setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)
-              }
-              style={{ color: "hsl(243deg, 50%, 50%)" }}
-            >
-              Prev
-            </Button>
-            <ButtonGroup>
-              {Array.from(Array(totalPages).keys())
-                .map((x) => x + 1)
-                .map((page) => (
-                  <Button onClick={() => setCurrentPage(page)}>{page}</Button>
-                ))}
-            </ButtonGroup>
-            <Button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              style={{ color: "hsl(243deg, 50%, 50%)" }}
-            >
-              Next
-            </Button>
-          </ButtonToolbar>
-        </Pagination>
+          <Stack spacing={2}>
+            {/* <Pagination count={10} shape="rounded" /> */}
+            <Pagination
+              count={totalPages}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              page={currentPage}
+              onChange={handleChange}
+            />
+          </Stack>
+        </PaginationWrapper>
       </TableWrapper>
 
       <ExpenseForm open={open} setOpen={setOpen} />
@@ -289,9 +260,9 @@ const TableDataCell = styled.td`
   font-size: 0.75rem;
   padding: 10px 20px;
 `;
-const Pagination = styled.div`
+
+const PaginationWrapper = styled.div`
   display: flex;
-  margin-top: auto;
   align-items: center;
   justify-content: space-between;
   margin-top: 30px;

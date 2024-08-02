@@ -6,13 +6,14 @@ import Statement from "./Statement";
 const PDF = () => {
   const location = useLocation();
 
-  const dataFromPreviousPage = location.state;
+  const { transactions, customer } = location.state;
+  console.log({ transactions });
   useEffect(() => {
     document.title = "CLIENT STATEMENT ACCOUNT";
   }, []);
   return (
     <PDFViewer width="100%" height="100%">
-      <Statement data={dataFromPreviousPage} />
+      <Statement data={transactions} customer={customer} />
     </PDFViewer>
   );
 };

@@ -1,29 +1,28 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import { fetchExecutions } from "../../reducers/executionSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import dayjs from "dayjs";
+import { useData } from "../../context/userContext";
+import { Pagination, Stack } from "@mui/material";
 
-const Contract = ({ id }) => {
-  const { executions, status, error } = useSelector(
-    (state) => state.executions
-  );
-  const dispatch = useDispatch();
+const Contract = () => {
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const { executions } = useData();
 
-  useEffect(() => {
-    dispatch(fetchExecutions(id));
-  }, [dispatch]);
+  const itemsPerPage = 10;
 
-  if (status === "loading") {
-    return <div>Loading ...</div>;
-  }
-  if (status === "failed") {
-    return <div>{error}</div>;
-  }
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
-  console.log(executions);
+  const totalPages = Math.ceil(executions?.length / itemsPerPage);
+
+  const currentData = executions?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <Wrapper>
       <p>Contract Note</p>
@@ -36,17 +35,17 @@ const Contract = ({ id }) => {
           <TableHeaderCell>amount</TableHeaderCell>
           <TableHeaderCell>Action</TableHeaderCell>
         </TableHeaderRow>
-        {executions.length === 0 ? (
+        {currentData?.length === 0 ? (
           <TableDataRow>
             <TableDataCell colSpan={6}>No data found</TableDataCell>
           </TableDataRow>
         ) : (
-          executions?.map((execution) => (
+          currentData?.map((execution) => (
             <TableDataRow key={execution._id}>
               <TableDataCell>
                 {dayjs(execution.date).format("DD-MM-YYYY")}
               </TableDataCell>
-              <TableDataCell>{execution.slip}</TableDataCell>
+              <TableDataCell>{execution.slip_no}</TableDataCell>
               <TableDataCell>{execution.price}</TableDataCell>
               <TableDataCell>{execution.executed}</TableDataCell>
               <TableDataCell>{execution.amount}</TableDataCell>
@@ -91,14 +90,36 @@ const Contract = ({ id }) => {
           ))
         )}
       </Table>
+      <Spacer></Spacer>
+      <PaginationWrapper>
+        <Counter>{executions?.length} total orders</Counter>
+        <Stack spacing={2}>
+          {/* <Pagination count={10} shape="rounded" /> */}
+          <Pagination
+            count={totalPages}
+            variant="outlined"
+            shape="rounded"
+            color="primary"
+            page={currentPage}
+            onChange={handleChange}
+          />
+        </Stack>
+      </PaginationWrapper>
     </Wrapper>
   );
 };
 
 const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   background-color: var(--color-white);
   border-radius: 7px;
+  min-height: 600px;
   padding: 20px;
+`;
+
+const Spacer = styled.div`
+  flex: 1;
 `;
 
 const Table = styled.div`
@@ -130,5 +151,14 @@ const TableDataCell = styled.td`
   padding: 8px 10px;
   border-bottom: 0.1px solid hsl(0deg 0% 70%);
 `;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30px;
+`;
+const Counter = styled.p``;
+const Pages = styled.div``;
 
 export default Contract;

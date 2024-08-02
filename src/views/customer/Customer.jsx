@@ -23,6 +23,7 @@ import Select from "../../components/select";
 import { Delete } from "@mui/icons-material";
 import { CiTrash } from "react-icons/ci";
 import { Notification, toaster } from "rsuite";
+import { DataProvider } from "../../context/userContext";
 
 const CustomerView = () => {
   const { openFilePicker, filesContent, loading, errors } = useFilePicker({
@@ -56,24 +57,6 @@ const CustomerView = () => {
   const navigate = useNavigate();
   const customer = location.state;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [transactionResponse, orderResponse] = await Promise.all([
-          axios.get(
-            `${import.meta.env.VITE_BASE_URL}/transactions/${customer.id}`
-          ),
-          axios.get(
-            `${import.meta.env.VITE_BASE_URL}/orders/client/${customer.id}`
-          ),
-        ]);
-        setTransactions(transactionResponse.data);
-        setOrders(orderResponse.data);
-      } catch (error) {}
-    };
-    fetchData();
-  }, []);
-
   const sendActivationEmail = async (email) => {
     try {
       const response = await axios.post(
@@ -86,7 +69,6 @@ const CustomerView = () => {
   };
 
   const sendResetPasswordEmail = async (email) => {
-    console.log(email);
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/auth/clients/request-reset-password`,
@@ -179,212 +161,230 @@ const CustomerView = () => {
   // );
   // console.log(totalShares);
   return (
-    <Wrapper>
-      <Main>
-        <Links>
-          <ListItem
-            style={
-              isActive === "account"
-                ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
-                : {}
-            }
-            onClick={() => setIsActive("account")}
-          >
-            <SlUser />
-            Account
-          </ListItem>
-          <ListItem
-            style={
-              isActive === "contract"
-                ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
-                : {}
-            }
-            onClick={() => setIsActive("contract")}
-          >
-            <LiaFileContractSolid />
-            Contract Note
-          </ListItem>
-          <ListItem
-            style={
-              isActive === "statement"
-                ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
-                : {}
-            }
-            onClick={() => setIsActive("statement")}
-          >
-            <FaRegFileLines />
-            Statement
-          </ListItem>
-          <ListItem
-            style={
-              isActive === "security"
-                ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
-                : {}
-            }
-            onClick={() => setIsActive("security")}
-          >
-            <GrShieldSecurity />
-            Security
-          </ListItem>
-        </Links>
-        {content()}
-        {files.length > 0 && (
-          <UploadView>
-            <table style={{ width: "100%" }}>
-              <thead>
-                <tr
-                  style={{
-                    backgroundColor: "hsl(243deg, 0%, 80%)",
-
-                    marginBottom: "20px",
-                  }}
-                >
-                  <th
-                    style={{ width: "50%", textAlign: "left", padding: "10px" }}
-                  >
-                    File Name
-                  </th>
-                  <th
-                    style={{ width: "25%", textAlign: "left", padding: "10px" }}
-                  >
-                    File Type
-                  </th>
-                  <th
-                    style={{ width: "25%", textAlign: "left", padding: "10px" }}
-                  >
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {files.map((file) => (
-                  <tr key={file.name} style={{ borderTop: "1px solid #ccc" }}>
-                    <td style={{ padding: "10px" }}>{file.name}</td>
-                    <td style={{ padding: "10px" }}>
-                      <Select
-                        value={fileType}
-                        width={340}
-                        onChange={(e) => setFileType(e.target.value)}
-                      >
-                        <option value="" disabled>
-                          Select File Type
-                        </option>
-                        <option value="identity">Identity</option>
-                        <option value="passport">Passport</option>
-                        <option value="other">Bank Slip</option>
-                      </Select>
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <CiTrash
-                        size={38}
-                        onClick={() => {}}
-                        style={{ cursor: "pointer", color: "red" }}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Button
-              onClick={handleUpload}
-              style={{
-                backgroundColor: "var(--color-button)",
-                alignSelf: "flex-end",
-                padding: "10px 20px",
-                borderBottom: "20px",
-              }}
+    <DataProvider customerId={customer.id}>
+      <Wrapper>
+        <Main>
+          <Links>
+            <ListItem
+              style={
+                isActive === "account"
+                  ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
+                  : {}
+              }
+              onClick={() => setIsActive("account")}
             >
-              Upload
-            </Button>
-          </UploadView>
-        )}
-      </Main>
-      <Portfolio>
-        <CustomerInfo>
-          <Avatar></Avatar>
-          <Table>
-            <tbody>
-              <TableDataRow>
-                <TableRowCell colSpan={2}>Customer Portfolio</TableRowCell>
-              </TableDataRow>
-              <TableDataRow>
-                <TableRowCell colSpan={2}>{customer.name}</TableRowCell>
-              </TableDataRow>
-              <TableDataRow>
-                <TableRowCell>CDS</TableRowCell>
-                <TableRowCell>{customer?.dse_account}</TableRowCell>
-              </TableDataRow>
-              <TableDataRow>
-                <TableRowCell>Shares</TableRowCell>
-                <TableRowCell>{}</TableRowCell>
-              </TableDataRow>
-              <TableDataRow>
-                <TableRowCell>Status</TableRowCell>
-                <TableRowCell style={{ textTransform: "capitalize" }}>
-                  <span
+              <SlUser />
+              Account
+            </ListItem>
+            <ListItem
+              style={
+                isActive === "contract"
+                  ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
+                  : {}
+              }
+              onClick={() => setIsActive("contract")}
+            >
+              <LiaFileContractSolid />
+              Contract Note
+            </ListItem>
+            <ListItem
+              style={
+                isActive === "statement"
+                  ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
+                  : {}
+              }
+              onClick={() => setIsActive("statement")}
+            >
+              <FaRegFileLines />
+              Statement
+            </ListItem>
+            <ListItem
+              style={
+                isActive === "security"
+                  ? { backgroundColor: "hsl(243deg, 50%, 21%)", color: "#fff" }
+                  : {}
+              }
+              onClick={() => setIsActive("security")}
+            >
+              <GrShieldSecurity />
+              Security
+            </ListItem>
+          </Links>
+          {content()}
+          {files.length > 0 && (
+            <UploadView>
+              <table style={{ width: "100%" }}>
+                <thead>
+                  <tr
                     style={{
-                      padding: "4px 6px",
-                      borderRadius: "4px",
-                      backgroundColor: "#f5f5f5",
-                      color:
-                        customer.status === "active"
-                          ? "green"
-                          : "var(--color-disapprove)",
+                      backgroundColor: "hsl(243deg, 0%, 80%)",
+
+                      marginBottom: "20px",
                     }}
                   >
-                    {customer.status}
-                  </span>
-                </TableRowCell>
-              </TableDataRow>
-            </tbody>
-          </Table>
-        </CustomerInfo>
-        <Actions>
-          <Button
-            onClick={() => openFilePicker()}
-            style={{ backgroundColor: "var(--color-button)" }}
-          >
-            Add Documents (PDF,JPG,GIF,PNG)
-          </Button>
-          <Button
-            onClick={() => setOpenMigrationShare(true)}
-            style={{ backgroundColor: "var(--color-reject)" }}
-          >
-            Migrate Shares
-          </Button>
-          <Button style={{ backgroundColor: "var(--color-disapprove)" }}>
-            {customer.status === "active" ? "Set Pending" : "Set Active"}
-          </Button>
-          <Button
-            onClick={() => sendActivationEmail("shauritangaathanas@gmail.com")}
-            style={{ backgroundColor: "var(--color-reject)" }}
-          >
-            Send Activation Email
-          </Button>
-          <Button
-            onClick={() =>
-              sendResetPasswordEmail("leah.gabriel@alphacapital.co.tz")
-            }
-            style={{ backgroundColor: "var(--color-reject)" }}
-          >
-            Send reset password email
-          </Button>
-          <Button
-            style={{ backgroundColor: "var(--color-button)" }}
-            onClick={() =>
-              navigate("/statement", { state: displayedTransactions })
-            }
-          >
-            Print Statement (PDF)
-          </Button>
-        </Actions>
-      </Portfolio>
-      {isModalOpen && <SelectionModal />}
-      <ShareMigrationForm
-        open={openMigrationShare}
-        setOpen={setOpenMigrationShare}
-      />
-    </Wrapper>
+                    <th
+                      style={{
+                        width: "50%",
+                        textAlign: "left",
+                        padding: "10px",
+                      }}
+                    >
+                      File Name
+                    </th>
+                    <th
+                      style={{
+                        width: "25%",
+                        textAlign: "left",
+                        padding: "10px",
+                      }}
+                    >
+                      File Type
+                    </th>
+                    <th
+                      style={{
+                        width: "25%",
+                        textAlign: "left",
+                        padding: "10px",
+                      }}
+                    >
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {files.map((file) => (
+                    <tr key={file.name} style={{ borderTop: "1px solid #ccc" }}>
+                      <td style={{ padding: "10px" }}>{file.name}</td>
+                      <td style={{ padding: "10px" }}>
+                        <Select
+                          value={fileType}
+                          width={340}
+                          onChange={(e) => setFileType(e.target.value)}
+                        >
+                          <option value="" disabled>
+                            Select File Type
+                          </option>
+                          <option value="identity">Identity</option>
+                          <option value="passport">Passport</option>
+                          <option value="other">Bank Slip</option>
+                        </Select>
+                      </td>
+                      <td style={{ padding: "10px" }}>
+                        <CiTrash
+                          size={38}
+                          onClick={() => {}}
+                          style={{ cursor: "pointer", color: "red" }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <Button
+                onClick={handleUpload}
+                style={{
+                  backgroundColor: "var(--color-button)",
+                  alignSelf: "flex-end",
+                  padding: "10px 20px",
+                  borderBottom: "20px",
+                }}
+              >
+                Upload
+              </Button>
+            </UploadView>
+          )}
+        </Main>
+        <Portfolio>
+          <CustomerInfo>
+            <Avatar></Avatar>
+            <Table>
+              <tbody>
+                <TableDataRow>
+                  <TableRowCell colSpan={2}>Customer Portfolio</TableRowCell>
+                </TableDataRow>
+                <TableDataRow>
+                  <TableRowCell colSpan={2}>{customer.name}</TableRowCell>
+                </TableDataRow>
+                <TableDataRow>
+                  <TableRowCell>CDS</TableRowCell>
+                  <TableRowCell>{customer?.dse_account}</TableRowCell>
+                </TableDataRow>
+                <TableDataRow>
+                  <TableRowCell>Shares</TableRowCell>
+                  <TableRowCell>{}</TableRowCell>
+                </TableDataRow>
+                <TableDataRow>
+                  <TableRowCell>Status</TableRowCell>
+                  <TableRowCell style={{ textTransform: "capitalize" }}>
+                    <span
+                      style={{
+                        padding: "4px 6px",
+                        borderRadius: "4px",
+                        backgroundColor: "#f5f5f5",
+                        color:
+                          customer.status === "active"
+                            ? "green"
+                            : "var(--color-disapprove)",
+                      }}
+                    >
+                      {customer.status}
+                    </span>
+                  </TableRowCell>
+                </TableDataRow>
+              </tbody>
+            </Table>
+          </CustomerInfo>
+          <Actions>
+            <Button
+              onClick={() => openFilePicker()}
+              style={{ backgroundColor: "var(--color-button)" }}
+            >
+              Add Documents (PDF,JPG,GIF,PNG)
+            </Button>
+            <Button
+              onClick={() => setOpenMigrationShare(true)}
+              style={{ backgroundColor: "var(--color-reject)" }}
+            >
+              Migrate Shares
+            </Button>
+            <Button style={{ backgroundColor: "var(--color-disapprove)" }}>
+              {customer.status === "active" ? "Set Pending" : "Set Active"}
+            </Button>
+            <Button
+              onClick={() =>
+                sendActivationEmail("shauritangaathanas@gmail.com")
+              }
+              style={{ backgroundColor: "var(--color-reject)" }}
+            >
+              Send Activation Email
+            </Button>
+            <Button
+              onClick={() =>
+                sendResetPasswordEmail("leah.gabriel@alphacapital.co.tz")
+              }
+              style={{ backgroundColor: "var(--color-reject)" }}
+            >
+              Send reset password email
+            </Button>
+            <Button
+              style={{ backgroundColor: "var(--color-button)" }}
+              onClick={() =>
+                navigate("/statement", {
+                  state: { transactions: displayedTransactions, customer },
+                })
+              }
+            >
+              Print Statement (PDF)
+            </Button>
+          </Actions>
+        </Portfolio>
+        {isModalOpen && <SelectionModal />}
+        <ShareMigrationForm
+          open={openMigrationShare}
+          setOpen={setOpenMigrationShare}
+        />
+      </Wrapper>
+    </DataProvider>
   );
 };
 

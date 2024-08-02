@@ -112,10 +112,11 @@ const Login = () => {
                 <ErrorMessage name="password" component="div" />
                 <p
                   style={{
-                    color: "#007bff",
+                    color: "hsl(243deg 50% 21%)",
                     cursor: "pointer",
                     alignSelf: "flex-end",
                   }}
+                  onClick={() => navigate("/reset-password-request")}
                 >
                   Forgot Password?
                 </p>
@@ -126,7 +127,7 @@ const Login = () => {
                     width: "100%",
                     padding: "10px",
                     border: "1px solid #007bff",
-                    backgroundColor: "#007bff",
+                    backgroundColor: "hsl(243deg 50% 21%)",
                     color: "#fff",
                     borderRadius: "4px",
                     outline: "none",

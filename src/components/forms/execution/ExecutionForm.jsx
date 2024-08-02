@@ -46,7 +46,7 @@ const ExecutionForm = ({ open, setOpen, order, customerId, balance }) => {
           Math.round((fees.totalConsideration + Number.EPSILON) * 100) / 100,
         dse: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
         cds: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
-        csma: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
+        cmsa: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
         fidelity: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
         vat: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
         brokerage:

@@ -71,6 +71,10 @@ const Otp = () => {
 
 const Wrapper = styled.div`
   display: flex;
+  background-image: url("../../gradient.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   flex-direction: column;
   align-items: center;
   margin-top: 100px;

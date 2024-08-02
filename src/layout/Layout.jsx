@@ -8,6 +8,7 @@ import { useLocation, Navigate } from "react-router-dom";
 
 import Sidebar from "../sidebar/Sidebar";
 import { useAuth } from "../provider/AuthProvider";
+import styled from "styled-components";
 
 const Layout = () => {
   const [isActive, setIsActive] = useState("");
@@ -35,7 +36,6 @@ const Layout = () => {
 
   return (
     <div className="layout">
-      {/* <div className="left"> */}
       {isSidebarOpen && (
         <Sidebar
           isActive={isActive}
@@ -44,7 +44,7 @@ const Layout = () => {
           setIsSidebarOpen={setIsSidebarOpen}
         />
       )}
-      {/* </div> */}
+
       <div className="right">
         <Navbar
           user={userObject}
@@ -59,5 +59,9 @@ const Layout = () => {
     </div>
   );
 };
+
+const Wrapper = styled.div`
+  display: grid;
+`;
 
 export default Layout;

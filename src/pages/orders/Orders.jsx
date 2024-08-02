@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SummaryCard from "../../components/summary-card/SummaryCard";
 import dayjs from "dayjs";
@@ -51,6 +51,7 @@ const Orders = () => {
   const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
   const [securities, setSecurities] = useState(null);
+  const [executions, setExecutions] = useState([]);
   const [allOrders, setAllOrders] = useState(null);
   const { orders, status, error, filters } = useSelector(
     (state) => state.orders
@@ -75,13 +76,18 @@ const Orders = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clientResponse, orderResponse, securityResponse] =
-          await Promise.all([
-            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
-          ]);
-
+        const [
+          clientResponse,
+          orderResponse,
+          securityResponse,
+          executionResponse,
+        ] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
+          axios.get(`${import.meta.env.VITE_BASE_URL}/executions`),
+        ]);
+        setExecutions(executionResponse.data);
         setAllOrders(orderResponse.data);
         setClients(clientResponse.data);
         setSecurities(securityResponse.data);
@@ -137,11 +143,11 @@ const Orders = () => {
   ).length;
 
   const processingOrders = allOrders?.filter(
-    (order) => order.status.toLowerCase() === "processing"
+    (order) => order.status.toLowerCase() === "approved"
   ).length;
 
   const completeOrders = allOrders?.filter(
-    (order) => order.status.toLowerCase() === "completed"
+    (order) => order.status.toLowerCase() === "complete"
   ).length;
 
   const summary = [
@@ -229,10 +235,19 @@ const Orders = () => {
       orderData = orders;
       break;
     case "pending":
-      orderData = orders.data?.filter((order) => order.status === "approved");
+      orderData = orders.data?.filter(
+        (order) => order.status?.toLowerCase() === "approved"
+      );
       break;
     case "complete":
-      orderData = orders.data?.filter((order) => order.status === "complete");
+      orderData = orders.data?.filter(
+        (order) => order.status?.toLowerCase() === "complete"
+      );
+      break;
+    case "cancelled":
+      orderData = orders.data?.filter(
+        (order) => order.status?.toLowerCase() === "cancelled"
+      );
       break;
   }
 
@@ -353,6 +368,20 @@ const Orders = () => {
             </TableDataRow>
           ) : (
             orderData.data?.map((order, index) => {
+              const executedOrderss = executions?.filter(
+                (execution) =>
+                  execution.order_id === order.id &&
+                  execution.status.toLowerCase() === "approved"
+              );
+
+              const executedOrders = executions
+                ?.filter(
+                  (execution) =>
+                    execution.order_id === order.id &&
+                    execution.status.toLowerCase() === "approved"
+                )
+                .reduce((acc, curr) => acc + parseInt(curr.executed), 0);
+
               const orderSecurity = securities?.filter(
                 (security) =>
                   (security.id || security._id) === order.security_id
@@ -381,11 +410,12 @@ const Orders = () => {
                   <TableDataCell>{toTitleCase(order.type)}</TableDataCell>
                   <TableDataCell>{order.amount}</TableDataCell>
                   <TableDataCell>{order.volume}</TableDataCell>
-                  <TableDataCell>{order.volume - order.executed}</TableDataCell>
+                  <TableDataCell>{order.volume - executedOrders}</TableDataCell>
                   <TableDataCell
                     onClick={() =>
                       navigate(`/orders/${order._id}`, {
                         state: {
+                          executedOrders,
                           order: order,
                           client: orderClient[0],
                           security: orderSecurity[0],
@@ -414,47 +444,6 @@ const Orders = () => {
             />
           </Stack>
         </PaginationWrapper>
-
-        {/* <Pagination>
-          
-          <ButtonToolbar>
-            <Button
-              onClick={() =>
-                setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)
-              }
-              style={{ color: "hsl(243deg, 50%, 50%)" }}
-            >
-              Prev
-            </Button>
-            <ButtonGroup>
-              {Array.from(Array(orders.totalPages).keys())
-                .map((x) => x + 1)
-                .map((page) => (
-                  <Button
-                    style={{
-                      backgroundColor: currentPage === page ? "#33336a" : "",
-                      color: currentPage === page ? "white" : "grey",
-                    }}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </Button>
-                ))}
-            </ButtonGroup>
-            <Button
-              onClick={() =>
-                setCurrentPage(
-                  currentPage < orders.totalPages
-                    ? currentPage + 1
-                    : currentPage
-                )
-              }
-              style={{ color: "hsl(243deg, 50%, 50%)" }}
-            >
-              Next
-            </Button>
-          </ButtonToolbar>
-        </Pagination> */}
       </TableWrapper>
       <ModalView
         title="Select Date Range"

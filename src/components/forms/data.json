@@ -1,0 +1,74 @@
+[
+    {
+        "_id": {
+            "$oid": "669fa300552073e3a90dc901"
+        },
+        "trading_date": {
+            "$date": {
+                "$numberLong": "1721606400000"
+            }
+        },
+        "settlement_date": {
+            "$date": {
+                "$numberLong": "1721865600000"
+            }
+        },
+        "order_id": "AOR00008",
+        "slip": "6305041",
+        "price": {
+            "$numberInt": "820"
+        },
+        "executed": {
+            "$numberInt": "23"
+        },
+        "totalFees": {
+            "$numberDouble": "446.23"
+        },
+        "total": {
+            "$numberDouble": "19306.23"
+        },
+        "dse": {
+            "$numberDouble": "26.4"
+        },
+        "cds": {
+            "$numberDouble": "11.32"
+        },
+        "csma": {
+            "$numberDouble": "26.4"
+        },
+        "fidelity": {
+            "$numberDouble": "3.77"
+        },
+        "vat": {
+            "$numberDouble": "57.71"
+        },
+        "brokerage": {
+            "$numberDouble": "320.62"
+        },
+        "amount": {
+            "$numberInt": "18860"
+        },
+        "__v": {
+            "$numberInt": "0"
+        }
+    },
+    {"_id":{"$oid":"66a0b8ee68327eb88c5a5f41"},"trading_date":{"$date":{"$numberLong":"1721606400000"}},"settlement_date":{"$date":{"$numberLong":"1721865600000"}},"order_id":"AOR00009","slip":"6305039","price":{"$numberInt":"590"},"executed":{"$numberInt":"827"},"totalFees":{"$numberDouble":"11544.42"},"total":{"$numberDouble":"499474.42"},"dse":{"$numberDouble":"683.1"},"cds":{"$numberDouble":"292.76"},"csma":{"$numberDouble":"683.1"},"fidelity":{"$numberDouble":"97.59"},"vat":{"$numberDouble":"1493.07"},"brokerage":{"$numberDouble":"8294.81"},"amount":{"$numberInt":"487930"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0f1c1b002108244f315a8"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00012","slip":"6301045","price":{"$numberInt":"850"},"executed":{"$numberInt":"50"},"totalFees":{"$numberDouble":"1005.55"},"total":{"$numberDouble":"43505.55"},"dse":{"$numberDouble":"59.5"},"cds":{"$numberDouble":"25.5"},"csma":{"$numberDouble":"59.5"},"fidelity":{"$numberDouble":"8.5"},"vat":{"$numberDouble":"130.05"},"brokerage":{"$numberDouble":"722.5"},"amount":{"$numberInt":"42500"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0f23bb002108244f315be"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00021","slip":"6300905","price":{"$numberInt":"225"},"executed":{"$numberInt":"10"},"totalFees":{"$numberDouble":"53.24"},"total":{"$numberDouble":"2303.24"},"dse":{"$numberDouble":"3.15"},"cds":{"$numberDouble":"1.35"},"csma":{"$numberDouble":"3.15"},"fidelity":{"$numberDouble":"0.45"},"vat":{"$numberDouble":"6.89"},"brokerage":{"$numberDouble":"38.25"},"amount":{"$numberInt":"2250"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0f310b002108244f315f4"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00010","slip":"6300895","price":{"$numberInt":"560"},"executed":{"$numberInt":"10"},"totalFees":{"$numberDouble":"132.5"},"total":{"$numberDouble":"5732.5"},"dse":{"$numberDouble":"7.84"},"cds":{"$numberDouble":"3.36"},"csma":{"$numberDouble":"7.84"},"fidelity":{"$numberDouble":"1.12"},"vat":{"$numberDouble":"17.14"},"brokerage":{"$numberDouble":"95.2"},"amount":{"$numberInt":"5600"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0f58bb002108244f31615"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00030","slip":"6299233","price":{"$numberInt":"550"},"executed":{"$numberInt":"50"},"totalFees":{"$numberDouble":"650.65"},"total":{"$numberDouble":"28150.65"},"dse":{"$numberDouble":"38.5"},"cds":{"$numberDouble":"16.5"},"csma":{"$numberDouble":"38.5"},"fidelity":{"$numberDouble":"5.5"},"vat":{"$numberDouble":"84.15"},"brokerage":{"$numberDouble":"467.5"},"amount":{"$numberInt":"27500"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0f707b002108244f3163e"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00029","slip":"6299420","price":{"$numberInt":"550"},"executed":{"$numberInt":"20"},"totalFees":{"$numberDouble":"260.26"},"total":{"$numberDouble":"11260.26"},"dse":{"$numberDouble":"15.4"},"cds":{"$numberDouble":"6.6"},"csma":{"$numberDouble":"15.4"},"fidelity":{"$numberDouble":"2.2"},"vat":{"$numberDouble":"33.66"},"brokerage":{"$numberInt":"187"},"amount":{"$numberInt":"11000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0f795b002108244f31654"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00028","slip":"6299445","price":{"$numberInt":"550"},"executed":{"$numberInt":"10"},"totalFees":{"$numberDouble":"130.13"},"total":{"$numberDouble":"5630.13"},"dse":{"$numberDouble":"7.7"},"cds":{"$numberDouble":"3.3"},"csma":{"$numberDouble":"7.7"},"fidelity":{"$numberDouble":"1.1"},"vat":{"$numberDouble":"16.83"},"brokerage":{"$numberDouble":"93.5"},"amount":{"$numberInt":"5500"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0fd82b002108244f31681"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00027","slip":"6299464","price":{"$numberInt":"550"},"executed":{"$numberInt":"20"},"totalFees":{"$numberDouble":"260.26"},"total":{"$numberDouble":"11260.26"},"dse":{"$numberDouble":"15.4"},"cds":{"$numberDouble":"6.6"},"csma":{"$numberDouble":"15.4"},"fidelity":{"$numberDouble":"2.2"},"vat":{"$numberDouble":"33.66"},"brokerage":{"$numberInt":"187"},"amount":{"$numberInt":"11000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a0fe45b002108244f3169f"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00026","slip":"6299588","price":{"$numberInt":"550"},"executed":{"$numberInt":"20"},"totalFees":{"$numberDouble":"260.26"},"total":{"$numberDouble":"11260.26"},"dse":{"$numberDouble":"15.4"},"cds":{"$numberDouble":"6.6"},"csma":{"$numberDouble":"15.4"},"fidelity":{"$numberDouble":"2.2"},"vat":{"$numberDouble":"33.66"},"brokerage":{"$numberInt":"187"},"amount":{"$numberInt":"11000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a10029114995c25a94eb77"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00025","slip":"6299697","price":{"$numberInt":"550"},"executed":{"$numberInt":"20"},"totalFees":{"$numberDouble":"260.26"},"total":{"$numberDouble":"11260.26"},"dse":{"$numberDouble":"15.4"},"cds":{"$numberDouble":"6.6"},"csma":{"$numberDouble":"15.4"},"fidelity":{"$numberDouble":"2.2"},"vat":{"$numberDouble":"33.66"},"brokerage":{"$numberInt":"187"},"amount":{"$numberInt":"11000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a104471377b6e8d25c9843"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00024","slip":"6299738","price":{"$numberInt":"550"},"executed":{"$numberInt":"30"},"totalFees":{"$numberDouble":"390.39"},"total":{"$numberDouble":"16890.39"},"dse":{"$numberDouble":"23.1"},"cds":{"$numberDouble":"9.9"},"csma":{"$numberDouble":"23.1"},"fidelity":{"$numberDouble":"3.3"},"vat":{"$numberDouble":"50.49"},"brokerage":{"$numberDouble":"280.5"},"amount":{"$numberInt":"16500"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a106c31377b6e8d25c985d"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00023","slip":"6299756","price":{"$numberInt":"550"},"executed":{"$numberInt":"20"},"totalFees":{"$numberDouble":"260.26"},"total":{"$numberDouble":"11260.26"},"dse":{"$numberDouble":"15.4"},"cds":{"$numberDouble":"6.6"},"csma":{"$numberDouble":"15.4"},"fidelity":{"$numberDouble":"2.2"},"vat":{"$numberDouble":"33.66"},"brokerage":{"$numberInt":"187"},"amount":{"$numberInt":"11000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a108ca1377b6e8d25c9899"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00022","slip":"6300044","price":{"$numberInt":"550"},"executed":{"$numberInt":"50"},"totalFees":{"$numberDouble":"650.65"},"total":{"$numberDouble":"28150.65"},"dse":{"$numberDouble":"38.5"},"cds":{"$numberDouble":"16.5"},"csma":{"$numberDouble":"38.5"},"fidelity":{"$numberDouble":"5.5"},"vat":{"$numberDouble":"84.15"},"brokerage":{"$numberDouble":"467.5"},"amount":{"$numberInt":"27500"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a110171377b6e8d25c98c2"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00011","slip":"6300076","price":{"$numberInt":"225"},"executed":{"$numberInt":"10"},"totalFees":{"$numberDouble":"53.24"},"total":{"$numberDouble":"2303.24"},"dse":{"$numberDouble":"3.15"},"cds":{"$numberDouble":"1.35"},"csma":{"$numberDouble":"3.15"},"fidelity":{"$numberDouble":"0.45"},"vat":{"$numberDouble":"6.89"},"brokerage":{"$numberDouble":"38.25"},"amount":{"$numberInt":"2250"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a1fd432b84478aa98a2fef"},"trading_date":{"$date":{"$numberLong":"1721001600000"}},"settlement_date":{"$date":{"$numberLong":"1721260800000"}},"order_id":"AOR00020","slip":"6300088","price":{"$numberInt":"550"},"executed":{"$numberInt":"20"},"totalFees":{"$numberDouble":"260.26"},"total":{"$numberDouble":"11260.26"},"dse":{"$numberDouble":"15.4"},"cds":{"$numberDouble":"6.6"},"csma":{"$numberDouble":"15.4"},"fidelity":{"$numberDouble":"2.2"},"vat":{"$numberDouble":"33.66"},"brokerage":{"$numberInt":"187"},"amount":{"$numberInt":"11000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a1fe302b84478aa98a3008"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00019","slip":"6301090","price":{"$numberInt":"560"},"executed":{"$numberInt":"9"},"totalFees":{"$numberDouble":"119.25"},"total":{"$numberDouble":"5159.25"},"dse":{"$numberDouble":"7.06"},"cds":{"$numberDouble":"3.02"},"csma":{"$numberDouble":"7.06"},"fidelity":{"$numberDouble":"1.01"},"vat":{"$numberDouble":"15.42"},"brokerage":{"$numberDouble":"85.68"},"amount":{"$numberInt":"5040"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a20ca45b5b7827a9451e43"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00018","slip":"6300433","price":{"$numberInt":"540"},"executed":{"$numberInt":"2000"},"totalFees":{"$numberDouble":"25552.8"},"total":{"$numberDouble":"1105552.8"},"dse":{"$numberInt":"1512"},"cds":{"$numberInt":"648"},"csma":{"$numberInt":"1512"},"fidelity":{"$numberInt":"216"},"vat":{"$numberDouble":"3304.8"},"brokerage":{"$numberInt":"18360"},"amount":{"$numberInt":"1080000"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a20d1a5b5b7827a9451e5d"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00018","slip":"6300653","price":{"$numberInt":"560"},"executed":{"$numberInt":"392"},"totalFees":{"$numberDouble":"5193.84"},"total":{"$numberDouble":"224713.84"},"dse":{"$numberDouble":"307.33"},"cds":{"$numberDouble":"131.71"},"csma":{"$numberDouble":"307.33"},"fidelity":{"$numberDouble":"43.9"},"vat":{"$numberDouble":"671.73"},"brokerage":{"$numberDouble":"3731.84"},"amount":{"$numberInt":"219520"},"__v":{"$numberInt":"0"}},
+    {"_id":{"$oid":"66a20ddc5b5b7827a9451e71"},"trading_date":{"$date":{"$numberLong":"1721088000000"}},"settlement_date":{"$date":{"$numberLong":"1721347200000"}},"order_id":"AOR00017","slip":"6300374","price":{"$numberInt":"550"},"executed":{"$numberInt":"110"},"totalFees":{"$numberDouble":"1431.43"},"total":{"$numberDouble":"61931.43"},"dse":{"$numberDouble":"84.7"},"cds":{"$numberDouble":"36.3"},"csma":{"$numberDouble":"84.7"},"fidelity":{"$numberDouble":"12.1"},"vat":{"$numberDouble":"185.13"},"brokerage":{"$numberDouble":"1028.5"},"amount":{"$numberInt":"60500"},"__v":{"$numberInt":"0"}}
+]

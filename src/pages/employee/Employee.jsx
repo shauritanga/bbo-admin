@@ -28,7 +28,7 @@ function Employee() {
   if (status === "failed") {
     return <div>Error: {error}</div>;
   }
-  console.log(employees);
+
   const filteredEmployees = employees
     .slice(0, filters.counter)
     .filter((employee) => {

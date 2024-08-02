@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
-import "./dashboard.css";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import { FiShoppingBag } from "react-icons/fi";
 import { VscServerProcess } from "react-icons/vsc";
 import { IoCheckmarkDoneCircleOutline, IoTimerOutline } from "react-icons/io5";
@@ -56,32 +55,6 @@ const pieData = [
     },
   ],
 ];
-const summary = [
-  {
-    name: "Receivable",
-    total: 0,
-    icon: <IoCheckmarkDoneCircleOutline style={{ "font-size": "1.8rem" }} />,
-    percent: 0,
-  },
-  {
-    name: "Revenue",
-    total: "76,800,432.85",
-    icon: <VscServerProcess style={{ "font-size": "1.8rem" }} />,
-    percent: 7,
-  },
-  {
-    name: "Expenses",
-    total: "50,780,589.87",
-    icon: <TiCancelOutline style={{ "font-size": "1.8rem" }} />,
-    percent: 22,
-  },
-  {
-    name: "Profit",
-    total: "14,490,500.43",
-    icon: <FiShoppingBag style={{ "font-size": "1.8rem" }} />,
-    percent: 3,
-  },
-];
 
 const names = ["Earnings", "Expenses", "Quaters"];
 
@@ -108,10 +81,10 @@ const rows = [
   },
 ];
 const Dashboard = () => {
-  const [incomes, setIncomes] = useState(null);
-  const [expenses, setExpenses] = useState(null);
-  const [customers, setCustomers] = useState(null);
-  const [orders, setOrders] = useState(null);
+  const [incomes, setIncomes] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [orders, setOrders] = useState([]);
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -129,21 +102,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [
-          incomeResponse,
-          expenseResponse,
-          customerResponse,
-          orderResponse,
-        ] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BASE_URL}/brokerage`),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/expenses/all`),
+        const [customerResponse, orderResponse] = await Promise.all([
           axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
           axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
         ]);
 
-        setIncomes(incomeResponse.data);
         setCustomers(customerResponse.data);
-        setExpenses(expenseResponse.data);
         setOrders(orderResponse.data);
       } catch (error) {
         console.log(error);
@@ -169,14 +133,18 @@ const Dashboard = () => {
     );
   }
 
-  const totalIncome = incomes?.reduce((prev, curr) => prev + curr.value, 0);
+  const totalIncome = memo(
+    () => incomes?.reduce((prev, curr) => prev + curr.value, 0),
+    [incomes]
+  );
 
-  const activeCustomers = customers?.filter(
-    (customer) => customer.status === "active"
-  ).length;
+  const activeCustomers = memo(
+    () => customers?.filter((customer) => customer.status === "active")?.length,
+    [customers]
+  );
 
-  const totalOrders = orders.length;
-  const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalOrders = orders?.length;
+  const totalExpenses = expenses?.reduce((acc, curr) => acc + curr.amount, 0);
   //calculation for pie chart
   const today = new Date();
   const startOfLastMonth = new Date(
@@ -208,15 +176,21 @@ const Dashboard = () => {
   const lastMonthName = getMonthName(startOfLastMonth.getMonth());
   const currentMonthName = getMonthName(startOfCurrentMonth.getMonth());
 
-  const totalLastMonthExpenses = expenses
-    .filter((expense) => {
-      const expenseDate = new Date(expense.date);
-      return expenseDate >= startOfLastMonth && expenseDate < endOfLastMonth;
-    })
-    .reduce((acc, curr) => acc + curr.amount, 0);
+  const totalLastMonthExpenses = memo(
+    () =>
+      expenses
+        ?.filter((expense) => {
+          const expenseDate = new Date(expense.date);
+          return (
+            expenseDate >= startOfLastMonth && expenseDate < endOfLastMonth
+          );
+        })
+        .reduce((acc, curr) => acc + curr.amount, 0),
+    [expenses]
+  );
 
   const totalCurrentMonthExpenses = expenses
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return (
         expenseDate >= startOfCurrentMonth && expenseDate < endOfCurrentMonth
@@ -236,7 +210,7 @@ const Dashboard = () => {
   const startOfJanuary = new Date(today.getFullYear(), 0, 1);
   const endOfJanuary = new Date(today.getFullYear(), 1, 0, 23.59, 59);
   const totalJanuaryExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfJanuary && expenseDate < endOfJanuary;
     })
@@ -246,7 +220,7 @@ const Dashboard = () => {
   const startOfFebruary = new Date(today.getFullYear(), 1, 1);
   const endOfFebruary = new Date(today.getFullYear(), 2, 0, 23.59, 59);
   const totalFebruaryExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfFebruary && expenseDate < endOfFebruary;
     })
@@ -256,7 +230,7 @@ const Dashboard = () => {
   const startOfMarch = new Date(today.getFullYear(), 2, 1);
   const endOfMarch = new Date(today.getFullYear(), 3, 0, 23.59, 59);
   const totalMarchExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfMarch && expenseDate < endOfMarch;
     })
@@ -266,7 +240,7 @@ const Dashboard = () => {
   const startOfApril = new Date(today.getFullYear(), 3, 1);
   const endOfApril = new Date(today.getFullYear(), 4, 0, 23.59, 59);
   const totalAprilExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfApril && expenseDate < endOfApril;
     })
@@ -276,7 +250,7 @@ const Dashboard = () => {
   const startOfMay = new Date(today.getFullYear(), 4, 1);
   const endOfMay = new Date(today.getFullYear(), 5, 0, 23.59, 59);
   const totalMayExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfMay && expenseDate < endOfMay;
     })
@@ -286,7 +260,7 @@ const Dashboard = () => {
   const startOfJune = new Date(today.getFullYear(), 5, 1);
   const endOfJune = new Date(today.getFullYear(), 6, 0, 23.59, 59);
   const totalJuneExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfJune && expenseDate < endOfJune;
     })
@@ -296,7 +270,7 @@ const Dashboard = () => {
   const startOfJuly = new Date(today.getFullYear(), 6, 1);
   const endOfJuly = new Date(today.getFullYear(), 7, 0, 23.59, 59);
   const totalJulyExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfJuly && expenseDate < endOfJuly;
     })
@@ -326,7 +300,7 @@ const Dashboard = () => {
   const startOfOctober = new Date(today.getFullYear(), 9, 1);
   const endOfOctober = new Date(today.getFullYear(), 10, 0, 23.59, 59);
   const totalOctoberExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfOctober && expenseDate < endOfOctober;
     })
@@ -336,7 +310,7 @@ const Dashboard = () => {
   const startOfNovember = new Date(today.getFullYear(), 10, 1);
   const endOfNovember = new Date(today.getFullYear(), 11, 0, 23.59, 59);
   const totalNovemberExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfNovember && expenseDate < endOfNovember;
     })
@@ -346,7 +320,7 @@ const Dashboard = () => {
   const startOfDecember = new Date(today.getFullYear(), 11, 1);
   const endOfDecember = new Date(today.getFullYear(), 12, 0, 23.59, 59);
   const totalDecemberExpenses = incomes
-    .filter((expense) => {
+    ?.filter((expense) => {
       const expenseDate = new Date(expense.date);
       return expenseDate >= startOfDecember && expenseDate < endOfDecember;
     })

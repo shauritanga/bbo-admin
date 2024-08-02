@@ -1,24 +1,14 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import Select from "../select";
 import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import { nationalities } from "../../utils/nationalities";
 import { Notification, toaster } from "rsuite";
+import { useData } from "../../context/userContext";
 
 const Account = ({ customer }) => {
-  const [profiles, setProfiles] = useState([]);
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/profiles`
-        );
-        setProfiles(response.data);
-      } catch (error) {}
-    };
-    fetchProfiles();
-  }, []);
+  const { profile } = useData();
+
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitting(true);
     try {
@@ -49,29 +39,19 @@ const Account = ({ customer }) => {
     }
   };
 
-  if (profiles.length === 0) {
-    return <div>Loading...</div>;
-  }
-
-  const userProfile = profiles.filter(
-    (profile) => profile.user_id === customer.id
-  )[0];
-
-  console.log({ userProfile });
-
   return (
     <Wrapper>
       <Title>Personal information</Title>
       <Formik
         initialValues={{
-          country: userProfile.nationality,
+          country: profile.nationality,
           category: customer?.category,
           cdsAccount: customer?.dse_account,
           name: customer?.name,
           phone: customer?.mobile,
           email: customer?.email,
-          idType: userProfile?.id_type,
-          idNumber: userProfile.identity,
+          idType: profile?.id_type,
+          idNumber: profile.identity,
           botAccount: customer?.botAccount,
           bankName: JSON.parse(customer.values).bank_name,
           bankAccount: customer?.bank_account_number,

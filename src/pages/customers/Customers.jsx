@@ -18,9 +18,11 @@ import SummaryCard from "../../components/summary-card/SummaryCard";
 import CustomerForm from "../../components/forms/customer/CustomerForm";
 import axios from "axios";
 import { RotatingLines } from "react-loader-spinner";
+import { Pagination, Stack } from "@mui/material";
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 function Customers() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [customers, setCustomers] = useState(null);
   const [profiles, setProfiles] = useState(null);
   const [customerFilter, setCustomerFilter] = useState("all");
@@ -31,6 +33,12 @@ function Customers() {
     return { startDate: Date.now(), endDate: Date.now() };
   });
   const navigate = useNavigate();
+
+  const itemsPerPage = 10;
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const { data, error, loading } = useSWR(
     `${import.meta.env.VITE_BASE_URL}/statements?startDate=${new Date(
@@ -113,6 +121,13 @@ function Customers() {
       backgroundColor: "#e71f27",
     },
   ];
+
+  const totalPages = Math.ceil(customers?.length / itemsPerPage);
+
+  const currentData = customers?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <Wrapper>
@@ -218,7 +233,7 @@ function Customers() {
             </TableHeaderRow>
           </thead>
           <tbody>
-            {customers?.map((customer) => {
+            {currentData?.map((customer) => {
               const profile = profiles?.filter(
                 (profile) => profile.user_id === customer.id
               );
@@ -250,7 +265,22 @@ function Customers() {
             })}
           </tbody>
         </Table>
+        <PaginationWrapper>
+          <Counter>{customers?.length} total orders</Counter>
+          <Stack spacing={2}>
+            {/* <Pagination count={10} shape="rounded" /> */}
+            <Pagination
+              count={totalPages}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              page={currentPage}
+              onChange={handleChange}
+            />
+          </Stack>
+        </PaginationWrapper>
       </TableWrapper>
+
       <ModalView
         title="Select Date Range"
         open={dateRage}
@@ -271,7 +301,9 @@ function Customers() {
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
+  background-color: white;
   gap: 30px;
+  padding: 20px;
   margin-bottom: 50px;
 `;
 const TopFilters = styled.div`
@@ -312,6 +344,7 @@ const Actions = styled.div`
   padding: 20px;
   border-radius: 7px;
   background-color: var(--color-white);
+  filter: drop-shadow(0px 2px 8px rgba(74, 70, 132, 0.4));
 `;
 const Button = styled.button`
   background-color: hsl(243deg, 50%, 21%);
@@ -324,6 +357,7 @@ const TableWrapper = styled.div`
   padding: 20px;
   border-radius: 7px;
   background-color: var(--color-white);
+  filter: drop-shadow(0px 2px 8px rgba(74, 70, 132, 0.4));
 `;
 const Table = styled.table`
   width: 100%;
@@ -348,4 +382,13 @@ const ViewButton = styled.button`
   padding: 4px 9px;
   cursor: pointer;
 `;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30px;
+`;
+const Counter = styled.p``;
+const Pages = styled.div``;
 export default Customers;

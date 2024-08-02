@@ -9,13 +9,14 @@ import PaymentForm from "../../components/forms/payment/PaymentForm";
 import { Button, ButtonGroup, ButtonToolbar } from "rsuite";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import { Pagination, Stack } from "@mui/material";
 
 function Payment() {
   const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(false);
-  const [clients, setClients] = useState(null);
+  const [clients, setClients] = useState([]);
   const [clientId, setClientId] = useState("");
-  const [payments, setPayments] = useState(null);
+  const [payments, setPayments] = useState([]);
   const [openForm, setOpenForm] = useState(false);
   const [selected, setSelected] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +25,10 @@ function Payment() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalDocuments, setTotalDocuments] = useState(0);
   const itemsPerPage = 10; // Number of items to show per page
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
@@ -79,14 +84,14 @@ function Payment() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${
-            import.meta.env.VITE_BASE_URL
-          }/payments/?page=${currentPage}&limit=${itemsPerPage}`
-        );
-        const data = await response.json();
-        setPayments(data.data); // Assuming API returns { items: [...], totalPages: ... }
+        const [paymentResponse, clientResponse] = await Promise.all([
+          axios(`${import.meta.env.VITE_BASE_URL}/payments`),
+          axios(`${import.meta.env.VITE_BASE_URL}/customers`),
+        ]);
+        const data = paymentResponse.data;
+        setPayments(data?.data);
         setTotalPages(data.totalPages);
+        setClients(clientResponse.data);
         setTotalDocuments(data.totalDocuments);
       } catch (error) {
         // Handle error
@@ -96,40 +101,14 @@ function Payment() {
     fetchData();
   }, [currentPage]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const customersResponse = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/customers`
-        );
-
-        if (!customersResponse.ok) throw new Error("Error fetching customers");
-
-        const customersData = await customersResponse.json();
-        setClients(customersData);
-      } catch (err) {
-        setError(err.message);
-        console.log(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  if (!clients) {
+  if (!clients || !payments) {
     return <div>Loading</div>;
   }
 
-  if (!payments) {
-    return <div>Loading...</div>;
-  }
-  console.log(payments);
-
-  const filtered = payments?.filter((payment) =>
-    payment.payee?.name.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = payments?.filter((payment) => {
+    const payee = clients.filter((client) => client.id === payment.client_id);
+    return payee[0]?.name.toLowerCase().includes(query.toLowerCase());
+  });
   const data = query ? filtered : payments;
   return (
     <div className="payment">
@@ -206,8 +185,11 @@ function Payment() {
             </TableHeaderRow>
           </thead>
           <tbody>
-            {Array.isArray(data) &&
-              data.map((expense, index) => (
+            {data?.map((expense, index) => {
+              const payee = clients?.filter(
+                (client) => client.id === expense.client_id
+              )[0];
+              return (
                 <TableDataRow key={expense._id}>
                   <TableDataCell style={{ width: "50px" }}>
                     <CheckBox
@@ -218,44 +200,33 @@ function Payment() {
                       updateValue={handleSelect}
                     />
                   </TableDataCell>
-                  <TableDataCell>{expense.paymentId}</TableDataCell>
-                  <TableDataCell>{expense.payee?.name}</TableDataCell>
+                  <TableDataCell>{expense.uid}</TableDataCell>
+                  <TableDataCell>{payee?.name}</TableDataCell>
                   <TableDataCell>{expense.description}</TableDataCell>
                   <TableDataCell>{expense.amount}</TableDataCell>
                   <TableDataCell>
-                    {dayjs(expense.date).format("DD-MM-YYYY")}
+                    {dayjs(expense.transaction_date).format("DD-MM-YYYY")}
                   </TableDataCell>
                   <TableDataCell>{expense.status}</TableDataCell>
                 </TableDataRow>
-              ))}
+              );
+            })}
           </tbody>
         </Table>
-        <Pagination>
+        <PaginationWrapper>
           <Counter>{totalDocuments} total orders</Counter>
-          <ButtonToolbar>
-            <Button
-              onClick={() =>
-                setCurrentPage(currentPage > 1 ? currentPage - 1 : currentPage)
-              }
-              style={{ color: "hsl(243deg, 50%, 50%)" }}
-            >
-              Prev
-            </Button>
-            <ButtonGroup>
-              {Array.from(Array(totalPages).keys())
-                .map((x) => x + 1)
-                .map((page) => (
-                  <Button onClick={() => setCurrentPage(page)}>{page}</Button>
-                ))}
-            </ButtonGroup>
-            <Button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              style={{ color: "hsl(243deg, 50%, 50%)" }}
-            >
-              Next
-            </Button>
-          </ButtonToolbar>
-        </Pagination>
+          <Stack spacing={2}>
+            {/* <Pagination count={10} shape="rounded" /> */}
+            <Pagination
+              count={totalPages}
+              variant="outlined"
+              shape="rounded"
+              color="primary"
+              page={currentPage}
+              onChange={handleChange}
+            />
+          </Stack>
+        </PaginationWrapper>
       </TableWrapper>
       <PaymentForm open={openForm} setOpen={setOpenForm} />
     </div>
@@ -292,9 +263,8 @@ const TableDataCell = styled.td`
   font-size: 0.75rem;
   padding: 10px 20px;
 `;
-const Pagination = styled.div`
+const PaginationWrapper = styled.div`
   display: flex;
-  margin-top: auto;
   align-items: center;
   justify-content: space-between;
   margin-top: 30px;

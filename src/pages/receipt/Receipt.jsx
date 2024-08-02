@@ -216,7 +216,7 @@ function Receipt() {
                 </TableDataCell>
               </TableDataRow>
             ) : (
-              data.map((expense) => {
+              data?.map((expense) => {
                 const payee = clients.filter(
                   (client) => client.id === expense.client_id
                 );

@@ -24,8 +24,6 @@ const OrderView = () => {
   const [openExecutionForm, setOpenExecutionForm] = useState(false);
   const [executions, setExecutions] = useState(null);
   const navigate = useNavigate();
-<<<<<<< Updated upstream
-=======
 
   //
   const [formData, setFormData] = useState({
@@ -44,7 +42,6 @@ const OrderView = () => {
       [name]: value,
     }));
   };
->>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,7 +51,7 @@ const OrderView = () => {
             axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
             axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
             axios.get(
-              `${import.meta.env.VITE_BASE_URL}/executions/${state.order?.uid}`
+              `${import.meta.env.VITE_BASE_URL}/executions/${state.order?.id}`
             ),
           ]);
 
@@ -76,12 +73,11 @@ const OrderView = () => {
     return <div>Loading...</div>;
   }
 
-  console.log(state.orders);
   return (
     <Wrapper>
       <Main>
         <Balance>
-          Order Balance: {state.order?.volume - state.order?.executed}
+          Order Balance: {state.order?.volume - state.executedOrders}
           <Form>
             <FormGroup>
               <FormController>
@@ -104,17 +100,9 @@ const OrderView = () => {
 
                 <DatePicker
                   id="date"
-<<<<<<< Updated upstream
-                  type="date"
-                  value={"4/7/2024"}
-                  onChange={(e) => {
-                    console.log(e);
-                  }}
-=======
                   format="yyyy-MM-dd" // Format for date input
                   value={formData.date}
                   onChange={(date) => handleChange(date, "date")}
->>>>>>> Stashed changes
                 />
               </FormController>
             </FormGroup>
@@ -220,50 +208,63 @@ const OrderView = () => {
                 </ExecutionTableDataCell>
               </ExecutionTableDataRow>
             ) : (
-              executions?.map((execution) => (
-                <ExecutionTableDataRow>
-                  <ExecutionTableDataCell>
-                    {dayjs(execution.date).format("DD-MM-YYYY")}
-                  </ExecutionTableDataCell>
-                  <ExecutionTableDataCell>
-                    {execution.slip}
-                  </ExecutionTableDataCell>
-                  <ExecutionTableDataCell>
-                    {execution.price}
-                  </ExecutionTableDataCell>
-                  <ExecutionTableDataCell>
-                    {execution.executed}
-                  </ExecutionTableDataCell>
-                  <ExecutionTableDataCell>
-                    {execution.amount}
-                  </ExecutionTableDataCell>
-                  <ExecutionTableDataCell
-                    style={{ display: "flex", gap: "40px" }}
-                  >
-                    <ExecutionAction>approved</ExecutionAction>
-                    <ExecutionAction
-                      onClick={() => {
-                        const url = `/contract?execution=${JSON.stringify(
-                          execution
-                        )}`;
-                        const title = "Contract";
-                        return window.open(url, title);
-                      }}
+              executions
+                ?.filter(
+                  (execution) => execution.status.toLowerCase() === "approved"
+                )
+                .map((execution) => (
+                  <ExecutionTableDataRow>
+                    <ExecutionTableDataCell>
+                      {dayjs(execution.trade_date).format("DD-MM-YYYY")}
+                    </ExecutionTableDataCell>
+                    <ExecutionTableDataCell>
+                      {execution.slip_no}
+                    </ExecutionTableDataCell>
+                    <ExecutionTableDataCell>
+                      {execution.price}
+                    </ExecutionTableDataCell>
+                    <ExecutionTableDataCell>
+                      {execution.executed}
+                    </ExecutionTableDataCell>
+                    <ExecutionTableDataCell>
+                      {execution.amount}
+                    </ExecutionTableDataCell>
+                    <ExecutionTableDataCell
+                      style={{ display: "flex", gap: "40px" }}
                     >
-                      PDF
-                    </ExecutionAction>
-                    <ExecutionAction
-                      onClick={() =>
-                        navigate(`/dealing/${execution._id}`, {
-                          state: execution,
-                        })
-                      }
-                    >
-                      view
-                    </ExecutionAction>
-                  </ExecutionTableDataCell>
-                </ExecutionTableDataRow>
-              ))
+                      <ExecutionAction
+                        style={{
+                          color:
+                            execution.status.toLowerCase() === "cancelled"
+                              ? "red"
+                              : "green",
+                        }}
+                      >
+                        {execution.status}
+                      </ExecutionAction>
+                      <ExecutionAction
+                        onClick={() => {
+                          const url = `/contract?execution=${JSON.stringify(
+                            execution
+                          )}`;
+                          const title = "Contract";
+                          return window.open(url, title);
+                        }}
+                      >
+                        PDF
+                      </ExecutionAction>
+                      <ExecutionAction
+                        onClick={() =>
+                          navigate(`/dealing/${execution._id}`, {
+                            state: execution,
+                          })
+                        }
+                      >
+                        view
+                      </ExecutionAction>
+                    </ExecutionTableDataCell>
+                  </ExecutionTableDataRow>
+                ))
             )}
           </ExecutionTable>
         </Execution>

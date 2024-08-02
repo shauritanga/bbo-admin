@@ -13,7 +13,6 @@ const CreateEmployeeForm = ({ open, setOpen }) => {
         `${import.meta.env.VITE_BASE_URL}/roles`
       );
       setRoles(response.data);
-      console.log(response.data);
     };
     fetchRoles();
   }, []);

@@ -4,6 +4,7 @@ import { useLocation } from "react-router";
 
 const DealingView = () => {
   const { state } = useLocation();
+
   return (
     <Wrapper>
       <Main>
@@ -14,11 +15,15 @@ const DealingView = () => {
             <FormGroup>
               <FormControl>
                 <label htmlFor="slip">Slip No</label>
-                <TextInput value={state.slip} type="text" disabled />
+                <TextInput value={state.slip_no} type="text" disabled />
               </FormControl>
               <FormControl>
-                <label htmlFor="slip">Slip No</label>
-                <TextInput type="text" placeholder="647865" />
+                <label htmlFor="slip">Price</label>
+                <TextInput
+                  value={parseFloat(state.price)}
+                  type="text"
+                  disabled
+                />
               </FormControl>
             </FormGroup>
             <FormGroup>
@@ -34,11 +39,21 @@ const DealingView = () => {
             <FormGroup>
               <FormControl>
                 <label htmlFor="slip">Total Fees(TZS)</label>
-                <TextInput value={state.totalFees} type="text" disabled />
+                <TextInput
+                  value={parseFloat(state.total_fees)}
+                  type="text"
+                  disabled
+                />
               </FormControl>
               <FormControl>
                 <label htmlFor="slip">Total(TZS)</label>
-                <TextInput value={state.total} type="text" disabled />
+                <TextInput
+                  value={parseFloat(
+                    state.total_fees + parseFloat(state.amount)
+                  )}
+                  type="text"
+                  disabled
+                />
               </FormControl>
             </FormGroup>
             <FormGroup>
@@ -54,7 +69,11 @@ const DealingView = () => {
             <FormGroup>
               <FormControl>
                 <label htmlFor="slip">CSMA Fee</label>
-                <TextInput value={state.csma} type="text" disabled />
+                <TextInput
+                  value={parseFloat(state.cmsa)}
+                  type="text"
+                  disabled
+                />
               </FormControl>
               <FormControl>
                 <label htmlFor="slip">Fidelity Fee</label>

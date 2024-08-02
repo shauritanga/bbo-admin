@@ -2,51 +2,43 @@ import axios from "axios";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useData } from "../../context/userContext";
+import { Pagination, Stack } from "@mui/material";
 
-const Statement = ({ id, transactions, orders }) => {
-  // const [transactions, setTransactions] = useState([]);
-  // const [orders, setOrders] = useState([]);
+const Statement = ({ id, orders }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const { transactions } = useData();
+
+  const itemsPerPage = 10;
+
+  const handleChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   let formatter = new Intl.NumberFormat("sw-TZ", {
     style: "currency",
     currency: "TZS",
   });
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const [transactionResponse, orderResponse] = await Promise.all([
-  //         axios.get(`${import.meta.env.VITE_BASE_URL}/transactions/${id}`),
-  //         axios.get(`${import.meta.env.VITE_BASE_URL}/orders/client/${id}`),
-  //       ]);
-  //       setTransactions(transactionResponse.data);
-  //       setOrders(orderResponse.data);
-  //     } catch (error) {}
-  //   };
-  //   fetchData();
-  // }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [orderResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BASE_URL}/orders/client/${id}`),
+        ]);
 
-  // if (!transactions) {
-  //   return <p>Loading...</p>;
-  // }
-  // let globalBalance = 0;
+        setOrders(orderResponse.data);
+      } catch (error) {}
+    };
+    fetchData();
+  }, []);
 
-  // const updatedTransactions = transactions.map((transaction) => {
-  //   const credit = parseFloat(transaction.credit);
-  //   const debit = parseFloat(transaction.debit);
-
-  //   // Update the global balance
-  //   globalBalance += credit - debit;
-
-  //   // Add the balance to the transaction
-  //   return {
-  //     ...transaction,
-  //     balance: globalBalance,
-  //   };
-  // });
+  if (!transactions) {
+    return <p>Loading...</p>;
+  }
 
   const updatedTransactions = transactions?.filter(
-    (trans) => trans.account_id === "62"
+    (trans) => trans.account_id === "62" && trans.status === "approved"
   );
 
   let globalBalance = 0;
@@ -65,6 +57,13 @@ const Statement = ({ id, transactions, orders }) => {
     };
   });
 
+  const totalPages = Math.ceil(displayedTransactions?.length / itemsPerPage);
+
+  const currentData = displayedTransactions?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <Wrapper>
       <p>Statement</p>
@@ -80,7 +79,7 @@ const Statement = ({ id, transactions, orders }) => {
           <TableHeaderCell>credit</TableHeaderCell>
           <TableHeaderCell>balance</TableHeaderCell>
         </TableHeaderRow>
-        {displayedTransactions.map((transaction) => {
+        {currentData?.map((transaction) => {
           const order = orders?.filter(
             (order) => order.id === transaction.order_id
           )[0];
@@ -109,14 +108,36 @@ const Statement = ({ id, transactions, orders }) => {
           );
         })}
       </Table>
+      <Spacer></Spacer>
+      <PaginationWrapper>
+        <Counter>{displayedTransactions?.length} total orders</Counter>
+        <Stack spacing={2}>
+          {/* <Pagination count={10} shape="rounded" /> */}
+          <Pagination
+            count={totalPages}
+            variant="outlined"
+            shape="rounded"
+            color="primary"
+            page={currentPage}
+            onChange={handleChange}
+          />
+        </Stack>
+      </PaginationWrapper>
     </Wrapper>
   );
 };
 
 const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   background-color: var(--color-white);
   border-radius: 7px;
+  min-height: 600px;
   padding: 20px;
+`;
+
+const Spacer = styled.div`
+  flex: 1;
 `;
 
 const Table = styled.div`
@@ -148,5 +169,14 @@ const TableDataCell = styled.td`
   padding: 8px 10px;
   border-bottom: 0.1px solid hsl(0deg 0% 70%);
 `;
+
+const PaginationWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30px;
+`;
+const Counter = styled.p``;
+const Pages = styled.div``;
 
 export default Statement;
