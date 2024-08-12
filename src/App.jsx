@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navigate } from "react-router";
 import AuthProvider from "./provider/AuthProvider";
 import { RotatingLines } from "react-loader-spinner";
+import 'rsuite/dist/rsuite.min.css';
 
 const AccountingReports = lazy(() =>
   import("./pages/reports/AccountingReports")

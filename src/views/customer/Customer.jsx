@@ -161,7 +161,7 @@ const CustomerView = () => {
   // );
   // console.log(totalShares);
   return (
-    <DataProvider customerId={customer.id}>
+    <DataProvider customerId={customer.user_id}>
       <Wrapper>
         <Main>
           <Links>

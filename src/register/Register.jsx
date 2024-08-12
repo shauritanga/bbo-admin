@@ -12,6 +12,7 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+		console.log("Inafika hapa");
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/auth/otp`,
         values

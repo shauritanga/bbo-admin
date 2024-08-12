@@ -4,11 +4,8 @@ import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import { nationalities } from "../../utils/nationalities";
 import { Notification, toaster } from "rsuite";
-import { useData } from "../../context/userContext";
 
 const Account = ({ customer }) => {
-  const { profile } = useData();
-
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitting(true);
     try {
@@ -39,22 +36,32 @@ const Account = ({ customer }) => {
     }
   };
 
+  const idNumber = customer?.idNumber;
+  let idType = "";
+  if (idNumber.length > 13) {
+    idType = "national id";
+  } else if (idNumber.length >= 10) {
+    idType = "driving licenses";
+  } else {
+    idType = "passport no";
+  }
+
   return (
     <Wrapper>
       <Title>Personal information</Title>
       <Formik
         initialValues={{
-          country: profile.nationality,
+          country: customer?.nationality,
           category: customer?.category,
-          cdsAccount: customer?.dse_account,
+          cdsAccount: customer?.dseAccount,
           name: customer?.name,
-          phone: customer?.mobile,
+          phone: customer?.phone,
           email: customer?.email,
-          idType: profile?.id_type,
-          idNumber: profile.identity,
+          idType: idType,
+          idNumber: customer?.idNumber,
           botAccount: customer?.botAccount,
-          bankName: JSON.parse(customer.values).bank_name,
-          bankAccount: customer?.bank_account_number,
+          bankName: customer?.bankName,
+          bankAccount: customer?.bankAccountNumber,
         }}
         onSubmit={handleSubmit}
       >

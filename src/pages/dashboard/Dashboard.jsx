@@ -90,14 +90,11 @@ const Dashboard = () => {
 
   const userObject = typeof user === "string" ? JSON.parse(user) : user;
 
-  let formater = useMemo(
-    () =>
+  let formater = 
       Intl.NumberFormat("sw-TZ", {
         style: "currency",
         currency: "TZS",
-      }),
-    []
-  );
+      });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,15 +130,10 @@ const Dashboard = () => {
     );
   }
 
-  const totalIncome = memo(
-    () => incomes?.reduce((prev, curr) => prev + curr.value, 0),
-    [incomes]
-  );
+  const totalIncome =
+     incomes?.reduce((prev, curr) => prev + curr.value, 0);
 
-  const activeCustomers = memo(
-    () => customers?.filter((customer) => customer.status === "active")?.length,
-    [customers]
-  );
+  const activeCustomers = customers?.filter((customer) => customer.status === "active")?.length;
 
   const totalOrders = orders?.length;
   const totalExpenses = expenses?.reduce((acc, curr) => acc + curr.amount, 0);
@@ -428,20 +420,20 @@ const Dashboard = () => {
                   ],
                 },
               ]}
-              //height={400}
+              height={400}
               grid={{ vertical: true, horizontal: true }}
-            />
+           />
           </Graph>
           <Pie>
             <h4>Expenses</h4>
             <h6>{formater.format(totalCurrentMonthExpenses)}</h6>
             <p>{percentComparison}% more than last month</p>
-            <MyPieChart
+				{/*<MyPieChart
               last={totalLastMonthExpenses}
               current={totalCurrentMonthExpenses}
               lastName={lastMonthName}
               currentName={currentMonthName}
-            />
+				/>*/}
             {/* <PieGraph outer={70} inner={50} /> */}
           </Pie>
           <Transaction>

@@ -388,7 +388,7 @@ const Orders = () => {
               );
 
               const orderClient = clients?.filter(
-                (client) => client.id === order.client_id
+                (client) => client.user_id === order.client_id
               );
 
               return (

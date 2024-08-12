@@ -56,15 +56,13 @@ function Customers() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileResponse, customerResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BASE_URL}/profiles`),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-        ]);
-
-        setProfiles(profileResponse.data);
+        const customerResponse = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/customers`
+        );
+        console.log(customerResponse);
         setCustomers(customerResponse.data);
       } catch (error) {
-        toaster.push(<Notification></Notification>, {
+        toaster.push(<Notification>Fail to fetch customers</Notification>, {
           duration: 4000,
           placement: "topCenter",
         });
@@ -73,7 +71,7 @@ function Customers() {
     fetchData();
   }, []);
 
-  if (!customers || !profiles) {
+  if (!customers) {
     return (
       <div
         style={{
@@ -128,6 +126,8 @@ function Customers() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  console.log(customers);
 
   return (
     <Wrapper>
@@ -234,10 +234,6 @@ function Customers() {
           </thead>
           <tbody>
             {currentData?.map((customer) => {
-              const profile = profiles?.filter(
-                (profile) => profile.user_id === customer.id
-              );
-
               return (
                 <TableDataRow key={customer._id}>
                   <TableDataCell>
@@ -245,14 +241,14 @@ function Customers() {
                   </TableDataCell>
                   <TableDataCell>
                     <p>{customer.email}</p>
-                    <p>{profile[0]?.mobile}</p>
+                    <p>{customer.mobile}</p>
                   </TableDataCell>
-                  <TableDataCell>{profile[0]?.nationality}</TableDataCell>
+                  <TableDataCell>{customer?.nationality}</TableDataCell>
                   <TableDataCell>{customer.status}</TableDataCell>
                   <TableDataCell>
                     <ViewButton
                       onClick={() =>
-                        navigate(`/customers/${customer.id}`, {
+                        navigate(`/customers/${customer.user_id}`, {
                           state: customer,
                         })
                       }

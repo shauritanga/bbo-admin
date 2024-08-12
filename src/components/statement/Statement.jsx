@@ -7,9 +7,11 @@ import { Pagination, Stack } from "@mui/material";
 
 const Statement = ({ id, orders }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { transactions } = useData();
+  const { statements } = useData();
 
   const itemsPerPage = 10;
+
+  console.log({ statements });
 
   const handleChange = (event, value) => {
     setCurrentPage(value);
@@ -33,33 +35,14 @@ const Statement = ({ id, orders }) => {
     fetchData();
   }, []);
 
-  if (!transactions) {
-    return <p>Loading...</p>;
-  }
-
-  const updatedTransactions = transactions?.filter(
-    (trans) => trans.account_id === "62" && trans.status === "approved"
+  const displayedStatements = statements?.sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
   );
+  console.log(displayedStatements);
 
-  let globalBalance = 0;
+  const totalPages = Math.ceil(displayedStatements?.length / itemsPerPage);
 
-  const displayedTransactions = updatedTransactions.map((transaction) => {
-    const credit = parseFloat(transaction.credit);
-    const debit = parseFloat(transaction.debit);
-
-    // Update the global balance
-    globalBalance += credit - debit;
-
-    // Add the balance to the transaction
-    return {
-      ...transaction,
-      balance: globalBalance,
-    };
-  });
-
-  const totalPages = Math.ceil(displayedTransactions?.length / itemsPerPage);
-
-  const currentData = displayedTransactions?.slice(
+  const currentData = displayedStatements?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -80,25 +63,16 @@ const Statement = ({ id, orders }) => {
           <TableHeaderCell>balance</TableHeaderCell>
         </TableHeaderRow>
         {currentData?.map((transaction) => {
-          const order = orders?.filter(
-            (order) => order.id === transaction.order_id
-          )[0];
-
           return (
             <TableDataRow key={transaction._id}>
               <TableDataCell>
-                {dayjs(transaction.transaction_date).format("DD-MM-YYYY")}
+                {dayjs(transaction.date).format("DD-MM-YYYY")}
               </TableDataCell>
-              <TableDataCell>{transaction.action}</TableDataCell>
-              <TableDataCell>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span>{transaction.reference}</span>
-                  {transaction.category}
-                </div>
-              </TableDataCell>
-              <TableDataCell>{transaction.description}</TableDataCell>
-              <TableDataCell>{order?.volume}</TableDataCell>
-              <TableDataCell>{order?.price}</TableDataCell>
+              <TableDataCell>{transaction.type}</TableDataCell>
+              <TableDataCell>{transaction.reference}</TableDataCell>
+              <TableDataCell>{transaction.particulars}</TableDataCell>
+              <TableDataCell>{transaction.quantity}</TableDataCell>
+              <TableDataCell>{transaction.price}</TableDataCell>
               <TableDataCell>{transaction.debit}</TableDataCell>
               <TableDataCell>{transaction.credit}</TableDataCell>
               <TableDataCell>
@@ -110,7 +84,7 @@ const Statement = ({ id, orders }) => {
       </Table>
       <Spacer></Spacer>
       <PaginationWrapper>
-        <Counter>{displayedTransactions?.length} total orders</Counter>
+        <Counter>{displayedStatements?.length} total orders</Counter>
         <Stack spacing={2}>
           {/* <Pagination count={10} shape="rounded" /> */}
           <Pagination
