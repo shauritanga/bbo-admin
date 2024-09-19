@@ -6,6 +6,7 @@ const renderToggle = (props) => (
     circle
     {...props}
     src="https://i.pravatar.cc/150?u=git@rsutiejs.com"
+    size="sm"
   />
 );
 
@@ -19,7 +20,7 @@ const LoginUser = () => {
         style={{ padding: 10, width: 160, color: "#656281" }}
       >
         <p>Signed in as</p>
-        <strong>{userObject.name}</strong>
+        <span className="text-blue-800">{userObject.name}</span>
       </Dropdown.Item>
       <Dropdown.Item>My Profile</Dropdown.Item>
       <Dropdown.Item onClick={() => logOut()}>Sign out</Dropdown.Item>
@@ -28,3 +29,4 @@ const LoginUser = () => {
 };
 
 export default LoginUser;
+

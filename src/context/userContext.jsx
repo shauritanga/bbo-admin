@@ -9,11 +9,11 @@ export const useData = () => useContext(DataContext);
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
 export const DataProvider = ({ children, customerId }) => {
-  console.log({ customerId });
   const { data, error } = useSWR(
     [
       `${import.meta.env.VITE_BASE_URL}/transactions/${customerId}`,
       `${import.meta.env.VITE_BASE_URL}/executions/${customerId}`,
+      `${import.meta.env.VITE_BASE_URL}/statements/${customerId}`,
       `${import.meta.env.VITE_BASE_URL}/statements/${customerId}`,
     ],
     async (urls) => {

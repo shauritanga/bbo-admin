@@ -38,16 +38,16 @@ const Account = ({ customer }) => {
 
   const idNumber = customer?.idNumber;
   let idType = "";
-  if (idNumber.length > 13) {
-    idType = "national id";
-  } else if (idNumber.length >= 10) {
+  if (idNumber?.length > 13) {
+    idType = "National ID";
+  } else if (idNumber?.length >= 10) {
     idType = "driving licenses";
   } else {
     idType = "passport no";
   }
 
   return (
-    <Wrapper>
+    <div className="bg-white p-2 shadow-md rounded">
       <Title>Personal information</Title>
       <Formik
         initialValues={{
@@ -57,7 +57,7 @@ const Account = ({ customer }) => {
           name: customer?.name,
           phone: customer?.phone,
           email: customer?.email,
-          idType: idType,
+          idType: customer?.idType,
           idNumber: customer?.idNumber,
           botAccount: customer?.botAccount,
           bankName: customer?.bankName,
@@ -122,7 +122,7 @@ const Account = ({ customer }) => {
                 <option value="" disabled>
                   Select Category
                 </option>
-                <option value="personal">Personal</option>
+                <option value="individual">Individual</option>
                 <option value="company">company</option>
                 <option value="government">Government</option>
               </Field>
@@ -166,8 +166,8 @@ const Account = ({ customer }) => {
                   Select Type
                 </option>
                 <option value="voter">Voter ID</option>
-                <option value="passport no">Passport</option>
-                <option value="national id">National ID</option>
+                <option value="Passport">Passport</option>
+                <option value="National ID">National ID</option>
                 <option value="driving license">Driving Lisence</option>
                 <option value="lisence">Certificate of Incorporation</option>
               </Field>
@@ -216,13 +216,13 @@ const Account = ({ customer }) => {
                   borderRadius: "5px",
                 }}
               >
-                {isSubmitting ? "saving..." : "save"}
+                {isSubmitting ? "Updating..." : "Update"}
               </button>
             </FormGroup>
           </Form>
         )}
       </Formik>
-    </Wrapper>
+    </div>
   );
 };
 

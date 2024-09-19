@@ -1,71 +1,107 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
 import axios from "axios";
 import { useAuth } from "../../provider/AuthProvider";
-import { Notification, toaster } from "rsuite";
+import * as Yup from "yup";
 
+import { Notification, toaster } from "rsuite";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+
+const validationSchema = Yup.object({
+  otp: Yup.string()
+    .required("OTP is required")
+    .length(6, "OTP must be 6 characters"),
+});
+
+const AutoSubmit = () => {
+  const { values, submitForm, isValid, touched } = useFormikContext();
+  useEffect(() => {
+    // Automatically submit the form when it is valid and touched
+    if (isValid && Object.keys(touched).length > 0) {
+      submitForm();
+    }
+  }, [values, isValid, touched, submitForm]);
+
+  return null;
+};
 const Otp = () => {
   const { state } = useLocation();
   const { loginAction } = useAuth();
+
   if (!state) {
     return null;
   }
+
+  const handleSubmit = async (values, { setSubmitting }) => {
+    console.log("Form submitted with values:", values);
+
+    try {
+      const result = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/auth/verify-otp`,
+        values
+      );
+      await toaster.push(
+        <Notification header="Success" type="success">
+          Welcome
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+      loginAction(result.data.email);
+      setSubmitting(false);
+    } catch (error) {
+      await toaster.push(
+        <Notification header="Error" type="error">
+          {error.response.data.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+    }
+  };
+  // Handle form submission logic, e.g., sending data to an API
+
   return (
-    <Wrapper>
-      <p>An OTP has been sent to your email:{state.email}</p>
-      <p>Enter the OTP</p>
-      <Formik
-        initialValues={{ otp: "", email: state.email }}
-        onSubmit={async (values, { setSubmitting }) => {
-          try {
-            const result = await axios.post(
-              `${import.meta.env.VITE_BASE_URL}/auth/verify-otp`,
-              values
-            );
-            await toaster.push(
-              <Notification header="Success" type="success"></Notification>,
-              { duration: 3000, placement: "topCenter" }
-            );
-            loginAction(result.data.email);
-            setSubmitting(false);
-          } catch (error) {
-            await toaster.push(
-              <Notification header="Success" type="success">
-                {error.response.data.message}
-              </Notification>,
-              { duration: 3000, placement: "topCenter" }
-            );
-          }
-        }}
-      >
-        {({ values, handleSubmit, handleChange }) => (
-          <Form
-            // onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column" }}
-          >
-            <Field
-              value={values.otp}
-              name="otp"
-              placeholder="Enter OTP"
-              onChange={handleChange}
-              style={{
-                width: "300px",
-                marginBottom: "20px",
-                border: "1px solid #ccc",
-                borderRadius: "5px",
-                padding: "10px",
-                fontSize: "16px",
-              }}
-              type="text"
-            />
-            <ErrorMessage name="otp" />
-            <Button>Verify</Button>
-          </Form>
-        )}
-      </Formik>
-    </Wrapper>
+    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-red-400  to-blue-950">
+      {/* <p>An OTP has been sent to your email:{state.email}</p> */}
+      <div className="bg-white p-4 rounded">
+        <p>Enter the OTP sent to your email</p>
+        <Formik
+          initialValues={{ otp: "", email: state.email }}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ values, setFieldValue }) => (
+            <Form style={{ display: "flex", flexDirection: "column" }}>
+              <InputOTP
+                maxLength={6}
+                onChange={(value) => setFieldValue("otp", value)}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+              <Button type="submit" className="mt-4">
+                Submit
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </div>
   );
 };
 
@@ -94,7 +130,7 @@ const Button = styled.button`
   color: #fff;
   border: none;
   border-radius: 5px;
-  padding: 10px 20px;
+  padding: 8px 15px;
   font-size: 16px;
   cursor: pointer;
 `;

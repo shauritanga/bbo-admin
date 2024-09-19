@@ -1,15 +1,12 @@
 import React, { memo, useEffect, useMemo, useState } from "react";
-import { FiShoppingBag } from "react-icons/fi";
-import { VscServerProcess } from "react-icons/vsc";
-import { IoCheckmarkDoneCircleOutline, IoTimerOutline } from "react-icons/io5";
-import { TiCancelOutline } from "react-icons/ti";
+
 import styled from "styled-components";
 import { LineChart } from "@mui/x-charts";
-import MyPieChart from "../../components/pie/trial";
 import axios from "axios";
 import { getMonthName } from "../../utils/getMonthName";
 import { useAuth } from "../../provider/AuthProvider";
 import { RotatingLines } from "react-loader-spinner";
+import Card from "../../components/Card";
 
 const pieData = [
   [
@@ -90,11 +87,10 @@ const Dashboard = () => {
 
   const userObject = typeof user === "string" ? JSON.parse(user) : user;
 
-  let formater = 
-      Intl.NumberFormat("sw-TZ", {
-        style: "currency",
-        currency: "TZS",
-      });
+  let formater = Intl.NumberFormat("sw-TZ", {
+    style: "currency",
+    currency: "TZS",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,10 +126,11 @@ const Dashboard = () => {
     );
   }
 
-  const totalIncome =
-     incomes?.reduce((prev, curr) => prev + curr.value, 0);
+  const totalIncome = incomes?.reduce((prev, curr) => prev + curr.value, 0);
 
-  const activeCustomers = customers?.filter((customer) => customer.status === "active")?.length;
+  const activeCustomers = customers?.filter(
+    (customer) => customer.status === "active"
+  )?.length;
 
   const totalOrders = orders?.length;
   const totalExpenses = expenses?.reduce((acc, curr) => acc + curr.amount, 0);
@@ -336,142 +333,108 @@ const Dashboard = () => {
   const staff = userObject;
 
   return (
-    <>
-      {staff.role?.name !== "admin" ? (
-        <div>normal dashboard coming soon</div>
-      ) : (
-        <Wrapper>
-          <Card
-            style={{
-              backgroundColor: "#000",
-              color: "white",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-          >
-            <span style={{ fontSize: "1rem" }}>Current Income</span>
-            <span style={{ fontSize: "1.3rem" }}>
-              {formater.format(totalIncome)}
-            </span>
-          </Card>
-          <Card
-            style={{
-              backgroundColor: "#323365",
-              color: "white",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-          >
-            <span style={{ fontSize: "1rem" }}>Current Customers</span>
-            <span style={{ fontSize: "1.2rem" }}>{customers.length}</span>
-          </Card>
-          <Card
-            style={{
-              backgroundColor: "#e71f27",
-              color: "white",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-          >
-            <span style={{ fontSize: "1rem" }}>Active Customers</span>
-            <span style={{ fontSize: "1.2rem" }}>
-              {`${activeCustomers / customers.length} %`}
-            </span>
-          </Card>
-          <Card
-            style={{
-              backgroundColor: "#656281",
-              color: "white",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-          >
-            <span style={{ fontSize: "1rem" }}>Total Orders</span>
-            <span style={{ fontSize: "1.2rem" }}>{totalOrders}</span>
-          </Card>
-          <Graph>
-            <h6>Income Trends</h6>
-            <LineChart
-              series={[
-                {
-                  data: [...lineData],
-                },
-              ]}
-              xAxis={[
-                {
-                  scaleType: "band",
-                  data: [
-                    "Jan",
-                    "Feb",
-                    "Mar",
-                    "Apr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Aug",
-                    "Sep",
-                    "Oct",
-                    "Nov",
-                    "Dec",
-                  ],
-                },
-              ]}
-              height={400}
-              grid={{ vertical: true, horizontal: true }}
-           />
-          </Graph>
-          <Pie>
+    <div className="flex flex-col gap-6 min-h-screen py-6 bg-slate-100 mt-4">
+      <div className="flex gap-4">
+        <Card backgroundColor="bg-blue-500">
+          <span>Current Income</span>
+          <span>{formater.format(totalIncome)}</span>
+        </Card>
+        <Card backgroundColor="bg-red-500">
+          <span>Current Customers</span>
+          <span>{customers.length}</span>
+        </Card>
+        <Card backgroundColor="bg-blue-900">
+          <span>Active Customers</span>
+          <span>{`${(activeCustomers / customers.length).toFixed(2)} %`}</span>
+        </Card>
+        <Card backgroundColor="bg-sky-500">
+          <span>Total Orders</span>
+          <span className="">{totalOrders}</span>
+        </Card>
+      </div>
+      <div className="flex gap-4">
+        <div className="flex-1 bg-white p-3 border rounded shadow-md h-[300px]">
+          <h6 className="text-red-900">Income Trends</h6>
+          <LineChart
+            series={[
+              {
+                data: [...lineData],
+              },
+            ]}
+            xAxis={[
+              {
+                scaleType: "band",
+                data: [
+                  "Jan",
+                  "Feb",
+                  "Mar",
+                  "Apr",
+                  "May",
+                  "Jun",
+                  "Jul",
+                  "Aug",
+                  "Sep",
+                  "Oct",
+                  "Nov",
+                  "Dec",
+                ],
+              },
+            ]}
+            height={290}
+            grid={{ vertical: true, horizontal: true }}
+          />
+        </div>
+        <div className="flex-1 flex gap-4">
+          <div className="flex-1 bg-white border rounded shadow-md p-2">
             <h4>Expenses</h4>
             <h6>{formater.format(totalCurrentMonthExpenses)}</h6>
             <p>{percentComparison}% more than last month</p>
-				{/*<MyPieChart
+            {/*<MyPieChart
               last={totalLastMonthExpenses}
               current={totalCurrentMonthExpenses}
               lastName={lastMonthName}
               currentName={currentMonthName}
 				/>*/}
             {/* <PieGraph outer={70} inner={50} /> */}
-          </Pie>
-          <Transaction>
+          </div>
+          <div className="flex-1 bg-white border rounded shadow-md p-2">
             <h5>Transactions</h5>
-          </Transaction>
-          <Summary>
-            <h6>Account Balance</h6>
-            <TableWrapper style={{ width: "100%", marginTop: "20px" }}>
-              <thead>
-                <TableHeaderRow>
-                  <TableHeaderCell>SN</TableHeaderCell>
-                  <TableHeaderCell>Account</TableHeaderCell>
-                  <TableHeaderCell>Balance</TableHeaderCell>
-                </TableHeaderRow>
-              </thead>
-              <tbody>
-                <TableBodyRow>
-                  <TableBodyCell>1</TableBodyCell>
-                  <TableBodyCell>Income </TableBodyCell>
-                  <TableBodyCell>46,585,556</TableBodyCell>
-                </TableBodyRow>
-                <TableBodyRow>
-                  <TableBodyCell>1</TableBodyCell>
-                  <TableBodyCell>Purchase </TableBodyCell>
-                  <TableBodyCell>46,585,556</TableBodyCell>
-                </TableBodyRow>
-              </tbody>
-            </TableWrapper>
-          </Summary>
-          <Table>
-            <h6>Customer Demographic</h6>
-            {/* <div style={{ width: "300px", height: "300px" }}>
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-4">
+        <div className="flex flex-col flex-1 h-72 bg-white shadow-md p-2 mb-4 rounded">
+          <h6>Account Balance</h6>
+          <TableWrapper style={{ width: "100%", marginTop: "20px" }}>
+            <thead>
+              <TableHeaderRow>
+                <TableHeaderCell>SN</TableHeaderCell>
+                <TableHeaderCell>Account</TableHeaderCell>
+                <TableHeaderCell>Balance</TableHeaderCell>
+              </TableHeaderRow>
+            </thead>
+            <tbody>
+              <TableBodyRow>
+                <TableBodyCell>1</TableBodyCell>
+                <TableBodyCell>Income </TableBodyCell>
+                <TableBodyCell>46,585,556</TableBodyCell>
+              </TableBodyRow>
+              <TableBodyRow>
+                <TableBodyCell>1</TableBodyCell>
+                <TableBodyCell>Purchase </TableBodyCell>
+                <TableBodyCell>46,585,556</TableBodyCell>
+              </TableBodyRow>
+            </tbody>
+          </TableWrapper>
+        </div>
+        <div className="flex-1 shadow-md bg-white mb-4 p-2 rounded">
+          <h6>Customer Demographic</h6>
+          {/* <div style={{ width: "300px", height: "300px" }}>
           <MapChart data={data} />
         </div> */}
-          </Table>
-        </Wrapper>
-      )}
-    </>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -491,45 +454,6 @@ const TableBodyRow = styled.tr`
   border-bottom: 1px solid #ccc;
 `;
 
-const Wrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
-  grid-template-rows: repeat(6, minmax(80px, 100px));
-  gap: 20px;
-  margin-bottom: 30px;
-`;
-
-const Card = styled.div`
-  background-color: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  border-radius: 10px;
-  padding: 20px;
-`;
-
-const Graph = styled.div`
-  background-color: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  border-radius: 10px;
-  padding: 20px;
-  grid-column: 1/3;
-  grid-row: 2/5;
-`;
-const Pie = styled.div`
-  background-color: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  border-radius: 10px;
-  padding: 20px;
-  grid-column: 3/4;
-  grid-row: 2/5;
-`;
-const Transaction = styled.div`
-  background-color: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  border-radius: 10px;
-  grid-column: 4/5;
-  grid-row: 2/5;
-  padding: 20px;
-`;
 const Summary = styled.div`
   background-color: #fff;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);

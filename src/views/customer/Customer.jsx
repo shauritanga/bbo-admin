@@ -24,6 +24,7 @@ import { Delete } from "@mui/icons-material";
 import { CiTrash } from "react-icons/ci";
 import { Notification, toaster } from "rsuite";
 import { DataProvider } from "../../context/userContext";
+import ActionLinks from "@/components/actions";
 
 const CustomerView = () => {
   const { openFilePicker, filesContent, loading, errors } = useFilePicker({
@@ -51,11 +52,12 @@ const CustomerView = () => {
   const [fileType, setFileType] = useState("");
   const [isActive, setIsActive] = useState("account");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [files, setFiles] = useState([]);
   const [openMigrationShare, setOpenMigrationShare] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const customer = location.state;
+  const { customer } = location.state;
 
   const sendActivationEmail = async (email) => {
     try {
@@ -134,37 +136,12 @@ const CustomerView = () => {
         break;
     }
   };
-  //
-  const updatedTransactions = transactions?.filter(
-    (trans) => trans.account_id === "62"
-  );
 
-  let globalBalance = 0;
-
-  const displayedTransactions = updatedTransactions.map((transaction) => {
-    const credit = parseFloat(transaction.credit);
-    const debit = parseFloat(transaction.debit);
-
-    // Update the global balance
-    globalBalance += credit - debit;
-
-    // Add the balance to the transaction
-    return {
-      ...transaction,
-      balance: globalBalance,
-    };
-  });
-
-  // const totalShares = customer.shares.reduce(
-  //   (accumulator, currentValue) => accumulator + currentValue.volume,
-  //   0
-  // );
-  // console.log(totalShares);
   return (
-    <DataProvider customerId={customer.user_id}>
-      <Wrapper>
-        <Main>
-          <Links>
+    <DataProvider customerId={customer._id}>
+      <div className="flex my-4 gap-4">
+        <div className="flex flex-col gap-4 w-10/12">
+          <div className="flex bg-white p-2">
             <ListItem
               style={
                 isActive === "account"
@@ -209,7 +186,7 @@ const CustomerView = () => {
               <GrShieldSecurity />
               Security
             </ListItem>
-          </Links>
+          </div>
           {content()}
           {files.length > 0 && (
             <UploadView>
@@ -293,8 +270,8 @@ const CustomerView = () => {
               </Button>
             </UploadView>
           )}
-        </Main>
-        <Portfolio>
+        </div>
+        <Portfolio className="w-2/12">
           <CustomerInfo>
             <Avatar></Avatar>
             <Table>
@@ -311,7 +288,7 @@ const CustomerView = () => {
                 </TableDataRow>
                 <TableDataRow>
                   <TableRowCell>Shares</TableRowCell>
-                  <TableRowCell>{}</TableRowCell>
+                  <TableRowCell>{customer.wallet}</TableRowCell>
                 </TableDataRow>
                 <TableDataRow>
                   <TableRowCell>Status</TableRowCell>
@@ -334,16 +311,17 @@ const CustomerView = () => {
               </tbody>
             </Table>
           </CustomerInfo>
-          <Actions>
+          <ActionLinks customerId={customer._id} />
+          {/* <div className="flex flex-col gap-2 bg-white rounded shadow-md p-2">
             <Button
               onClick={() => openFilePicker()}
-              style={{ backgroundColor: "var(--color-button)" }}
+              className="bg-blue-800 text-xs w-full"
             >
-              Add Documents (PDF,JPG,GIF,PNG)
+              Add Documents (PDF,PNG)
             </Button>
             <Button
               onClick={() => setOpenMigrationShare(true)}
-              style={{ backgroundColor: "var(--color-reject)" }}
+              className="bg-red-400 w-full rounded-md text-xs"
             >
               Migrate Shares
             </Button>
@@ -367,23 +345,23 @@ const CustomerView = () => {
               Send reset password email
             </Button>
             <Button
-              style={{ backgroundColor: "var(--color-button)" }}
               onClick={() =>
                 navigate("/statement", {
                   state: { transactions: displayedTransactions, customer },
                 })
               }
+              className="bg-sky-400"
             >
               Print Statement (PDF)
             </Button>
-          </Actions>
+          </div> */}
         </Portfolio>
         {isModalOpen && <SelectionModal />}
         <ShareMigrationForm
           open={openMigrationShare}
           setOpen={setOpenMigrationShare}
         />
-      </Wrapper>
+      </div>
     </DataProvider>
   );
 };
@@ -444,13 +422,7 @@ const Avatar = styled.div`
   border-radius: 50%;
   background-color: red;
 `;
-const Actions = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  background-color: var(--color-white);
-  gap: 15px;
-`;
+
 const Button = styled.button`
   border-radius: 7px;
   color: white;

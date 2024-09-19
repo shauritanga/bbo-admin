@@ -24,7 +24,7 @@ function Security({ backgroundColor }) {
     name: "",
     price: "",
   });
-  console.log(data);
+
   const dispatch = useDispatch();
   const { securities, status, error, filters } = useSelector(
     (state) => state.securities

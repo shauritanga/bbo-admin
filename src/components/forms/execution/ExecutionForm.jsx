@@ -1,96 +1,42 @@
-import React, { useState } from "react";
-import { Modal, Button, toaster, Notification } from "rsuite";
-import styled from "styled-components";
+import React, { useEffect } from "react";
+import { Modal, Notification, toaster } from "rsuite";
 import axios from "axios";
 import { calculateFees } from "../../../utils/getFees";
+import { Formik, Field, ErrorMessage, Form } from "formik";
+import { Button } from "@/components/ui/button";
 
-const ExecutionForm = ({ open, setOpen, order, customerId, balance }) => {
-  console.log(order);
-  const [state, setState] = useState({
-    settlement_date: null,
-    trading_date: Date.now,
-    slip: "",
-    price: 0,
-    executed: 0,
-    type: order?.type,
-  });
-  const amount = state.price * state.executed;
-  const fees = calculateFees(amount);
+const ExecutionForm = ({
+  open,
+  setOpen,
+  order,
+  customerId,
+  balance,
+  security,
+}) => {
+  const handleSubmit = async (values, { setsubmitting }) => {
+    const fees = calculateFees(parseFloat(values.amount));
 
-  const handleChange = (e) => {
-    e.preventDefault();
-    const { name, value } = e.target;
-    setState((prev) => {
-      if (name === "executed") {
-        return {
-          ...prev,
-          [name]: balance >= value ? value : balance,
-        };
-      }
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
-  };
+    values.total =
+      Math.round((fees.totalConsideration + Number.EPSILON) * 100) / 100;
 
-  const handleSubmit = async () => {
+    values.dse = Math.round((fees.dseFee + Number.EPSILON) * 100) / 100;
+    values.cds = Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100;
+    values.cmsa = Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100;
+    values.fidelity =
+      Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100;
+    values.vat = Math.round((fees.vat + Number.EPSILON) * 100) / 100;
+    values.brokerage =
+      Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100;
+
+    // alert(JSON.stringify(values, null, 2));
     try {
-      const postData = {
-        ...state,
-        customer: customerId,
-        order_id: order?.uid,
-        amount,
-        totalFees: Math.round((fees.totalCharges + Number.EPSILON) * 100) / 100,
-        total:
-          Math.round((fees.totalConsideration + Number.EPSILON) * 100) / 100,
-        dse: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
-        cds: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
-        cmsa: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
-        fidelity: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
-        vat: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
-        brokerage:
-          Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
-      };
-
-      console.log(postData);
-
-      const dseData = {
-        reference: state.slip,
-        value: Math.round((fees.dseFee + Number.EPSILON) * 100) / 100,
-      };
-      const cdsData = {
-        reference: state.slip,
-        value: Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100,
-      };
-      const csmaData = {
-        reference: state.slip,
-        value: Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100,
-      };
-      const vatData = {
-        reference: state.slip,
-        value: Math.round((fees.vat + Number.EPSILON) * 100) / 100,
-      };
-      const fidelityData = {
-        reference: state.slip,
-        value: Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100,
-      };
-      const brokerageData = {
-        reference: state.slip,
-        value: Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100,
-      };
-      const { executionResponse, dseResponse } = await Promise.all([
-        axios.post(`${import.meta.env.VITE_BASE_URL}/executions`, postData),
-        axios.post(`${import.meta.env.VITE_BASE_URL}/dse`, dseData),
-        axios.post(`${import.meta.env.VITE_BASE_URL}/vat`, vatData),
-        axios.post(`${import.meta.env.VITE_BASE_URL}/cds`, cdsData),
-        axios.post(`${import.meta.env.VITE_BASE_URL}/csma`, csmaData),
-        axios.post(`${import.meta.env.VITE_BASE_URL}/fidelity`, fidelityData),
-        axios.post(`${import.meta.env.VITE_BASE_URL}/brokerage`, brokerageData),
-      ]);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/executions`,
+        values
+      );
       await toaster.push(
         <Notification header="Success" type="success">
-          Data Saved Successfully
+          {response.data.message}
         </Notification>,
         {
           duration: 3000,
@@ -101,7 +47,7 @@ const ExecutionForm = ({ open, setOpen, order, customerId, balance }) => {
     } catch (error) {
       await toaster.push(
         <Notification header="Error" type="error">
-          Data was not saved, try again
+          {error.response.data.message}
         </Notification>,
         {
           duration: 3000,
@@ -114,125 +60,144 @@ const ExecutionForm = ({ open, setOpen, order, customerId, balance }) => {
   return (
     <Modal backdrop="static" open={open} onClose={() => setOpen(false)}>
       <Modal.Header>
-        <Modal.Title>New Execution</Modal.Title>
+        <Modal.Title>New Execution{balance}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form>
-          <FormGroup>
-            <FormControl>
-              <label htmlFor="trading_date">Trading Date</label>
-              <TextInput
-                name="trading_date"
-                value={state.date}
-                onChange={handleChange}
-                type="date"
-                id="trading_date"
-              />
-            </FormControl>
-            <FormControl>
-              <label htmlFor="settlement_date">Settlement Date</label>
-              <TextInput
-                name="settlement_date"
-                value={state.date}
-                onChange={handleChange}
-                type="date"
-                id="settlement_date"
-              />
-            </FormControl>
-          </FormGroup>
-          <FormGroup>
-            <FormControl>
-              <label htmlFor="slip">Slip No</label>
-              <TextInput
-                value={state.slip}
-                name="slip"
-                onChange={handleChange}
-                type="text"
-                id="date"
-                placeholder="slip number"
-              />
-            </FormControl>
-            <FormControl>
-              <label htmlFor="price">Price</label>
-              <TextInput
-                name="price"
-                value={state.price}
-                onChange={handleChange}
-                type="number"
-                id="price"
-                placeholder="price"
-                min={0}
-              />
-            </FormControl>
-          </FormGroup>
-          <FormGroup>
-            <FormControl>
-              <label htmlFor="volume">Executed</label>
-              <TextInput
-                name="executed"
-                value={state.executed}
-                onChange={handleChange}
-                type="number"
-                id="volume"
-                placeholder="volume"
-                min={0}
-              />
-            </FormControl>
-            <FormControl>
-              <label htmlFor="amount">Amount</label>
-              <TextInput
-                disabled
-                value={amount}
-                type="number"
-                id="amount"
-                placeholder="volume"
-                min={0}
-              />
-            </FormControl>
-          </FormGroup>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          style={{ backgroundColor: "hsl(243deg 50% 21%", color: "#fff" }}
-          onClick={handleSubmit}
-        >
-          Create
-        </Button>
-        <Button
-          style={{
-            border: "1px solid hsl(243deg 50% 21%",
-            color: "hsl(243deg 50% 21%",
+        <Formik
+          initialValues={{
+            tradingDate: "",
+            settlementDate: "",
+            executed: "",
+            security: security,
+            slip: "",
+            price: "",
+            amount: "",
+            type: order?.type,
+            userId: customerId,
+            orderId: order?._id,
           }}
-          onClick={() => setOpen(false)}
+          validate={(values) => {
+            const errors = {};
+            if (!values.tradingDate) {
+              errors.tradingDate = "Please select date is required";
+            }
+            if (!values.settlementDate) {
+              errors.settlementDate = "Please select settlement date";
+            }
+            if (!values.slip) {
+              errors.slip = "Please a slip number";
+            }
+            if (!values.price) {
+              errors.price = "Please enter price";
+            }
+            if (!values.executed) {
+              errors.executed = "Please enter volume executed";
+            }
+            return errors;
+          }}
+          onSubmit={handleSubmit}
         >
-          Cancel
-        </Button>
-      </Modal.Footer>
+          {({ values, isSubmitting, setFieldValue }) => {
+            useEffect(() => {
+              const amount = values.executed * values.price;
+              setFieldValue("amount", amount);
+            }, [values.executed, values.price, setFieldValue]);
+            return (
+              <Form>
+                <div className="flex w-fulln gap-4 mb-4">
+                  <div className="w-full flex flex-col gap-1">
+                    <label htmlFor="tradingDate">Trading Date</label>
+                    <Field
+                      name="tradingDate"
+                      value={values.tradingDate}
+                      type="datetime-local"
+                      className="w-full border rounded p-2"
+                    />
+                    <ErrorMessage
+                      name="tradingDate"
+                      component="div"
+                      className="text-destructive"
+                    />
+                  </div>
+                  <div className="w-full flex flex-col gap-1">
+                    <label htmlFor="settlementDate">Settlement Date</label>
+                    <Field
+                      name="settlementDate"
+                      value={values.settlementDate}
+                      type="datetime-local"
+                      className="w-full border rounded p-2"
+                    />
+                    <ErrorMessage
+                      name="settlementDate"
+                      component="div"
+                      className="text-destructive"
+                    />
+                  </div>
+                </div>
+                <div className="w-full flex gap-4 mb-4">
+                  <div className="w-full flex flex-col gap-1">
+                    <label htmlFor="Slip">Slip No</label>
+                    <Field
+                      name="slip"
+                      placeholder="slip number"
+                      className="w-full border rounded p-2"
+                    />
+                    <ErrorMessage
+                      name="slip"
+                      component="div"
+                      className="text-destructive"
+                    />
+                  </div>
+                  <div className="w-full flex flex-col gap-1">
+                    <label htmlFor="price">Price</label>
+                    <Field
+                      name="price"
+                      placeholder="slip number"
+                      className="w-full border rounded p-2"
+                    />
+                    <ErrorMessage
+                      name="price"
+                      component="div"
+                      className="text-destructive"
+                    />
+                  </div>
+                </div>
+                <div className="w-full flex gap-4 mb-4">
+                  <div className="w-full flex flex-col gap-1">
+                    <label htmlFor="executed">Executed</label>
+                    <Field
+                      name="executed"
+                      placeholder="slip number"
+                      className="w-full border rounded p-2"
+                    />
+                    <ErrorMessage
+                      name="executed"
+                      component="div"
+                      className="text-destructive"
+                    />
+                  </div>
+                  <div className="w-full flex flex-col gap-1">
+                    <label htmlFor="amount">Amount</label>
+                    <Field
+                      name="amount"
+                      readOnly
+                      placeholder="slip number"
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                </div>
+                <div className="flex w-full justify-end gap-4">
+                  <Button type="submit">
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </Button>
+                </div>
+              </Form>
+            );
+          }}
+        </Formik>
+      </Modal.Body>
     </Modal>
   );
 };
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-const FormGroup = styled.div`
-  display: flex;
-  gap: 10px;
-  width: 100%;
-`;
-const FormControl = styled.div`
-  width: 100%;
-  display: flex;
-  gap: 4px;
-  flex-direction: column;
-`;
-const TextInput = styled.input`
-  border: 1px solid #ccc;
-  padding: 8px;
-  border-radius: 5px;
-`;
 
 export default ExecutionForm;

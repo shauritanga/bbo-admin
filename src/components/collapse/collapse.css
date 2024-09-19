@@ -4,7 +4,6 @@
         align-items: center;
         justify-content: space-between;
         border-radius: var(--border-radius-1);
-        padding: 10px 20px;
   }
   .collapse-container .title{
     display: flex;

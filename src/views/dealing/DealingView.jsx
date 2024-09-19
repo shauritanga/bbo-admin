@@ -15,7 +15,7 @@ const DealingView = () => {
             <FormGroup>
               <FormControl>
                 <label htmlFor="slip">Slip No</label>
-                <TextInput value={state.slip_no} type="text" disabled />
+                <TextInput value={state.slip} type="text" disabled />
               </FormControl>
               <FormControl>
                 <label htmlFor="slip">Price</label>
@@ -40,7 +40,7 @@ const DealingView = () => {
               <FormControl>
                 <label htmlFor="slip">Total Fees(TZS)</label>
                 <TextInput
-                  value={parseFloat(state.total_fees)}
+                  value={parseFloat(state.totalFees)}
                   type="text"
                   disabled
                 />
@@ -48,9 +48,7 @@ const DealingView = () => {
               <FormControl>
                 <label htmlFor="slip">Total(TZS)</label>
                 <TextInput
-                  value={parseFloat(
-                    state.total_fees + parseFloat(state.amount)
-                  )}
+                  value={parseFloat(state.payout)}
                   type="text"
                   disabled
                 />

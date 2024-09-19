@@ -1,17 +1,14 @@
-import axios from "axios";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useData } from "../../context/userContext";
 import { Pagination, Stack } from "@mui/material";
 
-const Statement = ({ id, orders }) => {
+const Statement = ({ id }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { statements } = useData();
 
   const itemsPerPage = 10;
-
-  console.log({ statements });
 
   const handleChange = (event, value) => {
     setCurrentPage(value);
@@ -22,23 +19,9 @@ const Statement = ({ id, orders }) => {
     currency: "TZS",
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [orderResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BASE_URL}/orders/client/${id}`),
-        ]);
-
-        setOrders(orderResponse.data);
-      } catch (error) {}
-    };
-    fetchData();
-  }, []);
-
   const displayedStatements = statements?.sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
-  console.log(displayedStatements);
 
   const totalPages = Math.ceil(displayedStatements?.length / itemsPerPage);
 
@@ -48,9 +31,9 @@ const Statement = ({ id, orders }) => {
   );
 
   return (
-    <Wrapper>
+    <div className="flex flex-col bg-white shadow-sm p-2">
       <p>Statement</p>
-      <Table>
+      <Table className="text-sm">
         <TableHeaderRow>
           <TableHeaderCell>Date</TableHeaderCell>
           <TableHeaderCell>type</TableHeaderCell>
@@ -64,7 +47,7 @@ const Statement = ({ id, orders }) => {
         </TableHeaderRow>
         {currentData?.map((transaction) => {
           return (
-            <TableDataRow key={transaction._id}>
+            <TableDataRow key={transaction._id} className="text-xs">
               <TableDataCell>
                 {dayjs(transaction.date).format("DD-MM-YYYY")}
               </TableDataCell>
@@ -97,18 +80,9 @@ const Statement = ({ id, orders }) => {
           />
         </Stack>
       </PaginationWrapper>
-    </Wrapper>
+    </div>
   );
 };
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: var(--color-white);
-  border-radius: 7px;
-  min-height: 600px;
-  padding: 20px;
-`;
 
 const Spacer = styled.div`
   flex: 1;

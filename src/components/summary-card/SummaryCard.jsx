@@ -4,46 +4,25 @@ import styled from "styled-components";
 
 function SummaryCard({ total, info, icon, backgroundColor }) {
   return (
-    <Wrapper style={{ "--backgroundColor": backgroundColor }}>
+    <div
+      className={`flex flex-auto items-center cursor-pointer justify-between text-white rounded p-2 ${backgroundColor} hover:-translate-y-1 ease-in-out duration-300`}
+    >
       <Details>
         <span>{total}</span>
         {info}
       </Details>
-      <Icon>{icon}</Icon>
-    </Wrapper>
+      <div className=" flex items-center justify-center h-6 w-6 rounded-full bg-white">
+        {icon}
+      </div>
+    </div>
   );
 }
-const Wrapper = styled.div`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--backgroundColor);
-  color: #fff;
-  border-radius: 5px;
-  padding: 20px;
-  box-shadow: var(--box-shadow);
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-  &:hover {
-    box-shadow: none;
-    transform: translateY(-3px);
-  }
-`;
+
 const Details = styled.div`
   display: flex;
   flex-direction: column;
   & span {
     font-size: 1.2rem;
   }
-`;
-
-const Icon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ccc;
-  padding: 15px;
-  border-radius: 50%;
 `;
 export default SummaryCard;

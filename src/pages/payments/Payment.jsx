@@ -4,9 +4,8 @@ import Search from "../../components/search/Search";
 import dayjs from "dayjs";
 import CheckBox from "../../components/checkbox/CheckBox";
 import styled from "styled-components";
-import Select from "../../components/select";
 import PaymentForm from "../../components/forms/payment/PaymentForm";
-import { Button, ButtonGroup, ButtonToolbar } from "rsuite";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { Pagination, Stack } from "@mui/material";
@@ -106,26 +105,16 @@ function Payment() {
   }
 
   const filtered = payments?.filter((payment) => {
-    const payee = clients.filter((client) => client.id === payment.client_id);
+    const payee = clients.filter((client) => client._id === payment.userId);
     return payee[0]?.name.toLowerCase().includes(query.toLowerCase());
   });
   const data = query ? filtered : payments;
   return (
-    <div className="payment">
-      <div className="payment-header">
-        <button
-          style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-          onClick={() => setOpenForm(true)}
-        >
-          New Payment
-        </button>
-        <div className="payment-header-right">
-          <button
-            style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-            onClick={exportToExcel}
-          >
-            Export Excel
-          </button>
+    <div className="flex flex-col gap-4 my-4">
+      <div className="flex items-center justify-between bg-white p-2">
+        <Button onClick={() => setOpenForm(true)}>New Payment</Button>
+        <div className="">
+          <Button onClick={exportToExcel}>Export Excel</Button>
         </div>
       </div>
       <div className="payment-actions">
@@ -187,7 +176,7 @@ function Payment() {
           <tbody>
             {data?.map((expense, index) => {
               const payee = clients?.filter(
-                (client) => client.id === expense.client_id
+                (client) => client._id === expense.userId
               )[0];
               return (
                 <TableDataRow key={expense._id}>
@@ -205,7 +194,7 @@ function Payment() {
                   <TableDataCell>{expense.description}</TableDataCell>
                   <TableDataCell>{expense.amount}</TableDataCell>
                   <TableDataCell>
-                    {dayjs(expense.transaction_date).format("DD-MM-YYYY")}
+                    {dayjs(expense.transactionDate).format("DD-MM-YYYY")}
                   </TableDataCell>
                   <TableDataCell>{expense.status}</TableDataCell>
                 </TableDataRow>

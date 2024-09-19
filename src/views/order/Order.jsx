@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { useNavigate } from "react-router-dom";
-import { DatePicker, Input, InputPicker } from "rsuite";
+import { DatePicker, Input, InputPicker, Notification, toaster } from "rsuite";
 import styled from "styled-components";
 import "rsuite/InputNumber/styles/index.css";
 import Select from "../../components/select";
 import ExecutionForm from "../../components/forms/execution/ExecutionForm";
 import dayjs from "dayjs";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 
 const data = ["Bond", "Security"].map((item) => ({
   label: item,
@@ -16,31 +18,66 @@ const data = ["Bond", "Security"].map((item) => ({
 
 const OrderView = () => {
   const { state } = useLocation();
-  const [client, setClient] = useState(null);
   const [clients, setClients] = useState([]);
-  const [action, setAction] = useState("");
-  const [security, setSecurity] = useState(state.security?.name);
   const [securities, setSecurities] = useState(null);
   const [openExecutionForm, setOpenExecutionForm] = useState(false);
   const [executions, setExecutions] = useState(null);
   const navigate = useNavigate();
 
-  //
-  const [formData, setFormData] = useState({
-    customer: state?.client?.name ?? "",
-    date: state?.order?.date ? new Date(state?.order?.date) : "", // Convert to Date object
-    volume: state?.order?.volume ?? 0,
-    price: state?.order?.price ?? 0,
-    amount: state?.order?.amount ?? 0,
-    type: state?.order?.type.toLowerCase() ?? "",
-    security: state.security?.name ?? "",
-  });
+  const DeleteOrder = async (orderId) => {
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/orders/${orderId}`
+      );
+      await toaster.push(
+        <Notification type="success" header="Success">
+          {response.data.message}
+        </Notification>,
+        {
+          placement: "topCenter",
+          duration: 3000,
+        }
+      );
+      navigate("/orders/?q=all");
+    } catch (error) {
+      await toaster.push(
+        <Notification type="error" header="Error">
+          {response.error.data.message}
+        </Notification>,
+        {
+          placement: "topCenter",
+          duration: 3000,
+        }
+      );
+      return;
+    }
+  };
 
-  const handleChange = (value, name) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+  const updateOrder = async (values, { setSubmitting }) => {
+    alert(JSON.stringify(values, null, 2));
+
+    try {
+      setSubmitting(true);
+      const response = await axios.patch(
+        `${import.meta.env.VITE_BASE_URL}/orders/${state.order?._id}`,
+        values
+      );
+      setSubmitting(false);
+      await toaster.push(
+        <Notification type="success" header="Success">
+          {response.data.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+    } catch (error) {
+      setSubmitting(false);
+      await toaster.push(
+        <Notification type="success" header="Success">
+          {response.data.error.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+    }
   };
 
   useEffect(() => {
@@ -51,7 +88,7 @@ const OrderView = () => {
             axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
             axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
             axios.get(
-              `${import.meta.env.VITE_BASE_URL}/executions/${state.order?.id}`
+              `${import.meta.env.VITE_BASE_URL}/executions/${state.order?._id}`
             ),
           ]);
 
@@ -77,107 +114,149 @@ const OrderView = () => {
     <Wrapper>
       <Main>
         <Balance>
-          Order Balance: {state.order?.volume - state.executedOrders}
-          <Form>
-            <FormGroup>
-              <FormController>
-                <label htmlFor="customer">Customer</label>
-                <Select
-                  value={formData.customer}
-                  name="customer"
-                  onChange={(e) => handleChange(e.target.value, "customer")}
-                >
-                  <option value="">Select Customer</option>
-                  {clients?.map((item, index) => (
-                    <option key={index} value={item.name}>
-                      {item.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormController>
-              <FormController>
-                <label htmlFor="date">Order Date</label>
-
-                <DatePicker
-                  id="date"
-                  format="yyyy-MM-dd" // Format for date input
-                  value={formData.date}
-                  onChange={(date) => handleChange(date, "date")}
-                />
-              </FormController>
-            </FormGroup>
-            <FormGroup>
-              <FormController>
-                <label htmlFor="volume">Volume</label>
-                <TextInput
-                  value={formData.volume}
-                  type="number"
-                  name="volume"
-                  onChange={(e) => handleChange(e.target.value, "volume")}
-                />
-              </FormController>
-              <FormController>
-                <label htmlFor="price">Price</label>
-                <TextInput
-                  value={formData.price}
-                  type="number"
-                  onChange={(e) => handleChange(e.target.value, "price")}
-                />
-              </FormController>
-            </FormGroup>
-            <FormGroup>
-              <FormController>
-                <label htmlFor="amount">Amount(TZS)</label>
-                <TextInput
-                  disabled
-                  value={formData.amount}
-                  name="amount"
-                  type="number"
-                  onChange={(e) => handleChange(e.target.value, "amount")}
-                />
-              </FormController>
-              <FormController>
-                <label htmlFor="date">Order Type</label>
-                <Select
-                  value={formData.type}
-                  name="type"
-                  onChange={(e) => handleChange(e.target.value, "type")}
-                >
-                  <option value="">Select Type</option>
-                  <option value="buy">Buy</option>
-                  <option value="sell">Sell</option>
-                </Select>
-              </FormController>
-            </FormGroup>
-            <FormGroup>
-              <FormController>
-                <label htmlFor="holding">Security/Bond</label>
-                <InputPicker
-                  data={data}
-                  defaultValue={{ lable: action, value: action }}
-                  style={{ width: "100%" }}
-                  id="holding"
-                  name="holding"
-                  onChange={(security) => handleChange(security, "holding")}
-                />
-              </FormController>
-              <FormController>
-                <label htmlFor="security">Security</label>
-                <Select
-                  value={formData.security}
-                  onChange={(e) => handleChange(e.target.value, "security")}
-                >
-                  <option value="">Select Security</option>
-                  {securities?.map((security, index) => (
-                    <option key={index} value={security.name}>
-                      {security.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormController>
-            </FormGroup>
-            <Input as="textarea" rows={3} placeholder="Textarea" />
-          </Form>
+          Order Balance: {state.order?.volume - state.order?.executed}
+          <Formik
+            initialValues={{
+              customer: state?.client?.name,
+              date: state?.order?.date ? new Date(state?.order?.date) : "",
+              volume: state?.order?.volume ?? 0,
+              price: state?.order?.price ?? 0,
+              amount: state?.order?.amount ?? 0,
+              type: state?.order?.type.toLowerCase() ?? "",
+              security: state.security?.name ?? "",
+              holding: state.order?.holding,
+            }}
+            onSubmit={updateOrder}
+          >
+            {({ values, setFieldValue, isSubmitting }) => {
+              useEffect(() => {
+                const newAmount = values.volume * values.price;
+                setFieldValue("amount", newAmount);
+              }, [values.volume, values.price, setFieldValue]);
+              return (
+                <Form>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="customer">Customer</label>
+                      <Field
+                        as="select"
+                        name="customer"
+                        value={values.customer}
+                        className="w-full border rounded py-2"
+                      >
+                        <option value="">Select Customer</option>
+                        {clients?.map((item, index) => (
+                          <option key={index} value={item.name}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </Field>
+                    </div>
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="">Order Date</label>
+                      <DatePicker
+                        id="date"
+                        format="yyyy-MM-dd" // Format for date input
+                        value={values.date}
+                        onChange={(date) => setFieldValue("date", date)}
+                        className="w-full border rounded"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="volume">Volume</label>
+                      <Field
+                        name="volume"
+                        value={values.volume}
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="price">Price</label>
+                      <Field
+                        name="price"
+                        type="text"
+                        value={values.price}
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="amount">Amount</label>
+                      <Field
+                        name="amount"
+                        readOnly
+                        className="w-full border rounded p-2"
+                      />
+                    </div>
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="type">Order Type</label>
+                      <Field
+                        as="select"
+                        name="type"
+                        value={values.type}
+                        className="w-full border rounded p-2"
+                      >
+                        <option value="" selected disabled>
+                          Select Type
+                        </option>
+                        <option value="buy">Buy</option>
+                        <option value="sell">Sell</option>
+                      </Field>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="holding">Security/Bond</label>
+                      <Field
+                        as="select"
+                        name="holding"
+                        value={values.holding}
+                        className="w-full border rounded p-2"
+                      >
+                        <option value="" selected disabled>
+                          Select Security/Bond
+                        </option>
+                        <option value="Security">Security</option>
+                        <option value="Bond">Bond</option>
+                      </Field>
+                    </div>
+                    <div className="flex flex-col w-full gap-1">
+                      <label htmlFor="security">Security</label>
+                      <Field
+                        as="select"
+                        name="security"
+                        value={values.security}
+                        className="w-full border rounded p-2"
+                      >
+                        <option value="" disabled selected>
+                          Select Security
+                        </option>
+                        {securities?.map((security, index) => (
+                          <option key={index} value={security.name}>
+                            {security.name}
+                          </option>
+                        ))}
+                      </Field>
+                    </div>
+                  </div>
+                  {/* <div className="flex w-full">
+                  <div className="flex flex-col w-full">
+                    <label htmlFor=""></label>
+                  <Field as="textarea" />
+                  </div>
+                </div> */}
+                  <div className="flex w-full justify-end">
+                    <Button type="submit" className="w-max">
+                      {isSubmitting ? "Updating..." : "Update"}
+                    </Button>
+                  </div>
+                </Form>
+              );
+            }}
+          </Formik>
         </Balance>
         <Execution>
           <ExecutionHeader>
@@ -208,63 +287,49 @@ const OrderView = () => {
                 </ExecutionTableDataCell>
               </ExecutionTableDataRow>
             ) : (
-              executions
-                ?.filter(
-                  (execution) => execution.status.toLowerCase() === "approved"
-                )
-                .map((execution) => (
-                  <ExecutionTableDataRow>
-                    <ExecutionTableDataCell>
-                      {dayjs(execution.trade_date).format("DD-MM-YYYY")}
-                    </ExecutionTableDataCell>
-                    <ExecutionTableDataCell>
-                      {execution.slip_no}
-                    </ExecutionTableDataCell>
-                    <ExecutionTableDataCell>
-                      {execution.price}
-                    </ExecutionTableDataCell>
-                    <ExecutionTableDataCell>
-                      {execution.executed}
-                    </ExecutionTableDataCell>
-                    <ExecutionTableDataCell>
-                      {execution.amount}
-                    </ExecutionTableDataCell>
-                    <ExecutionTableDataCell
-                      style={{ display: "flex", gap: "40px" }}
+              executions?.map((execution) => (
+                <ExecutionTableDataRow>
+                  <ExecutionTableDataCell>
+                    {dayjs(execution.trade_date).format("DD-MM-YYYY")}
+                  </ExecutionTableDataCell>
+                  <ExecutionTableDataCell>
+                    {execution.slip}
+                  </ExecutionTableDataCell>
+                  <ExecutionTableDataCell>
+                    {execution.price}
+                  </ExecutionTableDataCell>
+                  <ExecutionTableDataCell>
+                    {execution.executed}
+                  </ExecutionTableDataCell>
+                  <ExecutionTableDataCell>
+                    {execution.amount}
+                  </ExecutionTableDataCell>
+                  <ExecutionTableDataCell
+                    style={{ display: "flex", gap: "40px" }}
+                  >
+                    <ExecutionAction
+                      onClick={() => {
+                        const url = `/contract?execution=${JSON.stringify(
+                          execution
+                        )}`;
+                        const title = "Contract";
+                        return window.open(url, title);
+                      }}
                     >
-                      <ExecutionAction
-                        style={{
-                          color:
-                            execution.status.toLowerCase() === "cancelled"
-                              ? "red"
-                              : "green",
-                        }}
-                      >
-                        {execution.status}
-                      </ExecutionAction>
-                      <ExecutionAction
-                        onClick={() => {
-                          const url = `/contract?execution=${JSON.stringify(
-                            execution
-                          )}`;
-                          const title = "Contract";
-                          return window.open(url, title);
-                        }}
-                      >
-                        PDF
-                      </ExecutionAction>
-                      <ExecutionAction
-                        onClick={() =>
-                          navigate(`/dealing/${execution._id}`, {
-                            state: execution,
-                          })
-                        }
-                      >
-                        view
-                      </ExecutionAction>
-                    </ExecutionTableDataCell>
-                  </ExecutionTableDataRow>
-                ))
+                      PDF
+                    </ExecutionAction>
+                    <ExecutionAction
+                      onClick={() =>
+                        navigate(`/dealing/${execution._id}`, {
+                          state: execution,
+                        })
+                      }
+                    >
+                      view
+                    </ExecutionAction>
+                  </ExecutionTableDataCell>
+                </ExecutionTableDataRow>
+              ))
             )}
           </ExecutionTable>
         </Execution>
@@ -290,7 +355,12 @@ const OrderView = () => {
               </tr>
               <tr>
                 <TableDataCell>Balance</TableDataCell>
-                {}
+                <TableDataCell>
+                  {Intl.NumberFormat("sw-TZ", {
+                    maximumFractionDigits: 2,
+                    minimumFractionDigits: 2,
+                  }).format(state.client?.wallet)}
+                </TableDataCell>
               </tr>
               <tr>
                 <TableDataCell>Shares</TableDataCell>
@@ -329,7 +399,10 @@ const OrderView = () => {
           <Button style={{ backgroundColor: "#F2A356", color: "#fff" }}>
             Reset
           </Button>
-          <Button style={{ backgroundColor: "#D95E5A", color: "#fff" }}>
+          <Button
+            onClick={() => DeleteOrder(state.order._id)}
+            style={{ backgroundColor: "#D95E5A", color: "#fff" }}
+          >
             Cancel
           </Button>
         </Actions>
@@ -338,8 +411,9 @@ const OrderView = () => {
         balance={state.order?.volume - state.order?.executed}
         open={openExecutionForm}
         setOpen={setOpenExecutionForm}
-        customerId={state.order?.client_id}
+        customerId={state.client?._id}
         order={state.order}
+        security={state.security?.name ?? ""}
       />
     </Wrapper>
   );
@@ -364,27 +438,7 @@ const Balance = styled.div`
   border-radius: 7px;
   padding: 20px;
 `;
-const Form = styled.form`
-  display: flex;
-  margin-top: 30px;
-  flex-direction: column;
-  gap: 20px;
-`;
-const FormGroup = styled.div`
-  display: flex;
-  gap: 30px;
-`;
-const FormController = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-`;
-const TextInput = styled.input`
-  border: 0.2px solid;
-  border-radius: 7px;
-  padding: 8px 15px;
-`;
+
 const Execution = styled.div`
   display: flex;
   flex-direction: column;
@@ -451,7 +505,7 @@ const Table = styled.table`
 `;
 
 const TableDataCell = styled.td`
-  border: 1px solid;
+  border: 1px solid black;
   padding: 10px;
 `;
 const Actions = styled.div`
@@ -461,9 +515,5 @@ const Actions = styled.div`
   padding: 20px;
   border-radius: 7px;
   background-color: #fff;
-`;
-const Button = styled.button`
-  padding: 8px 10px;
-  border-radius: 7px;
 `;
 export default OrderView;

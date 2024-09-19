@@ -35,6 +35,7 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 import { Pagination, Stack } from "@mui/material";
 import { RotatingLines } from "react-loader-spinner";
+import { OrderDataTable } from "@/components/orders/table";
 
 const Orders = () => {
   const [clients, setClients] = useState(null);
@@ -155,25 +156,25 @@ const Orders = () => {
       name: "New orders",
       total: newOrders,
       icon: <IoTimerOutline color="#000" />,
-      backgroundColor: "#000",
+      backgroundColor: "bg-black",
     },
     {
       name: "Processing",
       total: processingOrders,
       icon: <VscServerProcess color="#e71f27" />,
-      backgroundColor: "#e71f27",
+      backgroundColor: "bg-sky-500",
     },
     {
       name: "Completed",
       total: completeOrders,
       icon: <BsExclamationOctagon color="#33336a" />,
-      backgroundColor: "#33336a",
+      backgroundColor: "bg-blue-700",
     },
     {
       name: "All orders",
       total: totalOrders,
       icon: <FiShoppingBag color="#656281" />,
-      backgroundColor: "#656281",
+      backgroundColor: "bg-red-500",
     },
   ];
 
@@ -262,8 +263,27 @@ const Orders = () => {
     XLSX.writeFile(workbook, "Orders.xlsx");
   };
 
+  const orderTableData = allOrders?.map((order) => {
+    const customer = clients.filter((client) => client._id === order.userId)[0];
+    const security = securities?.filter(
+      (security) => security._id === order.securityId
+    )[0];
+    return {
+      id: order.uid ?? "",
+      orderId: order._id,
+      name: customer?.name,
+      status: order.status,
+      security: security?.name,
+      amount: order.amount,
+      type: order.type,
+      date: order.date,
+      volume: order.volume,
+      balance: order.volume - order.executed,
+    };
+  });
+
   return (
-    <Wrapper>
+    <div className="flex flex-col gap-4 min-h-screen mb-4">
       <TopFilters>
         <Breadcrumbs data={["Home", "CRM", "Orders"]} />
         <Filters>
@@ -305,7 +325,7 @@ const Orders = () => {
           </FilterButton>
         </Filters>
       </TopFilters>
-      <SummaryWrapper>
+      <div className="flex gap-4">
         {summary.map((item, index) => (
           <SummaryCard
             key={index}
@@ -315,7 +335,7 @@ const Orders = () => {
             backgroundColor={item.backgroundColor}
           />
         ))}
-      </SummaryWrapper>
+      </div>
       <OrderAction>
         <InputPicker
           data={customers}
@@ -339,6 +359,7 @@ const Orders = () => {
         </Button>
       </OrderAction>
       <TableWrapper>
+        <OrderDataTable orders={orderTableData} />
         <Table>
           <TableHeaderRow>
             <TableHeaderCell>id</TableHeaderCell>
@@ -368,27 +389,12 @@ const Orders = () => {
             </TableDataRow>
           ) : (
             orderData.data?.map((order, index) => {
-              const executedOrderss = executions?.filter(
-                (execution) =>
-                  execution.order_id === order.id &&
-                  execution.status.toLowerCase() === "approved"
-              );
-
-              const executedOrders = executions
-                ?.filter(
-                  (execution) =>
-                    execution.order_id === order.id &&
-                    execution.status.toLowerCase() === "approved"
-                )
-                .reduce((acc, curr) => acc + parseInt(curr.executed), 0);
-
               const orderSecurity = securities?.filter(
-                (security) =>
-                  (security.id || security._id) === order.security_id
+                (security) => security._id === order.securityId
               );
 
               const orderClient = clients?.filter(
-                (client) => client.user_id === order.client_id
+                (client) => client._id === order.userId
               );
 
               return (
@@ -399,23 +405,22 @@ const Orders = () => {
                   </TableDataCell>
                   <TableDataCell
                     onClick={() => {
-                      navigate(`/customers/${orderClient[0]._id}`, {
+                      navigate(`/customers/${orderClient[0]?._id}`, {
                         state: orderClient[0],
                       });
                     }}
                   >
-                    {orderClient[0].name}
+                    {orderClient[0]?.name}
                   </TableDataCell>
                   <TableDataCell>{orderSecurity[0]?.name}</TableDataCell>
                   <TableDataCell>{toTitleCase(order.type)}</TableDataCell>
                   <TableDataCell>{order.amount}</TableDataCell>
                   <TableDataCell>{order.volume}</TableDataCell>
-                  <TableDataCell>{order.volume - executedOrders}</TableDataCell>
+                  <TableDataCell>{order.volume - order.executed}</TableDataCell>
                   <TableDataCell
                     onClick={() =>
                       navigate(`/orders/${order._id}`, {
                         state: {
-                          executedOrders,
                           order: order,
                           client: orderClient[0],
                           security: orderSecurity[0],
@@ -459,14 +464,10 @@ const Orders = () => {
         size={750}
         setOpen={setIsOrderModalOpen}
       />
-    </Wrapper>
+    </div>
   );
 };
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+
 const TopFilters = styled.div`
   display: flex;
   align-items: baseline;
@@ -475,11 +476,6 @@ const TopFilters = styled.div`
 `;
 const Filters = styled.div`
   display: flex;
-`;
-
-const SummaryWrapper = styled.div`
-  display: flex;
-  gap: 30px;
 `;
 const OrderAction = styled.div`
   display: flex;

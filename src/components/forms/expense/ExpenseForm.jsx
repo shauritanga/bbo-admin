@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Button, Modal, Notification, toaster } from "rsuite";
+import { Modal, Notification, toaster } from "rsuite";
 import "./expense.css";
 import axios from "axios";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 function generateExpenseReference() {
   const timestamp = Date.now().toString().slice(-7); // Last 7 digits of timestamp
@@ -92,6 +100,7 @@ const ExpenseForm = ({ open, setOpen }) => {
           },
           body: JSON.stringify(payment),
         }),
+        ,
         fetch(`${import.meta.env.VITE_BASE_URL}/transactions`, {
           method: "post",
           headers: {
@@ -138,9 +147,9 @@ const ExpenseForm = ({ open, setOpen }) => {
         <Modal.Title>New Expense</Modal.Title>
       </Modal.Header>
       <Modal.Body style={{ width: "100%" }}>
-        <form action="" className="payment-modal-form">
-          <div className="row">
-            <div className="payment-modal-form-control">
+        <form action="" className="flex flex-col gap-4 w-full">
+          <div className="flex gap-4 items-center">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="transaction-date">Transaction Date</label>
               <input
                 type="text"
@@ -148,9 +157,10 @@ const ExpenseForm = ({ open, setOpen }) => {
                 id="transaction-date"
                 value={transactionDate}
                 onChange={(event) => settransactionDate(event.target.value)}
+                className="w-full p-1 text-sm outline-none border rounded"
               />
             </div>
-            <div className="payment-modal-form-control">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="amount">Amount</label>
               <input
                 type="text"
@@ -158,16 +168,17 @@ const ExpenseForm = ({ open, setOpen }) => {
                 id="amount"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
+                className="w-full p-1 text-sm outline-none border rounded"
               />
             </div>
           </div>
-          <div className="row">
-            <div className="payment-modal-form-control">
+          <div className="flex gap-4 items-center">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="category">Category</label>
               <select
                 id="category"
                 required
-                className="select"
+                className="border p-1 outline-none rounded"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
               >
@@ -176,12 +187,12 @@ const ExpenseForm = ({ open, setOpen }) => {
                 <option value="buy">Buy</option>
               </select>
             </div>
-            <div className="payment-modal-form-control">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="real-account">Real Account</label>
               <select
                 id="real-account"
                 required
-                className="select"
+                className="border p-1 outline-none rounded"
                 value={realAccount}
                 onChange={(event) => setRealAccount(event.target.value)}
               >
@@ -196,12 +207,12 @@ const ExpenseForm = ({ open, setOpen }) => {
               </select>
             </div>
           </div>
-          <div className="row">
-            <div className="payment-modal-form-control">
+          <div className="flex gap-4 items-center">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="payee">Payee</label>
               <select
                 required
-                className="select"
+                className="border p-1 outline-none rounded"
                 value={payee}
                 onChange={(event) => setPayee(event.target.value)}
               >
@@ -215,10 +226,10 @@ const ExpenseForm = ({ open, setOpen }) => {
                 ))}
               </select>
             </div>
-            <div className="payment-modal-form-control">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="pay-method">Payement Method</label>
               <select
-                className="select"
+                className="border p-1 outline-none rounded"
                 required
                 value={paymentMethodId}
                 onChange={(event) => setPaymentMethodId(event.target.value)}
@@ -230,8 +241,8 @@ const ExpenseForm = ({ open, setOpen }) => {
               </select>
             </div>
           </div>
-          <div className="row">
-            <div className="payment-modal-form-control">
+          <div className="flex gap-4 items-center">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="cheque">Cheque Number</label>
               <input
                 type="text"
@@ -243,7 +254,7 @@ const ExpenseForm = ({ open, setOpen }) => {
             </div>
           </div>
           <div className="row">
-            <div className="payment-modal-form-control">
+            <div className="flex flex-1 flex-col gap-1">
               <label htmlFor="Description">Description</label>
               <textarea
                 name="text"
@@ -252,18 +263,18 @@ const ExpenseForm = ({ open, setOpen }) => {
               >
                 Description
               </textarea>
+              <div className="flex flex-row-reverse gap-4 mt-4">
+                <Button onClick={() => setOpen(false)} appearance="subtle">
+                  Cancel
+                </Button>
+                <Button onClick={handleFormSubmit} appearance="primary">
+                  Ok
+                </Button>
+              </div>
             </div>
           </div>
         </form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={handleFormSubmit} appearance="primary">
-          Ok
-        </Button>
-        <Button onClick={() => setOpen(false)} appearance="subtle">
-          Cancel
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };

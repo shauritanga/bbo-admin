@@ -2,11 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { DateRangePicker, toaster, Notification } from "rsuite";
 import useSWR from "swr";
-import format from "date-fns/format";
 import "rsuite/DateRangePicker/styles/index.css";
 import styled from "styled-components";
-import Select from "../../components/select";
-import Spacer from "../../components/spacer/Spacer";
+
 import Breadcrumbs from "../../components/breadcrumbs/Breadcrumbs";
 import { GrCalendar } from "react-icons/gr";
 import ModalView from "../../components/modals/Modal";
@@ -18,27 +16,21 @@ import SummaryCard from "../../components/summary-card/SummaryCard";
 import CustomerForm from "../../components/forms/customer/CustomerForm";
 import axios from "axios";
 import { RotatingLines } from "react-loader-spinner";
-import { Pagination, Stack } from "@mui/material";
+
+import { CustomerDataTable } from "@/components/customer/table";
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 function Customers() {
-  const [currentPage, setCurrentPage] = useState(1);
   const [customers, setCustomers] = useState(null);
-  const [profiles, setProfiles] = useState(null);
-  const [customerFilter, setCustomerFilter] = useState("all");
+
   const [active, setActive] = useState("today");
   const [dateRage, setDateRage] = useState(false);
   const [customerForm, setCustomerForm] = useState(false);
+  const [clientSearch, setClientSearch] = useState("");
   const [dateSelected, setDateSelected] = useState(() => {
     return { startDate: Date.now(), endDate: Date.now() };
   });
   const navigate = useNavigate();
-
-  const itemsPerPage = 10;
-
-  const handleChange = (event, value) => {
-    setCurrentPage(value);
-  };
 
   const { data, error, loading } = useSWR(
     `${import.meta.env.VITE_BASE_URL}/statements?startDate=${new Date(
@@ -59,7 +51,7 @@ function Customers() {
         const customerResponse = await axios.get(
           `${import.meta.env.VITE_BASE_URL}/customers`
         );
-        console.log(customerResponse);
+
         setCustomers(customerResponse.data);
       } catch (error) {
         toaster.push(<Notification>Fail to fetch customers</Notification>, {
@@ -98,39 +90,43 @@ function Customers() {
       name: "New",
       total: newCustomers,
       icon: <IoTimerOutline color="#000" />,
-      backgroundColor: "#000",
+      backgroundColor: "bg-black",
     },
     {
       name: "Pending",
       total: pendingCustomers,
       icon: <VscServerProcess color="#33336a" />,
-      backgroundColor: "#33336a",
+      backgroundColor: "bg-blue-700",
     },
     {
       name: "Total",
       total: totalCustomers,
       icon: <BsExclamationOctagon color="#656281" />,
-      backgroundColor: "#656281",
+      backgroundColor: "bg-sky-500",
     },
     {
       name: "issues",
       total: 0,
       icon: <FiShoppingBag color="#e71f27" />,
-      backgroundColor: "#e71f27",
+      backgroundColor: "bg-red-500",
     },
   ];
 
-  const totalPages = Math.ceil(customers?.length / itemsPerPage);
+  const customersData = customers.map((customer) => {
+    return {
+      name: customer.name,
+      contact: customer.email,
+      nationality: customer.nationality,
+      status: customer.status,
+    };
+  });
 
-  const currentData = customers?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  const searchedCustomer = customers?.filter((customer) =>
+    customer.name?.toLowerCase().includes(clientSearch?.toLocaleLowerCase())
   );
 
-  console.log(customers);
-
   return (
-    <Wrapper>
+    <div className="flex flex-col gap-4">
       <TopFilters>
         <Breadcrumbs data={["Home", "Customers", "all"]} />
         <Filters>
@@ -194,88 +190,10 @@ function Customers() {
           />
         ))}
       </SummaryWrapper>
-      <Actions>
-        <DateRangePicker
-          placeholder="Select Date Range"
-          renderValue={([start, end]) => {
-            return (
-              format(start, "EEE, d MMM") + " - " + format(end, "EEE, d MMM")
-            );
-          }}
-          onChange={(range) =>
-            setDateSelected({ startDate: range[0], endDate: range[1] })
-          }
-        />
-        <Select
-          value={customerFilter}
-          onChange={(e) => e.target.value}
-          width={350}
-        >
-          <option value="all">All customers</option>
-          <option value="New">New Customers</option>
-          <option value="pending">Pending</option>
-          <option value="cancel">Cancel request</option>
-        </Select>
-        <Button>Export</Button>
-        <Spacer />
-        <Button>Filter Customer</Button>
-        <Button onClick={() => setCustomerForm(true)}>Create Customer</Button>
-      </Actions>
-      <TableWrapper>
-        <Table>
-          <thead>
-            <TableHeaderRow>
-              <TableHeaderCell>name</TableHeaderCell>
-              <TableHeaderCell>contact</TableHeaderCell>
-              <TableHeaderCell>country</TableHeaderCell>
-              <TableHeaderCell>status</TableHeaderCell>
-              <TableHeaderCell>action</TableHeaderCell>
-            </TableHeaderRow>
-          </thead>
-          <tbody>
-            {currentData?.map((customer) => {
-              return (
-                <TableDataRow key={customer._id}>
-                  <TableDataCell>
-                    <p>{customer.name}</p>
-                  </TableDataCell>
-                  <TableDataCell>
-                    <p>{customer.email}</p>
-                    <p>{customer.mobile}</p>
-                  </TableDataCell>
-                  <TableDataCell>{customer?.nationality}</TableDataCell>
-                  <TableDataCell>{customer.status}</TableDataCell>
-                  <TableDataCell>
-                    <ViewButton
-                      onClick={() =>
-                        navigate(`/customers/${customer.user_id}`, {
-                          state: customer,
-                        })
-                      }
-                    >
-                      view
-                    </ViewButton>
-                  </TableDataCell>
-                </TableDataRow>
-              );
-            })}
-          </tbody>
-        </Table>
-        <PaginationWrapper>
-          <Counter>{customers?.length} total orders</Counter>
-          <Stack spacing={2}>
-            {/* <Pagination count={10} shape="rounded" /> */}
-            <Pagination
-              count={totalPages}
-              variant="outlined"
-              shape="rounded"
-              color="primary"
-              page={currentPage}
-              onChange={handleChange}
-            />
-          </Stack>
-        </PaginationWrapper>
-      </TableWrapper>
+
+      <div className="flex flex-col bg-white shadow-md p-2 gap-4 mb-4">
+        <CustomerDataTable customers={customers} />
+      </div>
 
       <ModalView
         title="Select Date Range"
@@ -290,18 +208,10 @@ function Customers() {
         size={750}
         title="New Customer"
       />
-    </Wrapper>
+    </div>
   );
 }
 
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: white;
-  gap: 30px;
-  padding: 20px;
-  margin-bottom: 50px;
-`;
 const TopFilters = styled.div`
   display: flex;
   align-items: baseline;
@@ -334,14 +244,7 @@ const SummaryWrapper = styled.div`
   display: flex;
   gap: 30px;
 `;
-const Actions = styled.div`
-  display: flex;
-  gap: 30px;
-  padding: 20px;
-  border-radius: 7px;
-  background-color: var(--color-white);
-  filter: drop-shadow(0px 2px 8px rgba(74, 70, 132, 0.4));
-`;
+
 const Button = styled.button`
   background-color: hsl(243deg, 50%, 21%);
   color: #fff;
@@ -349,12 +252,7 @@ const Button = styled.button`
   min-width: 180px;
   padding: 10px 20px;
 `;
-const TableWrapper = styled.div`
-  padding: 20px;
-  border-radius: 7px;
-  background-color: var(--color-white);
-  filter: drop-shadow(0px 2px 8px rgba(74, 70, 132, 0.4));
-`;
+
 const Table = styled.table`
   width: 100%;
 `;
@@ -377,13 +275,6 @@ const ViewButton = styled.button`
   border-radius: 12px;
   padding: 4px 9px;
   cursor: pointer;
-`;
-
-const PaginationWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 30px;
 `;
 const Counter = styled.p``;
 const Pages = styled.div``;

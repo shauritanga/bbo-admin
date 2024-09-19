@@ -4,12 +4,13 @@ import Search from "../../components/search/Search";
 import CheckBox from "../../components/checkbox/CheckBox";
 import styled from "styled-components";
 import Select from "../../components/select";
-import { Button, ButtonGroup, ButtonToolbar } from "rsuite";
 import ExpenseForm from "../../components/forms/expense/ExpenseForm";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { Pagination, Stack } from "@mui/material";
 import dayjs from "dayjs";
+import { Button } from "@/components/ui/button";
+import { DialogDemo } from "@/components/dialog";
 
 function Expense() {
   const [query, setQuery] = useState("");
@@ -110,35 +111,32 @@ function Expense() {
   );
   const data = query ? filtered : expenses;
   return (
-    <div className="expense">
-      <div className="expense-header">
-        <button
-          style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
+    <div className="flex flex-col gap-4 my-4">
+      <div className="flex flex-row-reverse gap-4 bg-white p-2">
+        <Button
           onClick={() => setOpen(true)}
+          className="bg-blue-950 text-white"
         >
           New Expense
-        </button>
-        <div className="expense-header-right">
-          <button
-            style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-            onClick={exportToExcel}
-          >
-            Export Excel
-          </button>
-        </div>
+        </Button>
+        {/* <DialogDemo /> */}
+
+        <Button
+          onClick={exportToExcel}
+          className="border border-blue-500 bg-white text-blue-500"
+        >
+          Export Excel
+        </Button>
       </div>
       <div className="expense-actions">
         <Search setQuery={setQuery} />
-        <div
-          className="expense-actions_hiden"
-          style={{ visibility: visible ? "visible" : "hidden" }}
-        >
-          <button
-            style={{ backgroundColor: "var(--color-approve)", color: "#fff" }}
+        <div className={`flex gap-4 ${visible ? "visible" : "hidden"}`}>
+          <Button
             onClick={() => updatePayment(selected, { status: "approved" })}
+            className="bg-green-500"
           >
             Approve
-          </button>
+          </Button>
           <button
             style={{
               backgroundColor: "var(--color-disapprove)",

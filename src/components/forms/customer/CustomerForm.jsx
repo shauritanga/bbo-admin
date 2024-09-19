@@ -1,6 +1,6 @@
 import { Button, Modal, Notification, toaster } from "rsuite";
 import styled from "styled-components";
-import { countries } from "../../../utils/countries";
+import { nationalities } from "../../../utils/nationalities";
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import axios from "axios";
@@ -57,9 +57,9 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
   //=============OPTION VALUES===========================
   const ids = [
     { value: "Passport", label: "Passport" },
-    { value: "Driver's License", label: "Driver's License" },
+    { value: "Driving License", label: "Driving License" },
     { value: "National ID", label: "National ID" },
-    { value: "Voter's ID", label: "Voter's ID" },
+    { value: "Voter ID", label: "Voter's ID" },
     {
       value: "Certificate of Incorporation",
       label: "Certificate of Incorporation",
@@ -73,7 +73,7 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
       backdrop="static"
       open={open}
       setOpen={setOpen}
-      size={size}
+      size={600}
       onClose={() => setOpen(false)}
     >
       <Modal.Header>
@@ -86,109 +86,153 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
             cdsAccount: "",
             bankName: "",
             bankAccountNumber: "",
-            country: "",
+            nationality: "",
             email: "",
             phone: "",
+            occupation: "",
+            dob: "",
+            region: "",
+            address: "",
             idType: "",
             idNumber: "",
             category: "",
-            password: "",
+            nextOfKinName: "",
+            nextOfKinRelation: "",
+            nextOfKinResidence: "",
+            nextOfKinRegion: "",
+            nextOfKinPhone: "",
+            nextOfKinEmail: "",
+            password: "password",
           }}
           onSubmit={handleSubmit}
+          validate={(values) => {
+            const errors = {};
+            if (!values.name) {
+              errors.name = "Name is required";
+            }
+            if (!values.nationality) {
+              errors.nationality = "Please select nationality";
+            }
+            if (!values.cdsAccount) {
+              errors.cdsAccount = "CDS Account is required";
+            }
+            if (!values.dob) {
+              errors.dob = "Birth date is required";
+            }
+
+            if (!values.email) {
+              errors.email = "Name is required";
+            } else if (
+              !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
+            ) {
+              errors.email = "Invalid email address";
+            }
+            return errors;
+          }}
         >
           {({ isSubmitting }) => (
-            <Form>
-              <FormRow>
-                <FormGroup>
+            <Form className="flex flex-col gap-2 m-2">
+              <span className="font-semibold">Personal Details</span>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="cds">CDS Account</label>
                   <Field
-                    style={fieldStyle}
                     id="cds"
                     name="cdsAccount"
                     placeholder="CDS Account"
+                    className="border rounded p-1 text-sm outline-none"
                   />
                   <ErrorMessage name="cdsAccount" component="div" />
-                </FormGroup>
-                <FormGroup>
+                </div>
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="customer">Full Name</label>
                   <Field
-                    style={fieldStyle}
                     id="customer"
                     name="name"
                     type="text"
                     placeholder="Customer Name"
+                    className="border rounded p-1 text-sm outline-none"
                   />
                   <ErrorMessage name="name" component="div" />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
-                <FormGroup>
-                  <label htmlFor="bank">Bank Name</label>
-                  <Field
-                    style={fieldStyle}
-                    name="bankName"
-                    id="bank"
-                    type="text"
-                    placeholder="Bank Name"
-                  />
-                  <ErrorMessage name="bankName" component="div" />
-                </FormGroup>
-                <FormGroup>
-                  <label htmlFor="account">Account Number</label>
-                  <Field
-                    style={fieldStyle}
-                    id="account"
-                    type="text"
-                    name="bankAccountNumber"
-                    placeholder="Account Number"
-                  />
-                  <ErrorMessage name="bankAccountNumber" component="div" />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
-                <FormGroup>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="category">Category</label>
-                  <Field style={fieldStyle} as="select" name="category">
+                  <Field
+                    as="select"
+                    name="category"
+                    className="border rounded p-1 text-sm outline-none"
+                  >
                     <option value="">Select Category</option>
-                    <option value="personal">Personal</option>
+                    <option value="individual">Individual</option>
                     <option value="business">Business</option>
                     <option value="government">Government</option>
                   </Field>
                   <ErrorMessage name="category" component="div" />
-                </FormGroup>
-                <FormGroup>
-                  <label htmlFor="countries">Country</label>
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nationality">Nationality</label>
                   <Field
-                    style={fieldStyle}
                     as="select"
-                    name="country"
-                    id="countries"
+                    name="nationality"
+                    id="nationality"
+                    className="border rounded p-1 text-sm outline-none"
                   >
-                    <option value="">Select Country</option>
-                    {countries.map((country) => (
-                      <option key={country.value} value={country.value}>
-                        {country.value}
+                    <option value="">Select Nationality</option>
+                    {nationalities.map((country) => (
+                      <option key={country.country} value={country.nationality}>
+                        {country.nationality}
                       </option>
                     ))}
                   </Field>
-                  <ErrorMessage name="country" component="div" />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
-                <FormGroup>
+                  <ErrorMessage name="nationality" component="div" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="dob">Date of birth</label>
+                  <Field
+                    name="dob"
+                    id="dob"
+                    type="date"
+                    placeholder=""
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="dob" component="div" />
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="occupation">Occupation</label>
+                  <Field
+                    name="occupation"
+                    id="occupation"
+                    type="text"
+                    placeholder="e.g Teacher"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="occupation" component="div" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="phone">Phone</label>
                   <Field
-                    style={fieldStyle}
                     id="phone"
                     name="phone"
                     type="tel"
                     placeholder="Phone Number"
+                    className="border rounded p-1 text-sm outline-none"
                   />
                   <ErrorMessage name="phone" component="div" />
-                </FormGroup>
-                <FormGroup>
+                </div>
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="id">Identity Type</label>
-                  <Field style={fieldStyle} as="select" name="idType">
+                  <Field
+                    as="select"
+                    name="idType"
+                    className="border rounded p-1 text-sm outline-none"
+                  >
                     <option value="">Select ID type</option>
                     {ids.map((id, index) => (
                       <option value={id.value} key={index}>
@@ -197,45 +241,155 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     ))}
                   </Field>
                   <ErrorMessage name="idType" component="div" />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
-                <FormGroup>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="idnumber">ID Number</label>
                   <Field
-                    style={fieldStyle}
                     name="idNumber"
                     id="idnumber"
                     type="text"
                     placeholder="ID Number"
+                    className="border rounded p-1 text-sm outline-none"
                   />
                   <ErrorMessage name="idNumber" component="div" />
-                </FormGroup>
-                <FormGroup>
+                </div>
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="email">Email</label>
                   <Field
-                    style={fieldStyle}
                     name="email"
                     id="email"
                     type="email"
                     placeholder="Email Address"
+                    className="border rounded p-1 text-sm outline-none"
                   />
                   <ErrorMessage name="email" component="div" />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
-                <FormGroup>
-                  <label htmlFor="password">Password</label>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="address">Physical Address</label>
                   <Field
-                    style={fieldStyle}
-                    type="password"
-                    name="password"
-                    id="password"
+                    name="address"
+                    id="address"
+                    type="text"
+                    placeholder="Fupi St Basihaya, Bunju, Kinondoni, Dare es salaam"
+                    className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="password" component="div" />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
+                  <ErrorMessage name="address" component="div" />
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="region">Region</label>
+                  <Field
+                    name="region"
+                    id="region"
+                    type="region"
+                    placeholder="Your region"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="region" component="div" />
+                </div>
+              </div>
+              <span className="font-semibold">Bank Account Details</span>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="bank">Bank Name</label>
+                  <Field
+                    name="bankName"
+                    id="bank"
+                    type="text"
+                    placeholder="Bank Name"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="bankName" component="div" />
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="account">Account Number</label>
+                  <Field
+                    id="account"
+                    type="text"
+                    name="bankAccountNumber"
+                    placeholder="Account Number"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="bankAccountNumber" component="div" />
+                </div>
+              </div>
+              <span className="font-semibold">Next of Kin</span>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nextOfKinName">Full Name</label>
+                  <Field
+                    name="nextOfKinName"
+                    id="nextOfKinName"
+                    type="text"
+                    placeholder="Name"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="nextOfKinName" component="div" />
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nextOfKinRelation">Relationship</label>
+                  <Field
+                    name="nextOfKinRelation"
+                    id="nextOfKinRelation"
+                    type="text"
+                    placeholder="Your relation"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="nextOfKinRelation" component="div" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nextOfKinResidence">Residence</label>
+                  <Field
+                    name="nextOfKinResidence"
+                    id="nextOfKinResidence"
+                    type="text"
+                    placeholder="Residence"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="nextOfKinResidence" component="div" />
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nextOfKinRegion">Region</label>
+                  <Field
+                    name="nextOfKinRegion"
+                    id="nextOfKinRegion"
+                    type="nextOfKinRegion"
+                    placeholder="Region"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="nextOfKinRegion" component="div" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nextOfKinPhone">Mobile</label>
+                  <Field
+                    name="nextOfKinPhone"
+                    id="nextOfKinPhone"
+                    type="tel"
+                    placeholder="Mobile"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="nextOfKinPhone" component="div" />
+                </div>
+                <div className="flex flex-col w-full gap-1">
+                  <label htmlFor="nextOfKinEmail">Email</label>
+                  <Field
+                    name="nextOfKinEmail"
+                    id="nextOfKinEmail"
+                    type="nextOfKinEmail"
+                    placeholder="Email"
+                    className="border rounded p-1 text-sm outline-none"
+                  />
+                  <ErrorMessage name="nextOfKinEmail" component="div" />
+                </div>
+              </div>
+              <div>
                 <Button type="submit" appearance="primary">
                   {isSubmitting ? "Saving..." : "Save"}
                 </Button>
@@ -247,7 +401,7 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                 >
                   Cancel
                 </Button>
-              </FormRow>
+              </div>
             </Form>
           )}
         </Formik>
@@ -255,25 +409,5 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
     </Modal>
   );
 };
-
-const fieldStyle = {
-  padding: "10px",
-  border: "0.5px solid #ccc",
-  borderRadius: "4px",
-};
-const FormRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 30px;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: 4px;
-`;
 
 export default CustomerForm;

@@ -25,8 +25,8 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
   const ordersPath = new RegExp(`^orders(\/.*)?$`);
 
   return (
-    <div className="aside">
-      <div className="close">
+    <div className="flex flex-col gap-4 w-[200px] h-screen bg-white p-2">
+      <div className="flex justify-between close">
         <span>ALPHACAPITAL</span>
         <span onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           <MdChevronLeft size={25} />
@@ -35,23 +35,31 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
       <Link
         onClick={() => console.log("dashboard clicked")}
         to="/dashboard"
-        className={`item ${isActive === "/dashboard" ? "active" : ""}`}
+        className={`flex items-center gap-2 item ${
+          isActive === "/dashboard" ? "active" : ""
+        }`}
       >
         <RxDashboard />
         <span>Dashboard</span>
       </Link>
-      <CollapseButton icon={<MdOutlineSell />} name="Orders" className="item">
+      <CollapseButton
+        icon={<MdOutlineSell />}
+        name="Orders"
+        className=" flex items-center gap-2 item"
+      >
         <div>
           <Link
             to="/orders/?q=all"
-            className={`item ${isActive === "/orders/?q=all" ? "active" : ""}`}
+            className={`flex items-center gap-2 item ${
+              isActive === "/orders/?q=all" ? "active" : ""
+            }`}
           >
             <GoDot />
             <span>All orders</span>
           </Link>
           <Link
             to="/orders/?q=pending"
-            className={`item ${
+            className={`flex items-center gap-2 item ${
               isActive === "/orders/?q=pending" ? "active" : ""
             }`}
           >
@@ -60,7 +68,7 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
           </Link>
           <Link
             to="/orders/?q=complete"
-            className={`item ${
+            className={`flex items-center gap-2 item ${
               isActive === "/orders/?q=complete" ? "active" : ""
             }`}
           >
@@ -69,7 +77,7 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
           </Link>
           <Link
             to="/orders/?q=cancelled"
-            className={`item ${
+            className={`flex items-center gap-2 item ${
               isActive === "/orders/?q=cancelled" ? "active" : ""
             }`}
           >
@@ -80,37 +88,38 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
       </CollapseButton>
       <Link
         to="/dealing"
-        className={`item ${isActive === "/dealing" ? "active" : ""}`}
+        className={`flex items-center gap-2 item ${
+          isActive === "/dealing" ? "active" : ""
+        }`}
       >
         <BiSpreadsheet />
         <span>Dealing sheet</span>
       </Link>
       <Link
         to="/reports"
-        className={`item ${isActive === "/reports" ? "active" : ""}`}
+        className={`flex items-center gap-2 item ${
+          isActive === "/reports" ? "active" : ""
+        }`}
       >
         <TbReport />
         <span>Market Reports</span>
       </Link>
-      {/* <Link
-        to="/assets"
-        className={`item ${isActive === "/assets" ? "active" : ""}`}
-      >
-        <MdWebAsset />
-        <span>Asset Management</span>
-      </Link> */}
       <CollapseButton icon={<SlPeople />} name="CRM">
         <>
           <Link
             to="/customers"
-            className={`item ${isActive === "/customers" ? "active" : ""}`}
+            className={`flex items-center gap-2 item ${
+              isActive === "/customers" ? "active" : ""
+            }`}
           >
             <GoDot />
             <span>Customers</span>
           </Link>
           <Link
             to="/categories"
-            className={`item ${isActive === "/categories" ? "active" : ""}`}
+            className={`flex items-center gap-2 item ${
+              isActive === "/categories" ? "active" : ""
+            }`}
           >
             <GoDot />
             <span>Categories</span>
@@ -120,23 +129,24 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
 
       <Link
         to="/files"
-        className={`item ${isActive === "/files" ? "active" : ""}`}
+        className={`flex items-center gap-2 item ${
+          isActive === "/files" ? "active" : ""
+        }`}
       >
         <MdOutlineFolder />
         <span>File Manager</span>
       </Link>
-
-      {user.role?.name === "admin" && (
+      {
         <>
           <CollapseButton
             icon={<MdOutlineAccountBalanceWallet />}
             name="Accounting"
-            className="item"
+            className="flex items-center gap-2 item"
           >
             <div>
               <Link
                 to="/accounting/transactions"
-                className={`item ${
+                className={`flex items-center gap-2 item ${
                   isActive === "/transactions" ? "active" : ""
                 }`}
               >
@@ -145,28 +155,36 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
               </Link>
               <Link
                 to="/accounting/expenses"
-                className={`item ${isActive === "/expenses" ? "active" : ""}`}
+                className={`flex items-center gap-2 item ${
+                  isActive === "/expenses" ? "active" : ""
+                }`}
               >
                 <GoDot />
                 <span>Expenses</span>
               </Link>
               <Link
                 to="/accounting/payments"
-                className={`item ${isActive === "/payments" ? "active" : ""}`}
+                className={`flex items-center gap-2 item ${
+                  isActive === "/payments" ? "active" : ""
+                }`}
               >
                 <GoDot />
                 <span>Payments</span>
               </Link>
               <Link
                 to="/accounting/receipts"
-                className={`item ${isActive === "/receipts" ? "active" : ""}`}
+                className={`flex items-center gap-2 item ${
+                  isActive === "/receipts" ? "active" : ""
+                }`}
               >
                 <GoDot />
                 <span>Receipts</span>
               </Link>
               <Link
                 to="/accounting/reports"
-                className={`item ${isActive === "/reports" ? "active" : ""}`}
+                className={`flex items-center gap-2 item ${
+                  isActive === "/reports" ? "active" : ""
+                }`}
               >
                 <GoDot />
                 <span>Reports</span>
@@ -177,45 +195,44 @@ const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
             <div>
               <Link
                 to="/employees"
-                className={`item ${isActive === "/employees" ? "active" : ""}`}
+                className={`flex items-center gap-2 item ${
+                  isActive === "/employees" ? "active" : ""
+                }`}
               >
                 <GoDot />
                 <span>Employees</span>
               </Link>
-              {/* <Link
-                to="/departments"
-                className={`item ${
-                  isActive === "/departments" ? "active" : ""
-                }`}
-              >
-                <GoDot />
-                <span>Departments</span>
-              </Link> */}
             </div>
           </CollapseButton>
           <Link
             to="/securities"
-            className={`item ${isActive === "/securities" ? "active" : ""}`}
+            className={`flex items-center gap-2 item ${
+              isActive === "/securities" ? "active" : ""
+            }`}
           >
             <BsShieldLock />
             <span>Securities</span>
           </Link>
           <Link
             to="/business"
-            className={`item ${isActive === "/business" ? "active" : ""}`}
+            className={`flex items-center gap-2 item ${
+              isActive === "/business" ? "active" : ""
+            }`}
           >
             <MdOutlineAccountBalanceWallet />
             <span>Business</span>
           </Link>
           <Link
             to="/roles"
-            className={`item ${isActive === "/roles" ? "active" : ""}`}
+            className={`flex items-center gap-2 item ${
+              isActive === "/roles" ? "active" : ""
+            }`}
           >
             <HiOutlineSquaresPlus />
             <span>Roles</span>
           </Link>
         </>
-      )}
+      }
     </div>
   );
 };

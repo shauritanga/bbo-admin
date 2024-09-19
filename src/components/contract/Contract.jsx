@@ -59,7 +59,6 @@ const Contract = () => {
                     borderRadius: "5px",
                   }}
                   onClick={() => {
-                    console.log(execution);
                     const url = `/contract?execution=${JSON.stringify(
                       execution
                     )}`;

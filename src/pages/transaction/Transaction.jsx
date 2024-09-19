@@ -2,11 +2,20 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import "./transaction.css";
 import CheckBox from "../../components/checkbox/CheckBox";
-import Select from "../../components/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DateRangePicker, toaster, Notification } from "rsuite";
 import styled from "styled-components";
 import dayjs from "dayjs";
 import { Pagination, Stack } from "@mui/material";
+import { Button } from "@/components/ui/button";
+import * as XLSX from "xlsx";
+import axios from "axios";
 
 function Transaction() {
   const [query, setQuery] = useState("");
@@ -17,11 +26,25 @@ function Transaction() {
   const [visible, setVisible] = useState(false);
   const [selected, setSelected] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalDocuments, setTotalDocuments] = useState(0);
+  const [refetch, setRefetch] = useState("false");
   const itemsPerPage = 10; // Number of items to show per page
 
   const navigate = useNavigate();
+
+  const exportToExcel = () => {
+    try {
+      const data = selected;
+      alert(JSON.stringify(data, null, 2));
+
+      //xlsx
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      XLSX.writeFile(workbook, "Receipts.xlsx");
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   const handleChange = (event, value) => {
     setCurrentPage(value);
@@ -42,34 +65,28 @@ function Transaction() {
 
   const updateTransaction = async (selected, status) => {
     try {
+      let response;
       for (let item in selected) {
-        const response = await fetch(
+        response = await axios.patch(
           `${import.meta.env.VITE_BASE_URL}/transactions/${selected[item]._id}`,
-          {
-            mode: "cors",
-            method: "PATCH",
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(status),
-          }
+          status
         );
-        const json = await response.json();
       }
-      toaster.push(
+
+      await toaster.push(
         <Notification type="success" header="Success">
-          Update successifully
+          {response.data.message}
         </Notification>,
         {
-          duration: 5000,
+          duration: 3000,
           placement: "topCenter",
         }
       );
+      setRefetch(true);
     } catch (error) {
       toaster.push(
         <Notification type="error" header="Error">
-          {error.message}
+          {response.error.message}
         </Notification>,
         {
           duration: 5000,
@@ -98,21 +115,17 @@ function Transaction() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `${
-            import.meta.env.VITE_BASE_URL
-          }/transactions/?page=${currentPage}&limit=${itemsPerPage}`
+          `${import.meta.env.VITE_BASE_URL}/transactions`
         );
         const data = await response.json();
         setTransactions(data.data); // Assuming API returns { items: [...], totalPages: ... }
-        setTotalPages(data.totalPages);
-        setTotalDocuments(data.totalDocuments);
       } catch (error) {
         // Handle error
       }
     };
 
     fetchData();
-  }, [currentPage]);
+  }, [refetch]);
 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_BASE_URL}/customers`, {
@@ -139,22 +152,26 @@ function Transaction() {
     expense.payee?.name.toLowerCase().includes(query.toLowerCase())
   );
   const data = query ? filtered : transactions;
+
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
   return (
-    <div className="transaction">
-      <div className="transaction-actions">
-        <Select
-          width={340}
-          value={customer}
-          onChange={(event) => setCustomer(event.target.value)}
-        >
-          <option value="" disabled>
-            Select Customer
-          </option>
-          {clients?.map((customer) => (
-            <option key={customer._id} value={customer.name}>
-              {customer.name}
-            </option>
-          ))}
+    <div className="flex flex-col gap-4  my-4 min-h-screen">
+      <div className="flex items-center gap-4 bg-white shadow-md rounded p-2">
+        <Select onValueChange={(value) => setCustomer(value)}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Customer" />
+          </SelectTrigger>
+          <SelectContent>
+            {clients?.map((customer) => (
+              <SelectItem key={customer?._id} value={customer._id}>
+                {customer.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
         <DateRangePicker
           format="dd-MM-yyyy"
@@ -164,39 +181,30 @@ function Transaction() {
           }}
           placeholder="Select Date Range"
         />
-        <FilterButton>Filter</FilterButton>
+        <Button>Filter</Button>
         <div
-          className="transaction-actions_hiden"
-          style={{ visibility: visible ? "visible" : "hidden" }}
+          className={`flex items-center gap-4 self-end ml-auto ${
+            visible ? "block" : "hidden"
+          }`}
         >
-          <button
-            style={{ backgroundColor: "var(--color-approve)", color: "#fff" }}
+          <Button
             onClick={() => updateTransaction(selected, { status: "approved" })}
+            className="bg-green-500 text-sm"
           >
             Approve
-          </button>
-          <button
-            style={{
-              backgroundColor: "var(--color-disapprove)",
-              color: "#fff",
-            }}
+          </Button>
+          <Button
             onClick={() =>
               updateTransaction(selected, { status: "disapproved" })
             }
+            className="bg-red-500 text-sm"
           >
             Disapprove
-          </button>
-          <button
-            style={{ backgroundColor: "var(--color-reject)", color: "#fff" }}
-            onClick={() => updateTransaction(selected, { status: "rejected" })}
-          >
-            Reject
-          </button>
-          <button
-            style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-          >
+          </Button>
+
+          <Button onClick={exportToExcel} className="bg-blue-950 text-sm">
             Export(excel)
-          </button>
+          </Button>
         </div>
       </div>
       <div className="transaction-table">
@@ -221,13 +229,11 @@ function Transaction() {
             </TableHeaderRow>
           </thead>
           <tbody>
-            {data.map((transaction) => {
+            {currentItems.map((transaction) => {
               const payee = clients.filter(
-                (client) => client.id === transaction.client_id
+                (client) => client._id === transaction.userId
               );
-              const payMethod = clients.filter(
-                (client) => client.id === transaction.client_id
-              );
+
               return (
                 <TableDataRow key={transaction._id}>
                   <TableDataCell>
@@ -250,7 +256,11 @@ function Transaction() {
                   </TableDataCell>
                   <TableDataCell>
                     <div>
-                      <p>{dayjs(transaction.date).format("DD-MM-YYYY")}</p>
+                      <p>
+                        {dayjs(transaction.transactionDate).format(
+                          "DD-MM-YYYY"
+                        )}
+                      </p>
                       <p>{transaction.type}</p>
                     </div>
                   </TableDataCell>
@@ -283,7 +293,7 @@ function Transaction() {
           </tbody>
         </table>
         <PaginationWrapper>
-          <Counter>{totalDocuments} total orders</Counter>
+          <Counter>{transactions.length} total orders</Counter>
           <Stack spacing={2}>
             {/* <Pagination count={10} shape="rounded" /> */}
             <Pagination
@@ -299,14 +309,6 @@ function Transaction() {
     </div>
   );
 }
-const FilterButton = styled.button`
-  padding: 8px 20px;
-  color: hsl(0deg 0% 100%);
-  border-radius: 5px;
-  width: 200px;
-  margin-right: auto;
-  background-color: hsl(243deg 50% 21%);
-`;
 
 const TableHeaderRow = styled.tr`
   background-color: hsl(0deg 0% 80%);

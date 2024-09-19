@@ -4,6 +4,7 @@ import "./receipt.css";
 import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import styled from "styled-components";
+import { generateUniqueId } from "@/utils/generateId";
 
 const ReceiptForm = ({ open, setOpen }) => {
   const [transactionDate, settransactionDate] = useState("");
@@ -44,6 +45,8 @@ const ReceiptForm = ({ open, setOpen }) => {
             axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
           ]);
 
+        console.log();
+
         setClients(clientResponse.data);
         setPaymentMethod(paymentMethodResponse.data);
         setRealAccount(accountResponse.data);
@@ -62,6 +65,7 @@ const ReceiptForm = ({ open, setOpen }) => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitting(true);
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/receipts`,
@@ -105,46 +109,48 @@ const ReceiptForm = ({ open, setOpen }) => {
           initialValues={{
             date: "",
             amount: "",
-            reference: "",
+            reference: generateUniqueId(),
             category: "receipt",
-            client_id: "",
-            account_id: "",
-            payment_method_id: "",
+            userId: "",
+            accountId: "",
+            paymentMethodId: "",
             status: "new",
             description: "",
           }}
           onSubmit={handleSubmit}
         >
           {({ values, isSubmitting }) => (
-            <Form>
-              <Row>
-                <div className="receipt-modal-form-control">
+            <Form className="flex flex-col gap-2">
+              <div className="flex gap-4">
+                <div className="flex flex-col flex-1 gap-1">
                   <label htmlFor="transaction-date">Transaction Date</label>
                   <Field
-                    type="date"
+                    type="datetime-local"
                     placeholder="dd-mm-yyyy"
                     id="transaction-date"
                     name="date"
+                    className="w-full border rounded text-sm outline-none p-1"
                   />
                 </div>
-                <div className="receipt-modal-form-control">
+                <div className="flex flex-col flex-1 gap-1">
                   <label htmlFor="amount">Amount</label>
                   <Field
                     type="text"
                     placeholder="Amount"
                     id="amount"
                     name="amount"
+                    className="w-full border rounded text-sm outline-none p-1"
                   />
                 </div>
-              </Row>
-              <Row>
-                <div className="receipt-modal-form-control">
+              </div>
+              <div className="flex gap-4">
+                <div className="flex flex-col flex-1 gap-1">
                   <label htmlFor="category">Category</label>
                   <Field
                     as="select"
                     id="category"
                     name="category"
-                    className="select"
+                    className="w-full border rounded text-sm outline-none p-1"
                   >
                     <option value="" selected disabled>
                       Select Category
@@ -152,9 +158,13 @@ const ReceiptForm = ({ open, setOpen }) => {
                     <option value="buy">Buy</option>
                   </Field>
                 </div>
-                <div className="receipt-modal-form-control">
+                <div className="flex flex-col flex-1 gap-1">
                   <label htmlFor="real-account">Real Account</label>
-                  <Field as="select" name="account_id" className="select">
+                  <Field
+                    as="select"
+                    name="accountId"
+                    className="w-full border rounded text-sm outline-none p-1"
+                  >
                     <option value="" selected disabled>
                       Select account
                     </option>
@@ -165,25 +175,29 @@ const ReceiptForm = ({ open, setOpen }) => {
                     ))}
                   </Field>
                 </div>
-              </Row>
+              </div>
               <Row>
-                <div className="receipt-modal-form-control">
+                <div className="flex flex-col flex-1 gap-1">
                   <label htmlFor="payee">Payee</label>
-                  <Field as="select" className="select" name="client_id">
+                  <Field
+                    as="select"
+                    className="w-full border rounded text-sm outline-none p-1"
+                    name="userId"
+                  >
                     <option value="" disabled>
                       Select payee
                     </option>
                     {clients?.map((payee) => (
-                      <option value={payee.id}>{payee.name}</option>
+                      <option value={payee._id}>{payee.name}</option>
                     ))}
                   </Field>
                 </div>
-                <div className="receipt-modal-form-control">
+                <div className="flex flex-col flex-1 gap-1">
                   <label htmlFor="pay-method">Payement Method</label>
                   <Field
                     as="select"
-                    className="select"
-                    name="payment_method_id"
+                    name="paymentMethodId"
+                    className="w-full border rounded text-sm outline-none p-1"
                   >
                     <option value="" disabled>
                       Select Payment Method
@@ -192,12 +206,6 @@ const ReceiptForm = ({ open, setOpen }) => {
                       <option value={method._id}>{method.name}</option>
                     ))}
                   </Field>
-                </div>
-              </Row>
-              <Row>
-                <div className="receipt-modal-form-control">
-                  <label htmlFor="reference">Reference</label>
-                  <Field type="text" id="reference" name="reference" />
                 </div>
               </Row>
               <Row>

@@ -44,6 +44,13 @@ const securitiesSlice = createSlice({
       state.filters.counter = action.payload;
     },
     // Add other reducers for filtering, sorting, etc. later
+    updateSecurity(state, action) {
+      const { id, updates } = action.payload;
+      const existingSecurity = state.securities.find((sec) => sec.id === id);
+      if (existingSecurity) {
+        Object.assign(existingSecurity, updates);
+      }
+    },
   },
   extraReducers(builder) {
     builder
@@ -72,5 +79,6 @@ const securitiesSlice = createSlice({
   },
 });
 
-export const { setQueryFilter, setCounterFilter } = securitiesSlice.actions; // Add actions later if needed
+export const { setQueryFilter, setCounterFilter, updateSecurity } =
+  securitiesSlice.actions; // Add actions later if needed
 export default securitiesSlice.reducer;

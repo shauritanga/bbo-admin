@@ -35,7 +35,7 @@ const Layout = () => {
   }, [theme]);
 
   return (
-    <div className="layout">
+    <div className=" flex w-screen h-screen">
       {isSidebarOpen && (
         <Sidebar
           isActive={isActive}

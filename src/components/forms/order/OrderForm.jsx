@@ -8,6 +8,7 @@ import { ErrorMessage, Field, Form, Formik, useFormikContext } from "formik";
 import { calculateFees } from "../../../utils/getFees";
 import axios from "axios";
 import { RotatingLines } from "react-loader-spinner";
+import { SearchSelect } from "@/components/SerachSelect";
 
 const OrderForm = ({ open, setOpen, size, title }) => {
   const [securities, setSecurities] = useState([]);
@@ -90,7 +91,7 @@ const OrderForm = ({ open, setOpen, size, title }) => {
 
   const clients = customers.map((item) => ({
     label: item.name,
-    value: item.id,
+    value: item._id,
   }));
 
   return (
@@ -106,30 +107,22 @@ const OrderForm = ({ open, setOpen, size, title }) => {
       <Modal.Body style={{ width: "100%" }}>
         <Formik
           initialValues={{
-            client_id: "",
+            userId: "",
             date: null,
             volume: "",
             price: "",
             type: "",
-            security_id: "",
+            securityId: "",
             amount: "",
             total: "",
-            total_fees: "",
-            dse: "",
-            vat: "",
+            totalFees: "",
             holding: "",
-            mode: "market",
-            brokerage: "",
-            cmsa: "",
-            fidelity: "",
-            cds: "",
-            total_commissions: "",
           }}
           onSubmit={handleSubmit}
           validate={(values) => {
             const errors = {};
-            if (!values.client_id) {
-              errors.client_id = "It is required";
+            if (!values.userId) {
+              errors.userId = "It is required";
             }
             if (!values.price) {
               errors.price = "price field is required";
@@ -143,8 +136,8 @@ const OrderForm = ({ open, setOpen, size, title }) => {
             if (!values.amount) {
               errors.amount = "Amount field is required";
             }
-            if (!values.total_fees) {
-              errors.total_fees = "Total fees field is required";
+            if (!values.totalFees) {
+              errors.totalFees = "Total fees field is required";
             }
             if (!values.total) {
               errors.total = "This field is required";
@@ -155,50 +148,51 @@ const OrderForm = ({ open, setOpen, size, title }) => {
             if (!values.holding) {
               errors.holding = "This field is required";
             }
-            if (!values.security_id) {
-              errors.security_id = "This field is required";
+            if (!values.securityId) {
+              errors.securityId = "This field is required";
             }
             return errors;
           }}
         >
           {({ values, setFieldValue, isSubmitting }) => (
             <Form>
-              <FormRow>
-                <FormGroup>
+              <div className="flex w-full gap-4">
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="customer">Customer</label>
                   <InputPicker
                     data={clients}
-                    name="client_id"
+                    name="userId"
                     style={{
                       marginRight: "auto",
                       width: "100%",
                     }}
                     placeholder="Select Client"
-                    onChange={(value) => setFieldValue("client_id", value)}
+                    onChange={(value) => setFieldValue("userId", value)}
                   />
                   <ErrorMessage
-                    name="client_id"
+                    name="userId"
                     component="div"
                     style={{ color: "red" }}
                   />
-                </FormGroup>
-                <FormGroup>
+                </div>
+                <div className="flex flex-col w-full gap-1">
                   <label htmlFor="date">Trading Date</label>
                   <Field
                     id="date"
-                    type="date"
+                    type="datetime-local"
                     name="date"
                     style={fieldStyles}
+                    className="w-full border rounded p-1"
                   />
                   <ErrorMessage
                     name="date"
                     component="div"
                     style={{ color: "red" }}
                   />
-                </FormGroup>
-              </FormRow>
-              <FormRow>
-                <FormGroup>
+                </div>
+              </div>
+              <div className="w-full flex gap-4">
+                <div className="w-full flex flex-col gap-1">
                   <label htmlFor="volume">Volume</label>
                   <Field
                     id="volume"
@@ -212,8 +206,8 @@ const OrderForm = ({ open, setOpen, size, title }) => {
                     component="div"
                     style={{ color: "red" }}
                   />
-                </FormGroup>
-                <FormGroup>
+                </div>
+                <div className="w-full flex flex-col gap-1">
                   <label htmlFor="price">Price</label>
                   <Field
                     id="price"
@@ -227,8 +221,8 @@ const OrderForm = ({ open, setOpen, size, title }) => {
                     component="div"
                     style={{ color: "red" }}
                   />
-                </FormGroup>
-              </FormRow>
+                </div>
+              </div>
               <FormRow>
                 <FormGroup>
                   <label htmlFor="amount">Amount(TZS)</label>
@@ -249,22 +243,22 @@ const OrderForm = ({ open, setOpen, size, title }) => {
                   />
                 </FormGroup>
                 <FormGroup>
-                  <label htmlFor="total_fees">Total Fees(TZS)</label>
+                  <label htmlFor="totalFees">Total Fees(TZS)</label>
                   <Field
-                    id="total_fees"
-                    name="total_fees"
+                    id="totalFees"
+                    name="totalFees"
                     type="number"
-                    value={values.total_fees}
+                    value={values.totalFees}
                     style={fieldStyles}
                     onFocus={() =>
                       setFieldValue(
-                        "total_fees",
+                        "totalFees",
                         calculateFees(values.amount).totalCharges
                       )
                     }
                   />
                   <ErrorMessage
-                    name="total_fees"
+                    name="totalFees"
                     component="div"
                     style={{ color: "red" }}
                   />
@@ -303,8 +297,8 @@ const OrderForm = ({ open, setOpen, size, title }) => {
                     <option value="" disabled>
                       Select Order Type
                     </option>
-                    <option value="Buy">Buy</option>
-                    <option value="Sell">Sell</option>
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
                   </Field>
                   <ErrorMessage
                     name="type"
@@ -339,8 +333,8 @@ const OrderForm = ({ open, setOpen, size, title }) => {
                     <label htmlFor="customer">Security</label>
                     <Field
                       as="select"
-                      name="security_id"
-                      value={values.security_id}
+                      name="securityId"
+                      value={values.securityId}
                       style={fieldStyles}
                     >
                       <option value="" disabled selected>
@@ -353,7 +347,7 @@ const OrderForm = ({ open, setOpen, size, title }) => {
                       ))}
                     </Field>
                     <ErrorMessage
-                      name="security_id"
+                      name="securityId"
                       component="div"
                       style={{ color: "red" }}
                     />
@@ -381,10 +375,6 @@ const OrderForm = ({ open, setOpen, size, title }) => {
   );
 };
 
-// const Form = styled.form`
-//   display: flex;
-//   flex-direction: column;
-// `;
 const fieldStyles = {
   width: "100%",
   padding: "8px",
