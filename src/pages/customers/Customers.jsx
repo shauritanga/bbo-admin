@@ -18,7 +18,9 @@ import axios from "axios";
 import { RotatingLines } from "react-loader-spinner";
 
 import { CustomerDataTable } from "@/components/customer/table";
-const fetcher = (url) => fetch(url).then((res) => res.json());
+import { axiosInstance } from "@/utils/axiosConfig";
+const fetcher = (url) =>
+  axiosInstance.get(url).then((response) => response.data);
 
 function Customers() {
   const [customers, setCustomers] = useState(null);
@@ -32,32 +34,22 @@ function Customers() {
   });
   const navigate = useNavigate();
 
-  const { data, error, loading } = useSWR(
-    `${import.meta.env.VITE_BASE_URL}/statements?startDate=${new Date(
-      dateSelected.startDate
-    ).toISOString()}&endDate=${new Date(dateSelected.endDate).toISOString()}`,
-    fetcher
-  );
-  if (error) {
-    console.log(error);
-  }
-
-  if (!error && !loading) {
-  }
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const customerResponse = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/customers`
-        );
+        const customerResponse = await axiosInstance.get(`/customers`);
 
         setCustomers(customerResponse.data);
       } catch (error) {
-        toaster.push(<Notification>Fail to fetch customers</Notification>, {
-          duration: 4000,
-          placement: "topCenter",
-        });
+        toaster.push(
+          <Notification header="Error" type="error">
+            {error.response.data.message}
+          </Notification>,
+          {
+            duration: 4000,
+            placement: "topCenter",
+          }
+        );
       }
     };
     fetchData();

@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
 import styled from "styled-components";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage, useFormikContext } from "formik";
-import axios from "axios";
-import { useAuth } from "../../provider/AuthProvider";
 import * as Yup from "yup";
 
 import { Notification, toaster } from "rsuite";
@@ -13,6 +11,8 @@ import {
   InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useAuth } from "@/provider/AuthProvider";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const validationSchema = Yup.object({
   otp: Yup.string()
@@ -33,7 +33,8 @@ const AutoSubmit = () => {
 };
 const Otp = () => {
   const { state } = useLocation();
-  const { loginAction } = useAuth();
+  const { setUserToken } = useAuth();
+  const navigate = useNavigate;
 
   if (!state) {
     return null;
@@ -43,18 +44,15 @@ const Otp = () => {
     console.log("Form submitted with values:", values);
 
     try {
-      const result = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/auth/verify-otp`,
-        values
-      );
+      const result = await axiosInstance.post(`/auth/verify-otp`, values);
+      setSubmitting(false);
       await toaster.push(
         <Notification header="Success" type="success">
-          Welcome
+          {result.data.message}
         </Notification>,
         { duration: 3000, placement: "topCenter" }
       );
-      loginAction(result.data.email);
-      setSubmitting(false);
+      setUserToken(result.data.token);
     } catch (error) {
       await toaster.push(
         <Notification header="Error" type="error">

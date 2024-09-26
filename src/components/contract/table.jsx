@@ -10,9 +10,8 @@ import {
 import {
   ArrowUpDown,
   ChevronDown,
-  Edit2,
+  FileText,
   MoreHorizontal,
-  Trash2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -37,144 +48,92 @@ import {
 import { Navigate, useNavigate } from "react-router";
 import { toCapitalize } from "@/utils/sentenseCase";
 import CustomerForm from "../forms/customer/CustomerForm";
+import axios from "axios";
+import { Notification, toaster } from "rsuite";
+import { MoreVertical, Trash2, Edit2 } from "lucide-react";
+import ContractNoteDownload from "../pdf/PrintContractPDF";
 import dayjs from "dayjs";
-import ReceiptForm from "../forms/receipt/ReceiptForm";
-import { Checkbox } from "../ui/checkbox";
-import OrderForm from "../forms/order/OrderForm";
 
-export function OrderDataTable({ orders }) {
-  const [openForm, setOpenForm] = React.useState(false);
+export function ContractDataTable({ executions }) {
+  const [customerForm, setCustomerForm] = React.useState(false);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const data = orders;
+  const data = executions;
+  const [itemToDelete, setItemToDelete] = React.useState(null);
+  const [isAlertOpen, setIsAlertOpen] = React.useState(false);
+
+  const handleDelete = async () => {
+    if (itemToDelete) {
+      await deleteCustomer(itemToDelete);
+      setItemToDelete(null);
+      setIsAlertOpen(false);
+    }
+  };
+
+  const openDeleteAlert = (item) => {
+    setItemToDelete(item);
+    setIsAlertOpen(true);
+  };
 
   const navigate = useNavigate();
 
+  const deleteCustomer = async (customerId) => {
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/customers/${customerId}`
+      );
+      toaster.push(
+        <Notification header="Success" type="success">
+          {response.data.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+    } catch (error) {
+      toaster.push(
+        <Notification header="Error" type="error">
+          {response.data.error.message}
+        </Notification>,
+        { duration: 3000, placement: "topCenter" }
+      );
+    }
+  };
+
   const columns = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-
-    {
-      accessorKey: "uid",
-      header: "ID",
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
+      accessorKey: "tradingDate",
+      header: "Trading Date",
       cell: ({ row }) => {
-        const date = row.getValue("date");
-        const formatted = dayjs(date).format("DD-MM-YYYY");
-        return <div>{formatted}</div>;
+        const date = dayjs(row.original.tradingDate).format("DD-MM-YYYY");
+        return <div>{date}</div>;
+      },
+    },
+    { accessorKey: "slip", header: "Slip No" },
+    {
+      accessorKey: "price",
+      header: "Price",
+      cell: ({ row }) => {
+        const price = row.getValue("price");
+        return <div>{price}</div>;
       },
     },
     {
-      accessorKey: "name",
-      accessorFn: (row) => row.name,
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const name = row.original.user?.name;
-        const formatted = toCapitalize(name);
-        return <div>{formatted}</div>;
-      },
+      accessorKey: "executed",
+      header: "Executed",
     },
-    {
-      accessorKey: "security",
-      header: "Security",
-      cell: ({ row }) => {
-        const name = row.original.security?.name;
-        return <div>{name}</div>;
-      },
-    },
-    { accessorKey: "type", header: "Type" },
 
     {
       accessorKey: "amount",
       header: "Amount",
-    },
-    { accessorKey: "volume", header: "Volume" },
-
-    {
-      accessorKey: "balance",
-      header: "Balance",
-      cell: ({ row }) => {
-        const volume = row.original.volume;
-        const executed = row.original.executed;
-        const balance = volume - executed;
-        return <div>{balance}</div>;
-      },
-    },
-
-    {
-      header: "Status",
-      cell: ({ row }) => {
-        let stat = "mm";
-        const volume = row.original.volume;
-        const executed = row.original.executed;
-        const balance = volume - executed;
-        console.log(balance, volume);
-        if (balance === volume) {
-          stat = "pending";
-        }
-        if (balance < volume) {
-          stat = "processing";
-        }
-        if (balance === 0) {
-          stat = "completed";
-        }
-
-        return (
-          <div
-            className={`capitalize ${
-              stat === "pending"
-                ? "text-red-400"
-                : stat === "processing"
-                ? "text-blue-800"
-                : "text-green-500"
-            }`}
-          >
-            {stat}
-          </div>
-        );
-      },
+      cell: ({ row }) => <div>{row.getValue("amount")}</div>,
     },
     {
       header: "Actions",
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const order = row.original;
+        const execution = row.original;
 
         return (
           <DropdownMenu>
@@ -187,10 +146,8 @@ export function OrderDataTable({ orders }) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() =>
-                  navigate(`/orders/${order._id}`, {
-                    state: {
-                      orderId: order._id,
-                    },
+                  navigate(`/dealing/${execution._id}`, {
+                    state: execution,
                   })
                 }
                 className="cursor-pointer"
@@ -199,8 +156,8 @@ export function OrderDataTable({ orders }) {
                 View
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                <FileText className="mr-2 h-4 w-4" />
+                <ContractNoteDownload data={row.original} />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -229,49 +186,9 @@ export function OrderDataTable({ orders }) {
   });
 
   return (
-    <div className="w-full p-4 bg-white rounded shadow-sm">
+    <div className="w-full bg-white p-3 rounded shadow-sm">
       <div className="flex items-center py-4 gap-4">
-        <Input
-          placeholder="Search Client..."
-          value={table.getColumn("name")?.getFilterValue() ?? ""}
-          onChange={(event) => {
-            console.log(event.target.value);
-            table.getColumn("name")?.setFilterValue(event.target.value);
-          }}
-          className="w-[300px]"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button onClick={() => {}} className="bg-blue-950">
-          Export
-        </Button>
-        <Button onClick={() => setOpenForm(true)} className="bg-blue-950">
-          New Order
-        </Button>
+        <p>Contract Note</p>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -347,12 +264,31 @@ export function OrderDataTable({ orders }) {
           </Button>
         </div>
       </div>
-      <OrderForm
-        open={openForm}
-        setOpen={setOpenForm}
+      <CustomerForm
+        open={customerForm}
+        setOpen={setCustomerForm}
         size={750}
-        title="New Order"
+        title="New Customer"
       />
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this customer?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete{" "}
+              {itemToDelete?.name}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+              Yes, delete customer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

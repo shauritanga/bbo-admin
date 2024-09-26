@@ -7,13 +7,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  Edit2,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,15 +34,15 @@ import CustomerForm from "../forms/customer/CustomerForm";
 import dayjs from "dayjs";
 import ReceiptForm from "../forms/receipt/ReceiptForm";
 import { Checkbox } from "../ui/checkbox";
-import OrderForm from "../forms/order/OrderForm";
+import PaymentForm from "../forms/payment/PaymentForm";
 
-export function OrderDataTable({ orders }) {
+export function PaymentDataTable({ customers }) {
   const [openForm, setOpenForm] = React.useState(false);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const data = orders;
+  const data = customers;
 
   const navigate = useNavigate();
 
@@ -91,7 +85,6 @@ export function OrderDataTable({ orders }) {
     },
     {
       accessorKey: "name",
-      accessorFn: (row) => row.name,
       header: ({ column }) => {
         return (
           <Button
@@ -110,61 +103,34 @@ export function OrderDataTable({ orders }) {
       },
     },
     {
-      accessorKey: "security",
-      header: "Security",
-      cell: ({ row }) => {
-        const name = row.original.security?.name;
-        return <div>{name}</div>;
-      },
+      accessorKey: "description",
+      header: "Description",
     },
-    { accessorKey: "type", header: "Type" },
-
     {
       accessorKey: "amount",
       header: "Amount",
-    },
-    { accessorKey: "volume", header: "Volume" },
-
-    {
-      accessorKey: "balance",
-      header: "Balance",
       cell: ({ row }) => {
-        const volume = row.original.volume;
-        const executed = row.original.executed;
-        const balance = volume - executed;
-        return <div>{balance}</div>;
+        const amount = row.original.amount;
+        const formmater = Intl.NumberFormat("sw-TZ", {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        });
+        return <div className="capitalize">{formmater.format(amount)}</div>;
       },
     },
 
     {
+      accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        let stat = "mm";
-        const volume = row.original.volume;
-        const executed = row.original.executed;
-        const balance = volume - executed;
-        console.log(balance, volume);
-        if (balance === volume) {
-          stat = "pending";
-        }
-        if (balance < volume) {
-          stat = "processing";
-        }
-        if (balance === 0) {
-          stat = "completed";
-        }
-
+        const status = row.original.status;
         return (
           <div
             className={`capitalize ${
-              stat === "pending"
-                ? "text-red-400"
-                : stat === "processing"
-                ? "text-blue-800"
-                : "text-green-500"
+              status === "approved" ? "text-green-500" : "text-orange-400"
             }`}
           >
-            {stat}
+            {row.getValue("status")}
           </div>
         );
       },
@@ -174,7 +140,7 @@ export function OrderDataTable({ orders }) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const order = row.original;
+        const payment = row.original;
 
         return (
           <DropdownMenu>
@@ -187,21 +153,17 @@ export function OrderDataTable({ orders }) {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() =>
-                  navigate(`/orders/${order._id}`, {
+                  navigate(`/customers/${row.original._id}`, {
                     state: {
-                      orderId: order._id,
+                      customer: row.original,
                     },
                   })
                 }
                 className="cursor-pointer"
               >
-                <Edit2 className="mr-2 h-4 w-4" />
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              <DropdownMenuItem>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -266,11 +228,8 @@ export function OrderDataTable({ orders }) {
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button onClick={() => {}} className="bg-blue-950">
-          Export
-        </Button>
         <Button onClick={() => setOpenForm(true)} className="bg-blue-950">
-          New Order
+          New Receipt
         </Button>
       </div>
       <div className="rounded-md border">
@@ -347,11 +306,11 @@ export function OrderDataTable({ orders }) {
           </Button>
         </div>
       </div>
-      <OrderForm
+      <PaymentForm
         open={openForm}
         setOpen={setOpenForm}
         size={750}
-        title="New Order"
+        title="New Receipt"
       />
     </div>
   );

@@ -3,6 +3,7 @@ import axios from "axios";
 import * as XLSX from "xlsx";
 
 import { ReceiptDataTable } from "@/components/receipt/table";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 function Receipt() {
   const [clients, setClients] = useState(null);
@@ -14,18 +15,10 @@ function Receipt() {
 
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
-      const response = await fetch(
+      const response = await axiosInstance.patch(
         `${import.meta.env.VITE_BASE_URL}/receipts/${selected[item]._id}`,
-        {
-          method: "POST",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(status),
-        }
+        JSON.stringify(status)
       );
-      const json = await response.json();
     }
   };
 
@@ -46,11 +39,7 @@ function Receipt() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/receipts/all`
-        );
-        const data = await response.json();
-        setReceipts(data); // Assuming API returns { items: [...], totalPages: ... }
+        const response = await setReceipts(response.data); // Assuming API returns { items: [...], totalPages: ... }
       } catch (error) {
         // Handle error
       }
@@ -63,13 +52,12 @@ function Receipt() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const customersResponse = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/customers`
-        );
-        if (!customersResponse.ok) throw new Error("Error fetching customers");
-
-        const customersData = await customersResponse.json();
-        setClients(customersData);
+        const response = await Promise.all([
+          axiosInstance.get(`transactions/receipts`),
+          axiosInstance.get(`/customers`),
+        ]);
+        setReceipts(response[0].data);
+        setClients(response[1].data);
       } catch (err) {}
     };
     fetchData();
@@ -82,6 +70,8 @@ function Receipt() {
   if (!receipts) {
     return <div>Loading...</div>;
   }
+
+  console.log(receipts);
 
   const receiptTableData = receipts?.map((receipt) => {
     const payee = clients.filter((client) => client._id === receipt.userId)[0];
@@ -98,7 +88,7 @@ function Receipt() {
   return (
     <div className="flex flex-col gap-4 my-4">
       <ReceiptDataTable
-        customers={receiptTableData}
+        customers={receipts}
         open={openForm}
         setOpenForm={setOpenForm}
       />

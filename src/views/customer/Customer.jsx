@@ -25,6 +25,7 @@ import { CiTrash } from "react-icons/ci";
 import { Notification, toaster } from "rsuite";
 import { DataProvider } from "../../context/userContext";
 import ActionLinks from "@/components/actions";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const CustomerView = () => {
   const { openFilePicker, filesContent, loading, errors } = useFilePicker({
@@ -61,8 +62,8 @@ const CustomerView = () => {
 
   const sendActivationEmail = async (email) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/emails/send-activation-email`,
+      const response = await axiosInstance.post(
+        `/emails/send-activation-email`,
         { email }
       );
     } catch (error) {
@@ -72,8 +73,8 @@ const CustomerView = () => {
 
   const sendResetPasswordEmail = async (email) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/auth/clients/request-reset-password`,
+      const response = await axiosInstance.post(
+        `/auth/clients/request-reset-password`,
         { email }
       );
       await toaster.push(
@@ -125,7 +126,7 @@ const CustomerView = () => {
       case "statement":
         return (
           <Statement
-            id={customer.id}
+            id={customer._id}
             transactions={transactions}
             orders={orders}
           />
@@ -141,7 +142,7 @@ const CustomerView = () => {
     <DataProvider customerId={customer._id}>
       <div className="flex my-4 gap-4">
         <div className="flex flex-col gap-4 w-10/12">
-          <div className="flex bg-white p-2">
+          <div className="flex bg-white p-2 rounded shadow-sm">
             <ListItem
               style={
                 isActive === "account"
@@ -287,8 +288,10 @@ const CustomerView = () => {
                   <TableRowCell>{customer?.dse_account}</TableRowCell>
                 </TableDataRow>
                 <TableDataRow>
-                  <TableRowCell>Shares</TableRowCell>
-                  <TableRowCell>{customer.wallet}</TableRowCell>
+                  <TableRowCell>Balance</TableRowCell>
+                  <TableRowCell>
+                    {Intl.NumberFormat().format(customer.wallet)}
+                  </TableRowCell>
                 </TableDataRow>
                 <TableDataRow>
                   <TableRowCell>Status</TableRowCell>
@@ -385,7 +388,7 @@ const Links = styled.div`
 const ListItem = styled.div`
   display: flex;
   align-items: center;
-  padding: 10px 20px;
+  padding: 8px 15px;
   border-radius: 7px;
   gap: 12px;
   cursor: pointer;

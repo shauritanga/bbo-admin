@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import "./pay.css";
 import axios from "axios";
 import { generateUniqueId } from "@/utils/generateId";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const PaymentForm = ({ open, setOpen }) => {
   const [paymentMethod, setPaymentMethod] = useState(null);
@@ -16,9 +17,9 @@ const PaymentForm = ({ open, setOpen }) => {
       try {
         const [paymethodResponse, clientRespponse, accountResponse] =
           await Promise.all([
-            axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
+            axiosInstance.get(`/paymethods`),
+            axiosInstance.get(`/customers`),
+            axiosInstance.get(`/accounts`),
           ]);
 
         setPaymentMethod(paymethodResponse.data);
@@ -29,16 +30,12 @@ const PaymentForm = ({ open, setOpen }) => {
       }
     };
     fetchData();
-  }, []); // Empty dependency array ensures this runs once on component mount
+  }, []);
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    alert(JSON.stringify(values, null, 2));
-
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/payments`,
-        values
-      );
+      alert(JSON.stringify(values, null, 2));
+      const response = await axiosInstance.post(`/transactions`, values);
       toaster.push(
         <Notification header="success" type="success">
           {response.data.message}
@@ -69,8 +66,9 @@ const PaymentForm = ({ open, setOpen }) => {
         <Formik
           initialValues={{
             date: "",
-            category: "",
+            category: "payment",
             userId: "",
+            bank: "",
             accountId: "",
             amount: 0.0,
             description: "",
@@ -103,11 +101,10 @@ const PaymentForm = ({ open, setOpen }) => {
               </div>
               <div className="flex w-full gap-4">
                 <div className="flex flex-col flex-1 gap-1">
-                  <label htmlFor="category">Bank</label>
+                  <label htmlFor="bank">Bank</label>
                   <Field
                     as="select"
-                    type="datetime-local"
-                    name="category"
+                    name="bank"
                     className="border rounded p-1 outline-none"
                   >
                     <option value="" selected disabled>
@@ -189,13 +186,6 @@ const PaymentForm = ({ open, setOpen }) => {
                 />
               </div>
               <div className="flex flex-row-reverse gap-4">
-                <Button
-                  variant="link"
-                  onClick={() => setOpen(false)}
-                  className="bg-slate-50 text-gray-500"
-                >
-                  Cancel
-                </Button>
                 <Button type="submit">Ok</Button>
               </div>
             </Form>

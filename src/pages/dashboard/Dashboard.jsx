@@ -7,6 +7,7 @@ import { getMonthName } from "../../utils/getMonthName";
 import { useAuth } from "../../provider/AuthProvider";
 import { RotatingLines } from "react-loader-spinner";
 import Card from "../../components/Card";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const pieData = [
   [
@@ -96,8 +97,8 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const [customerResponse, orderResponse] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
+          axiosInstance.get(`/customers`),
+          axiosInstance.get(`/orders`),
         ]);
 
         setCustomers(customerResponse.data);

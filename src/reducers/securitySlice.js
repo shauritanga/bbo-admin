@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -15,9 +16,7 @@ const initialState = {
 export const fetchSecurities = createAsyncThunk(
   "securities/fetchSecurities",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/securities`
-    );
+    const response = await axiosInstance.get(`/securities`);
     return response.data; // Assuming your API returns an array of orders
   }
 );
@@ -25,10 +24,7 @@ export const fetchSecurities = createAsyncThunk(
 export const addSecurity = createAsyncThunk(
   "securities/addSecurity",
   async (security) => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/securities`,
-      security
-    );
+    const response = await axiosInstance.post(`/securities`, security);
     return response.data; // Assuming your backend returns the new order
   }
 );

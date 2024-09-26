@@ -9,6 +9,7 @@ import { calculateFees } from "../../../utils/getFees";
 import axios from "axios";
 import { RotatingLines } from "react-loader-spinner";
 import { SearchSelect } from "@/components/SerachSelect";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const OrderForm = ({ open, setOpen, size, title }) => {
   const [securities, setSecurities] = useState([]);
@@ -20,24 +21,18 @@ const OrderForm = ({ open, setOpen, size, title }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/customers`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Error fetching customers: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => setCustomers(data))
-      .catch((error) => console.log(error));
+    const fetchData = async () => {
+      try {
+        const response = await Promise.all([
+          axiosInstance.get("/customers"),
+          axiosInstance.get("/securities"),
+        ]);
+        setCustomers(response[0].data);
+        setSecurities(response[1].data);
+      } catch (error) {}
+    };
+    fetchData();
   }, []);
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/securities`)
-      .then((response) => response.json())
-      .then((data) => setSecurities(data))
-      .catch((error) => console.log(error));
-  }, []);
-
   if (!security && !customers) {
     return;
   }
@@ -61,14 +56,11 @@ const OrderForm = ({ open, setOpen, size, title }) => {
     // alert(JSON.stringify(values, null, 2));
     try {
       setSubmitting(true);
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/orders`,
-        values
-      );
+      const response = await axiosInstance.post(`/orders`, values);
       setSubmitting(false);
       await toaster.push(
         <Notification header="Success" type="success">
-          Order created successfully
+          {response.data.message}
         </Notification>,
         {
           duration: 4000,
@@ -78,7 +70,7 @@ const OrderForm = ({ open, setOpen, size, title }) => {
       setOpen(false);
     } catch (error) {
       await toaster.push(
-        <Notification header="Success" type="success">
+        <Notification header="Error" type="error">
           {error.response.data.message}
         </Notification>,
         {

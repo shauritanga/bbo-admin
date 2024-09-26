@@ -9,9 +9,7 @@ const CreateEmployeeForm = ({ open, setOpen }) => {
   const [roles, setRoles] = useState([]);
   useEffect(() => {
     const fetchRoles = async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/roles`
-      );
+      const response = await axios.get(`/roles`);
       setRoles(response.data);
     };
     fetchRoles();
@@ -19,10 +17,7 @@ const CreateEmployeeForm = ({ open, setOpen }) => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/employees`,
-        values
-      );
+      const response = await axios.post(`/employees`, values);
       setSubmitting(false);
       await toaster.push(
         <Notification header="Success" type="success">

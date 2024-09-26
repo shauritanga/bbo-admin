@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -14,11 +15,7 @@ export const fetchDealings = createAsyncThunk(
   "dealings/fetchDealings",
   async (query) => {
     const { currentPage, itemsPerPage } = query;
-    const response = await axios.get(
-      `${
-        import.meta.env.VITE_BASE_URL
-      }/orders/dealing?page=${currentPage}&limit=${itemsPerPage}`
-    );
+    const response = await axiosInstance.get(`/orders`);
     console.log(response);
     return response.data;
   }

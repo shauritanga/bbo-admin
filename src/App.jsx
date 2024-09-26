@@ -1,9 +1,10 @@
 import React, { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navigate } from "react-router";
 import AuthProvider from "./provider/AuthProvider";
 import { RotatingLines } from "react-loader-spinner";
-import 'rsuite/dist/rsuite.min.css';
+import "rsuite/dist/rsuite.min.css";
+import AppContent from "./pages/app";
 
 const AccountingReports = lazy(() =>
   import("./pages/reports/AccountingReports")
@@ -45,9 +46,8 @@ const TransactionView = lazy(() =>
 function App() {
   return (
     <>
-      <BrowserRouter>
-        <AuthProvider>
-          <Suspense
+      <Router>
+        {/* <Suspense
             fallback={
               <div
                 style={{
@@ -119,9 +119,9 @@ function App() {
               <Route path="/contract" element={<PrintContractPDF />} />
               <Route path="/statement" element={<PDF />} />
             </Routes>
-          </Suspense>
-        </AuthProvider>
-      </BrowserRouter>
+          </Suspense> */}
+        <AppContent />
+      </Router>
     </>
   );
 }

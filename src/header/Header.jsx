@@ -6,7 +6,7 @@ import { LuSearch } from "react-icons/lu";
 import { MdOutlineDarkMode, MdOutlineLightMode } from "react-icons/md";
 import LoginUser from "../components/user/LoginUser";
 
-function Header({ user, theme, setTheme, isSidebarOpen, setIsSidebarOpen }) {
+function Header({ theme, setTheme, isSidebarOpen, setIsSidebarOpen }) {
   return (
     <div className=" flex h-max w-full bg-blue-500 border rounded-md p-1 text-white justify-between">
       <div className="logo">

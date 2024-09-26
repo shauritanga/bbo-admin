@@ -4,14 +4,12 @@ import { nationalities } from "../../../utils/nationalities";
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import axios from "axios";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const CustomerForm = ({ open, setOpen, size, title }) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/customers/admin`,
-        values
-      );
+      const response = await axiosInstance.post(`/customers/admin`, values);
       setSubmitting(false);
       await toaster.push(
         <Notification
@@ -19,7 +17,7 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
           header="Success"
           type="success"
         >
-          You have successfully created new customer
+          {response.data.message}
         </Notification>,
         {
           duration: 5000,
@@ -29,9 +27,10 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
       setOpen(false);
     } catch (error) {
       setSubmitting(false);
+      console.log(error);
       await toaster.push(
-        <Notification style={{ color: "red" }} header="Success" type="success">
-          Customer creation fail, try again!
+        <Notification style={{ color: "red" }} header="Error" type="error">
+          {error.response.data.message}
         </Notification>,
         {
           duration: 5000,

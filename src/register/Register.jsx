@@ -5,15 +5,16 @@ import { Formik, Form, ErrorMessage, Field } from "formik";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Notification, toaster } from "rsuite";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const Login = () => {
-  const { loginAction } = useAuth();
+  //const { loginAction } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/auth/otp`,
+      const response = await axiosInstance.post(
+        `${import.meta.env.VITE_BASE_URL}/auth/login/employees`,
         values
       );
       toaster.push(

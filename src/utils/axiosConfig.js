@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5001", // Replace with your API base URL
+  baseURL: `${import.meta.env.VITE_BASE_URL}`, // Replace with your API base URL
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,7 +11,13 @@ const axiosInstance = axios.create({
 const setupAxiosInterceptors = (navigate) => {
   // Add a response interceptor
   axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      const newToken = response.headers["authorization"];
+      if (newToken) {
+        localStorage.setItem("token", newToken.split(" ")[1]);
+      }
+      return response;
+    },
     (error) => {
       if (error.response.status === 401) {
         localStorage.removeItem("token"); // Remove token if it expires

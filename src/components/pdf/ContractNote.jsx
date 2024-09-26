@@ -12,11 +12,13 @@ import dayjs from "dayjs";
 import { calculateFees } from "../../utils/getFees";
 
 const Contract = ({ data }) => {
-  const fees = calculateFees(data.amount);
-
+  const formatter = Intl.NumberFormat("sw-TZ", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
   return (
     <Document pageMode="full-screen">
-      <Page size="A4">
+      <Page size="A4" style={styles.page}>
         <View fixed={true} style={{ flex: 1 }}>
           <Image src={backgroundImage} style={styles.pageBackground} />
           <View style={styles.body}>
@@ -59,35 +61,46 @@ const Contract = ({ data }) => {
                   { borderRight: "none", borderTop: "1px solid grey" },
                 ]}
               >
-                Trade Date: {dayjs(data.date).format("DD-MM-YYYY")}
+                Trade Date: {dayjs(data.tradingDate).format("DD-MM-YYYY")}
               </Text>
               <Text style={[styles.cell, { borderTop: "1px solid grey" }]}>
-                Settlement Date: {dayjs(data.date).format("DD-MM-YYYY")}
+                Settlement Date:{" "}
+                {dayjs(data.settlementDate).format("DD-MM-YYYY")}
               </Text>
             </View>
             <View style={styles.table}>
               <Text style={styles.cell}>
-                Name of client: {data.customer?.name}
+                Name of client: {data.order?.user?.name}
               </Text>
             </View>
             <View style={styles.table}>
-              <Text style={styles.cell}>Client Address: -</Text>
+              <Text style={styles.cell}>
+                Client Address: -
+                {`${data.order?.user?.address}, ${data.order?.user?.region}`}
+              </Text>
             </View>
             <View style={styles.table}>
-              <Text style={styles.cell}>Client's Ref: 611770</Text>
+              <Text style={styles.cell}>
+                Client's Ref: {data.order?.user?.dseAccount}
+              </Text>
             </View>
             <View style={styles.table}>
-              <Text style={styles.cell}>Security: {data.security?.name}</Text>
+              <Text style={styles.cell}>
+                Security: {data.order?.security?.name}
+              </Text>
             </View>
             <View style={styles.table}>
               <Text style={styles.cell}>Quantity: {data.executed}</Text>
             </View>
             <View style={styles.table}>
-              <Text style={styles.cell}>Price per share: TZS {data.price}</Text>
+              <Text style={styles.cell}>
+                Price per share: TZS {data.order?.price}
+              </Text>
             </View>
             <View style={styles.table}>
               <Text style={styles.cell}>
-                Consideration (TZS) - Quantinty x Price: {data.amount}
+                Consideration (TZS) - Quantinty x Price:{" "}
+                {formatter.format(data.amount)}
               </Text>
             </View>
             <View style={styles.table}>
@@ -101,8 +114,7 @@ const Contract = ({ data }) => {
                 Brokerage Commission up to TZS 10mn @ 1.7%
               </Text>
               <Text style={styles.cell}>
-                {Math.round((fees.commissionTier1 + Number.EPSILON) * 100) /
-                  100}
+                {formatter.format(calculateFees(data.amount).commissionTier1)}
               </Text>
             </View>
             <View style={styles.table}>
@@ -110,8 +122,7 @@ const Contract = ({ data }) => {
                 Brokerage Commission for the next TZS 40mn @ 1.5%
               </Text>
               <Text style={styles.cell}>
-                {Math.round((fees.commissionTier2 + Number.EPSILON) * 100) /
-                  100}
+                {formatter.format(calculateFees(data.amount).commissionTier2)}
               </Text>
             </View>
             <View style={styles.table}>
@@ -119,8 +130,7 @@ const Contract = ({ data }) => {
                 Brokerage Commission for the sum above TZS 70mn @ 0.8%
               </Text>
               <Text style={styles.cell}>
-                {Math.round((fees.commissionTier3 + Number.EPSILON) * 100) /
-                  100}
+                {formatter.format(calculateFees(data.amount).commissionTier3)}
               </Text>
             </View>
             <View style={styles.table}>
@@ -128,66 +138,52 @@ const Contract = ({ data }) => {
                 Total Brokerage Commission
               </Text>
               <Text style={styles.cell}>
-                {Math.round((fees.totalCommission + Number.EPSILON) * 100) /
-                  100}
+                {formatter.format(data.brokerage)}
               </Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 VAT @ 18%
               </Text>
-              <Text style={styles.cell}>
-                {Math.round((fees.vat + Number.EPSILON) * 100) / 100}
-              </Text>
+              <Text style={styles.cell}>{formatter.format(data.vat)}</Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 DSE Fee @ 0.14%
               </Text>
-              <Text style={styles.cell}>
-                {Math.round((fees.dseFee + Number.EPSILON) * 100) / 100}
-              </Text>
+              <Text style={styles.cell}>{formatter.format(data.dse)}</Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 CMSA Fee @ 0.14%
               </Text>
-              <Text style={styles.cell}>
-                {Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100}
-              </Text>
+              <Text style={styles.cell}>{formatter.format(data.cmsa)}</Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 Fidelity Fee @ 0.02%
               </Text>
-              <Text style={styles.cell}>
-                {Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100}
-              </Text>
+              <Text style={styles.cell}>{formatter.format(data.fidelity)}</Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 CDS Fee @ 0.06%
               </Text>
-              <Text style={styles.cell}>
-                {Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100}
-              </Text>
+              <Text style={styles.cell}>{formatter.format(data.cds)}</Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 Total Charges
               </Text>
               <Text style={styles.cell}>
-                {Math.round((fees.totalCharges + Number.EPSILON) * 100) / 100}
+                {formatter.format(calculateFees(data.amount).totalCharges)}
               </Text>
             </View>
             <View style={styles.table}>
               <Text style={[styles.cell, { flex: 2, borderRight: "none" }]}>
                 TOTAL CONSIDERATION
               </Text>
-              <Text style={styles.cell}>
-                {Math.round((fees.totalConsideration + Number.EPSILON) * 100) /
-                  100}
-              </Text>
+              <Text style={styles.cell}>{formatter.format(data.total)}</Text>
             </View>
             <View style={styles.table}>
               <Text

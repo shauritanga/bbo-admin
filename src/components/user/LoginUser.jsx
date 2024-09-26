@@ -1,5 +1,5 @@
 import { Dropdown, Avatar } from "rsuite";
-import { useAuth } from "../../provider/AuthProvider";
+import { jwtDecode } from "jwt-decode";
 
 const renderToggle = (props) => (
   <Avatar
@@ -11,8 +11,7 @@ const renderToggle = (props) => (
 );
 
 const LoginUser = () => {
-  const { user, logOut } = useAuth();
-  const userObject = typeof user === "string" ? JSON.parse(user) : user;
+  const user = jwtDecode(localStorage.getItem("token"));
   return (
     <Dropdown renderToggle={renderToggle} placement="bottomEnd">
       <Dropdown.Item
@@ -20,7 +19,7 @@ const LoginUser = () => {
         style={{ padding: 10, width: 160, color: "#656281" }}
       >
         <p>Signed in as</p>
-        <span className="text-blue-800">{userObject.name}</span>
+        <span className="text-blue-800">{user?.name}</span>
       </Dropdown.Item>
       <Dropdown.Item>My Profile</Dropdown.Item>
       <Dropdown.Item onClick={() => logOut()}>Sign out</Dropdown.Item>
@@ -29,4 +28,3 @@ const LoginUser = () => {
 };
 
 export default LoginUser;
-

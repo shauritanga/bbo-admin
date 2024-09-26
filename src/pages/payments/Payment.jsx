@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { Pagination, Stack } from "@mui/material";
+import { axiosInstance } from "@/utils/axiosConfig";
+import { PaymentDataTable } from "@/components/payment/table";
 
 function Payment() {
   const [query, setQuery] = useState("");
@@ -31,17 +33,9 @@ function Payment() {
 
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/payments/${selected[item]._id}`,
-        {
-          mode: "cors",
-          method: "POST",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(status),
-        }
+      const response = await axiosInstance.patch(
+        `/transactions/payments/${selected[item]._id}`,
+        JSON.stringify(status)
       );
       const json = await response.json();
     }
@@ -49,9 +43,7 @@ function Payment() {
 
   const exportToExcel = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/payments/all`
-      );
+      const response = await axiosInstance.get(`transactions/payments`);
       const data = response.data;
 
       //xlsx
@@ -84,14 +76,12 @@ function Payment() {
     const fetchData = async () => {
       try {
         const [paymentResponse, clientResponse] = await Promise.all([
-          axios(`${import.meta.env.VITE_BASE_URL}/payments`),
-          axios(`${import.meta.env.VITE_BASE_URL}/customers`),
+          axiosInstance.get(`transactions/payments`),
+          axiosInstance.get(`/customers`),
         ]);
-        const data = paymentResponse.data;
-        setPayments(data?.data);
-        setTotalPages(data.totalPages);
+        console.log(paymentResponse);
+        setPayments(paymentResponse.data);
         setClients(clientResponse.data);
-        setTotalDocuments(data.totalDocuments);
       } catch (error) {
         // Handle error
       }
@@ -104,118 +94,23 @@ function Payment() {
     return <div>Loading</div>;
   }
 
-  const filtered = payments?.filter((payment) => {
-    const payee = clients.filter((client) => client._id === payment.userId);
-    return payee[0]?.name.toLowerCase().includes(query.toLowerCase());
+  const paymentTableData = payments?.map((receipt) => {
+    const payee = clients.filter((client) => client._id === receipt.userId)[0];
+    return {
+      id: receipt?.uid ?? "",
+      name: payee?.name,
+      status: receipt.status,
+      amount: receipt.amount,
+      date: receipt.transactionDate,
+      description: receipt.description,
+    };
   });
-  const data = query ? filtered : payments;
+
+  console.log(payments);
   return (
     <div className="flex flex-col gap-4 my-4">
-      <div className="flex items-center justify-between bg-white p-2">
-        <Button onClick={() => setOpenForm(true)}>New Payment</Button>
-        <div className="">
-          <Button onClick={exportToExcel}>Export Excel</Button>
-        </div>
-      </div>
-      <div className="payment-actions">
-        <Search setQuery={setQuery} />
-        <div
-          className="payment-actions_hiden"
-          style={{
-            visibility: visible || selected.length !== 0 ? "visible" : "hidden",
-          }}
-        >
-          <button
-            style={{ backgroundColor: "var(--color-approve)", color: "#fff" }}
-            onClick={() => updatePayment(selected, { status: "approved" })}
-          >
-            Approve
-          </button>
-          <button
-            style={{
-              backgroundColor: "var(--color-disapprove)",
-              color: "#fff",
-            }}
-            onClick={() => updatePayment(selected, { status: "" })}
-          >
-            Disapprove
-          </button>
-          <button
-            style={{ backgroundColor: "var(--color-reject)", color: "#fff" }}
-          >
-            Reject
-          </button>
-          <button
-            style={{ backgroundColor: "var(--color-button)", color: "#fff" }}
-          >
-            Export(excel)
-          </button>
-        </div>
-      </div>
       <TableWrapper>
-        <Table style={{ width: "100%" }}>
-          <thead>
-            <TableHeaderRow>
-              <TableHeaderCell style={{ width: "50px" }}>
-                <CheckBox
-                  name="all"
-                  value={selected.length === payments.length}
-                  visible={visible}
-                  setVisible={setVisible}
-                  updateValue={selectAll}
-                />
-              </TableHeaderCell>
-              <TableHeaderCell>id</TableHeaderCell>
-              <TableHeaderCell>payee</TableHeaderCell>
-              <TableHeaderCell>Description</TableHeaderCell>
-              <TableHeaderCell>amount</TableHeaderCell>
-              <TableHeaderCell>date</TableHeaderCell>
-              <TableHeaderCell>status</TableHeaderCell>
-            </TableHeaderRow>
-          </thead>
-          <tbody>
-            {data?.map((expense, index) => {
-              const payee = clients?.filter(
-                (client) => client._id === expense.userId
-              )[0];
-              return (
-                <TableDataRow key={expense._id}>
-                  <TableDataCell style={{ width: "50px" }}>
-                    <CheckBox
-                      name={expense}
-                      value={selected.includes(expense)}
-                      visible={visible}
-                      setVisible={setVisible}
-                      updateValue={handleSelect}
-                    />
-                  </TableDataCell>
-                  <TableDataCell>{expense.uid}</TableDataCell>
-                  <TableDataCell>{payee?.name}</TableDataCell>
-                  <TableDataCell>{expense.description}</TableDataCell>
-                  <TableDataCell>{expense.amount}</TableDataCell>
-                  <TableDataCell>
-                    {dayjs(expense.transactionDate).format("DD-MM-YYYY")}
-                  </TableDataCell>
-                  <TableDataCell>{expense.status}</TableDataCell>
-                </TableDataRow>
-              );
-            })}
-          </tbody>
-        </Table>
-        <PaginationWrapper>
-          <Counter>{totalDocuments} total orders</Counter>
-          <Stack spacing={2}>
-            {/* <Pagination count={10} shape="rounded" /> */}
-            <Pagination
-              count={totalPages}
-              variant="outlined"
-              shape="rounded"
-              color="primary"
-              page={currentPage}
-              onChange={handleChange}
-            />
-          </Stack>
-        </PaginationWrapper>
+        <PaymentDataTable customers={payments} />
       </TableWrapper>
       <PaymentForm open={openForm} setOpen={setOpenForm} />
     </div>

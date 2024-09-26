@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -8,7 +9,7 @@ const initialState = {
 };
 
 export const fetchRoles = createAsyncThunk("roles/fetchRoles", async () => {
-  const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/roles`);
+  const response = await axiosInstance.get(`/roles`);
   return response.data;
 });
 

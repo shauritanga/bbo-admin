@@ -16,6 +16,7 @@ import { Pagination, Stack } from "@mui/material";
 import { Button } from "@/components/ui/button";
 import * as XLSX from "xlsx";
 import axios from "axios";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 function Transaction() {
   const [query, setQuery] = useState("");
@@ -67,8 +68,8 @@ function Transaction() {
     try {
       let response;
       for (let item in selected) {
-        response = await axios.patch(
-          `${import.meta.env.VITE_BASE_URL}/transactions/${selected[item]._id}`,
+        response = await axiosInstance.patch(
+          `/transactions/${selected[item]._id}`,
           status
         );
       }
@@ -86,7 +87,7 @@ function Transaction() {
     } catch (error) {
       toaster.push(
         <Notification type="error" header="Error">
-          {response.error.message}
+          {error.response.data.message}
         </Notification>,
         {
           duration: 5000,
@@ -114,11 +115,12 @@ function Transaction() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BASE_URL}/transactions`
-        );
-        const data = await response.json();
-        setTransactions(data.data); // Assuming API returns { items: [...], totalPages: ... }
+        const response = await Promise.all([
+          axiosInstance.get(`/transactions`),
+          axiosInstance.get(`/customers`),
+        ]);
+        setClients(response[1].data);
+        setTransactions(response[0].data);
       } catch (error) {
         // Handle error
       }
@@ -126,19 +128,6 @@ function Transaction() {
 
     fetchData();
   }, [refetch]);
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/customers`, {
-      mode: "cors",
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => setClients(data))
-      .catch((error) => console.log(error));
-  }, []);
 
   if (!clients || !transactions) {
     return <div>Loading...</div>;
@@ -148,16 +137,6 @@ function Transaction() {
     return { lable: client.name, value: client.name };
   });
 
-  const filtered = transactions?.filter((expense) =>
-    expense.payee?.name.toLowerCase().includes(query.toLowerCase())
-  );
-  const data = query ? filtered : transactions;
-
-  const totalPages = Math.ceil(data.length / itemsPerPage);
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
   return (
     <div className="flex flex-col gap-4  my-4 min-h-screen">
       <div className="flex items-center gap-4 bg-white shadow-md rounded p-2">
@@ -229,11 +208,7 @@ function Transaction() {
             </TableHeaderRow>
           </thead>
           <tbody>
-            {currentItems.map((transaction) => {
-              const payee = clients.filter(
-                (client) => client._id === transaction.userId
-              );
-
+            {transactions?.map((transaction) => {
               return (
                 <TableDataRow key={transaction._id}>
                   <TableDataCell>
@@ -246,7 +221,7 @@ function Transaction() {
                     />
                   </TableDataCell>
                   <TableDataCell>{transaction.uid}</TableDataCell>
-                  <TableDataCell>{payee[0]?.name}</TableDataCell>
+                  <TableDataCell>{transaction.user?.name}</TableDataCell>
                   <TableDataCell>{transaction.description}</TableDataCell>
                   <TableDataCell>
                     <div>
@@ -292,19 +267,6 @@ function Transaction() {
             })}
           </tbody>
         </table>
-        <PaginationWrapper>
-          <Counter>{transactions.length} total orders</Counter>
-          <Stack spacing={2}>
-            {/* <Pagination count={10} shape="rounded" /> */}
-            <Pagination
-              count={totalPages}
-              variant="outlined"
-              shape="rounded"
-              page={currentPage}
-              onChange={handleChange}
-            />
-          </Stack>
-        </PaginationWrapper>
       </div>
     </div>
   );

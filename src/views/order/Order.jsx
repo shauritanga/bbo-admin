@@ -10,6 +10,8 @@ import dayjs from "dayjs";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { axiosInstance } from "@/utils/axiosConfig";
+import ContractNoteDownload from "@/components/pdf/PrintContractPDF";
 
 const data = ["Bond", "Security"].map((item) => ({
   label: item,
@@ -18,17 +20,16 @@ const data = ["Bond", "Security"].map((item) => ({
 
 const OrderView = () => {
   const { state } = useLocation();
-  const [clients, setClients] = useState([]);
-  const [securities, setSecurities] = useState(null);
+  const [order, setOrder] = useState(null);
   const [openExecutionForm, setOpenExecutionForm] = useState(false);
   const [executions, setExecutions] = useState(null);
+  const [securities, setSecurities] = useState([]);
+  const [clients, setClients] = useState([]);
   const navigate = useNavigate();
 
   const DeleteOrder = async (orderId) => {
     try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_BASE_URL}/orders/${orderId}`
-      );
+      const response = await axiosInstance.delete(`/orders/${orderId}`);
       await toaster.push(
         <Notification type="success" header="Success">
           {response.data.message}
@@ -58,8 +59,8 @@ const OrderView = () => {
 
     try {
       setSubmitting(true);
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/orders/${state.order?._id}`,
+      const response = await axiosInstance.patch(
+        `/orders/${state.order?._id}`,
         values
       );
       setSubmitting(false);
@@ -83,21 +84,17 @@ const OrderView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clientResponse, securityResponse, executionResponse] =
-          await Promise.all([
-            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
-            axios.get(
-              `${import.meta.env.VITE_BASE_URL}/executions/${state.order?._id}`
-            ),
-          ]);
+        const data = await Promise.all([
+          axiosInstance.get(`/orders/${state.orderId}`),
+          axiosInstance.get(`/executions/${state.orderId}`),
+          axiosInstance.get(`/customers`),
+          axiosInstance.get(`/securities`),
+        ]);
 
-        const clientResult = clientResponse.data;
-        const securityResult = securityResponse.data;
-        const executionResult = executionResponse.data;
-        setClients(clientResult);
-        setSecurities(securityResult);
-        setExecutions(executionResult);
+        setOrder(data[0].data);
+        setExecutions(data[1].data);
+        setClients(data[2].data);
+        setSecurities(data[3].data);
       } catch (error) {
         console.log(error);
       }
@@ -106,25 +103,26 @@ const OrderView = () => {
     fetchData();
   }, []);
 
-  if (clients === null || securities === null) {
+  if (order === null || executions === null) {
     return <div>Loading...</div>;
   }
 
+  const balance = order?.volume - order?.executed;
   return (
     <Wrapper>
       <Main>
-        <Balance>
-          Order Balance: {state.order?.volume - state.order?.executed}
+        <Balance className="">
+          Order Balance: {balance}
           <Formik
             initialValues={{
-              customer: state?.client?.name,
-              date: state?.order?.date ? new Date(state?.order?.date) : "",
-              volume: state?.order?.volume ?? 0,
-              price: state?.order?.price ?? 0,
-              amount: state?.order?.amount ?? 0,
-              type: state?.order?.type.toLowerCase() ?? "",
-              security: state.security?.name ?? "",
-              holding: state.order?.holding,
+              customer: order.user?.name,
+              date: order?.date ? new Date(order?.date) : "",
+              volume: order?.volume ?? 0,
+              price: order?.price ?? 0,
+              amount: order?.amount ?? 0,
+              type: order?.type.toLowerCase() ?? "",
+              security: order.security?.name ?? "",
+              holding: order?.holding,
             }}
             onSubmit={updateOrder}
           >
@@ -302,21 +300,24 @@ const OrderView = () => {
                     {execution.executed}
                   </ExecutionTableDataCell>
                   <ExecutionTableDataCell>
-                    {execution.amount}
+                    {Intl.NumberFormat("sw-TZ", {
+                      maximumFractionDigits: 2,
+                      minimumFractionDigits: 2,
+                    }).format(execution.amount)}
                   </ExecutionTableDataCell>
                   <ExecutionTableDataCell
                     style={{ display: "flex", gap: "40px" }}
                   >
                     <ExecutionAction
-                      onClick={() => {
-                        const url = `/contract?execution=${JSON.stringify(
-                          execution
-                        )}`;
-                        const title = "Contract";
-                        return window.open(url, title);
-                      }}
+                    // onClick={() => {
+                    //   const url = `/contract?execution=${JSON.stringify(
+                    //     execution
+                    //   )}`;
+                    //   const title = "Contract";
+                    //   return window.open(url, title);
+                    // }}
                     >
-                      PDF
+                      <ContractNoteDownload data={execution} />
                     </ExecutionAction>
                     <ExecutionAction
                       onClick={() =>
@@ -408,11 +409,11 @@ const OrderView = () => {
         </Actions>
       </Aside>
       <ExecutionForm
-        balance={state.order?.volume - state.order?.executed}
+        balance={order?.volume - order?.executed}
         open={openExecutionForm}
         setOpen={setOpenExecutionForm}
-        customerId={state.client?._id}
-        order={state.order}
+        customerId={order?.user._id}
+        order={order}
         security={state.security?.name ?? ""}
       />
     </Wrapper>

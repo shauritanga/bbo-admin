@@ -1,87 +1,49 @@
 import dayjs from "dayjs";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useData } from "../../context/userContext";
 import { Pagination, Stack } from "@mui/material";
+import { axiosInstance } from "@/utils/axiosConfig";
+import { StatementDataTable } from "./table";
 
 const Statement = ({ id }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { statements } = useData();
-
-  const itemsPerPage = 10;
-
-  const handleChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  const { transactions } = useData();
+  let globalBalance = 0;
 
   let formatter = new Intl.NumberFormat("sw-TZ", {
-    style: "currency",
-    currency: "TZS",
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
   });
 
-  const displayedStatements = statements?.sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
-  );
+  useEffect(() => {
+    const fetchUserTransactions = async () => {
+      await axiosInstance.get(`/transactions/${id}`);
+    };
+  });
 
-  const totalPages = Math.ceil(displayedStatements?.length / itemsPerPage);
+  const userTransactions = transactions
+    ?.filter(
+      (transaction) =>
+        transaction.user?._id === id && transaction.status === "approved"
+    )
+    .sort((a, b) => new Date(a.transactionDate) - new Date(b.transactionDate));
 
-  const currentData = displayedStatements?.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const displayedTransactions = userTransactions?.map((transaction) => {
+    const credit = transaction.credit;
+    const debit = transaction.debit;
 
-  return (
-    <div className="flex flex-col bg-white shadow-sm p-2">
-      <p>Statement</p>
-      <Table className="text-sm">
-        <TableHeaderRow>
-          <TableHeaderCell>Date</TableHeaderCell>
-          <TableHeaderCell>type</TableHeaderCell>
-          <TableHeaderCell>reference</TableHeaderCell>
-          <TableHeaderCell>particulars</TableHeaderCell>
-          <TableHeaderCell>quantity</TableHeaderCell>
-          <TableHeaderCell>price</TableHeaderCell>
-          <TableHeaderCell>debit</TableHeaderCell>
-          <TableHeaderCell>credit</TableHeaderCell>
-          <TableHeaderCell>balance</TableHeaderCell>
-        </TableHeaderRow>
-        {currentData?.map((transaction) => {
-          return (
-            <TableDataRow key={transaction._id} className="text-xs">
-              <TableDataCell>
-                {dayjs(transaction.date).format("DD-MM-YYYY")}
-              </TableDataCell>
-              <TableDataCell>{transaction.type}</TableDataCell>
-              <TableDataCell>{transaction.reference}</TableDataCell>
-              <TableDataCell>{transaction.particulars}</TableDataCell>
-              <TableDataCell>{transaction.quantity}</TableDataCell>
-              <TableDataCell>{transaction.price}</TableDataCell>
-              <TableDataCell>{transaction.debit}</TableDataCell>
-              <TableDataCell>{transaction.credit}</TableDataCell>
-              <TableDataCell>
-                {formatter.format(transaction.balance)}
-              </TableDataCell>
-            </TableDataRow>
-          );
-        })}
-      </Table>
-      <Spacer></Spacer>
-      <PaginationWrapper>
-        <Counter>{displayedStatements?.length} total orders</Counter>
-        <Stack spacing={2}>
-          {/* <Pagination count={10} shape="rounded" /> */}
-          <Pagination
-            count={totalPages}
-            variant="outlined"
-            shape="rounded"
-            color="primary"
-            page={currentPage}
-            onChange={handleChange}
-          />
-        </Stack>
-      </PaginationWrapper>
-    </div>
-  );
+    // Update the global balance
+    globalBalance += credit - debit;
+
+    // Add the balance to the transaction
+    return {
+      ...transaction,
+      balance: globalBalance,
+    };
+  });
+
+  return <StatementDataTable statements={displayedTransactions} />;
 };
 
 const Spacer = styled.div`

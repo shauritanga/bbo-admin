@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -14,17 +15,15 @@ const initialState = {
 export const fetchFinancialYears = createAsyncThunk(
   "financialYears/fetchFinancialYears",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/financial-years`
-    );
+    const response = await axiosInstance.get(`/financial-years`);
     return response.data;
   }
 );
 export const addFinancialYear = createAsyncThunk(
   "financialYears/addFinancialYear",
   async (financialYear) => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/financial-years`,
+    const response = await axiosInstance.post(
+      `/financial-years`,
       financialYear
     );
     return response.data;
@@ -33,8 +32,8 @@ export const addFinancialYear = createAsyncThunk(
 export const deleteFinancialYear = createAsyncThunk(
   "financialYears/deleteFinancialYear",
   async (financialYearId) => {
-    const response = await axios.delete(
-      `${import.meta.env.VITE_BASE_URL}financial-years/${financialYearId}`
+    const response = await axiosInstance.delete(
+      `/financial-years/${financialYearId}`
     );
     return response.data;
   }

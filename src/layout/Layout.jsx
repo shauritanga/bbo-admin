@@ -3,6 +3,7 @@ import Footer from "../footer/Footer";
 import Navbar from "../header/Header";
 import { Outlet } from "react-router";
 import "./layout.css";
+import { jwtDecode } from "jwt-decode";
 
 import { useLocation, Navigate } from "react-router-dom";
 
@@ -17,13 +18,6 @@ const Layout = () => {
     () => window.localStorage.getItem("theme") || "light"
   );
   const { pathname, search } = useLocation();
-  const { user } = useAuth();
-
-  const userObject = typeof user === "string" ? JSON.parse(user) : user;
-
-  if (userObject === null) {
-    return <Navigate to="/login" replace />;
-  }
 
   useEffect(() => {
     setIsActive(pathname + search);
@@ -39,7 +33,6 @@ const Layout = () => {
       {isSidebarOpen && (
         <Sidebar
           isActive={isActive}
-          user={userObject}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
         />
@@ -47,7 +40,6 @@ const Layout = () => {
 
       <div className="right">
         <Navbar
-          user={userObject}
           theme={theme}
           setTheme={setTheme}
           isSidebarOpen={isSidebarOpen}

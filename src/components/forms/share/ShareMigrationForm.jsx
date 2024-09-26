@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { Button, Modal, Placeholder } from "rsuite";
@@ -24,10 +25,14 @@ const ShareMigrationForm = ({ open, setOpen }) => {
   };
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_BASE_URL}/securities`)
-      .then((response) => response.json())
-      .then((data) => setSecurities(data))
-      .catch((error) => console.log(error));
+    const fetchSecurities = async () => {
+      try {
+        const response = await axiosInstance.get("/securities");
+        setSecurities(data);
+      } catch (error) {}
+    };
+
+    fetchSecurities();
   }, []);
   if (!securities) {
     return <div>Loading ...</div>;

@@ -5,6 +5,7 @@ import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import styled from "styled-components";
 import { generateUniqueId } from "@/utils/generateId";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const ReceiptForm = ({ open, setOpen }) => {
   const [transactionDate, settransactionDate] = useState("");
@@ -20,40 +21,21 @@ const ReceiptForm = ({ open, setOpen }) => {
   const [accountId, setAccountId] = useState("");
 
   useEffect(() => {
-    const fetchPayees = () => {
-      fetch(`${import.meta.env.VITE_BASE_URL}/customers`, {
-        mode: "cors",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => setClients(data))
-        .catch((error) => console.log(error));
-    };
-    fetchPayees();
-  }, []);
-
-  useEffect(() => {
-    const fetchPaymentMethods = async () => {
+    const fetchData = async () => {
       try {
-        const [paymentMethodResponse, clientResponse, accountResponse] =
-          await Promise.all([
-            axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
-          ]);
+        const response = await Promise.all([
+          axiosInstance.get(`/paymethods`),
+          axiosInstance.get(`/customers`),
+          axiosInstance.get(`/accounts`),
+        ]);
 
-        console.log();
-
-        setClients(clientResponse.data);
-        setPaymentMethod(paymentMethodResponse.data);
-        setRealAccount(accountResponse.data);
+        setPaymentMethod(response[0].data);
+        setClients(response[1].data);
+        setRealAccount(response[2].data);
       } catch (error) {}
     };
 
-    fetchPaymentMethods();
+    fetchData();
   }, []);
 
   if (!paymentMethod) {
@@ -67,10 +49,7 @@ const ReceiptForm = ({ open, setOpen }) => {
     setSubmitting(true);
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/receipts`,
-        values
-      );
+      const response = await axiosInstance.post(`/transactions`, values);
       setSubmitting(false);
       await toaster.push(
         <Notification header="Success" type="success">
@@ -169,7 +148,7 @@ const ReceiptForm = ({ open, setOpen }) => {
                       Select account
                     </option>
                     {realAccount.map((account) => (
-                      <option key={account.id} value={account.id}>
+                      <option key={account._id} value={account._id}>
                         {account.name}
                       </option>
                     ))}

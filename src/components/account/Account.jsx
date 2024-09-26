@@ -4,13 +4,14 @@ import axios from "axios";
 import { Field, Form, Formik } from "formik";
 import { nationalities } from "../../utils/nationalities";
 import { Notification, toaster } from "rsuite";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const Account = ({ customer }) => {
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitting(true);
     try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_BASE_URL}/customers/${customer._id}`,
+      const response = await axiosInstance.patch(
+        `/customers/${customer._id}`,
         values
       );
       setSubmitting(false);

@@ -19,10 +19,12 @@ import "./sidebar.css";
 import { SlPeople } from "react-icons/sl";
 import { BsShieldLock } from "react-icons/bs";
 import { HiOutlineSquaresPlus } from "react-icons/hi2";
+import { jwtDecode } from "jwt-decode";
 
-const Sidebar = ({ isActive, user, isSidebarOpen, setIsSidebarOpen }) => {
+const Sidebar = ({ isActive, isSidebarOpen, setIsSidebarOpen }) => {
   const customersPath = new RegExp(`^customers(\/.*)?$`);
   const ordersPath = new RegExp(`^orders(\/.*)?$`);
+  const user = jwtDecode(localStorage.getItem("token"));
 
   return (
     <div className="flex flex-col gap-4 w-[200px] h-screen bg-white p-2">

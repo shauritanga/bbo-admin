@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-
+import { axiosInstance } from "@/utils/axiosConfig";
+import { Formik, Field, ErrorMessage, Form } from "formik";
 function generateExpenseReference() {
   const timestamp = Date.now().toString().slice(-7); // Last 7 digits of timestamp
   const randomNumber = Math.floor(Math.random() * 10000) // 4 random digits
@@ -20,64 +21,35 @@ function generateExpenseReference() {
 }
 
 const ExpenseForm = ({ open, setOpen }) => {
-  const [transactionDate, settransactionDate] = useState("");
-  const [accounts, setAccounts] = useState([]);
-  const [amount, setAmount] = useState(0);
-  const [reference, setReference] = useState("");
-  const [description, setDescription] = useState("");
   const [paymentMethod, setPaymentMethod] = useState(null);
-  const [paymentMethodId, setPaymentMethodId] = useState("");
-  const [payee, setPayee] = useState(null);
-  const [customers, setCustomers] = useState([]);
-  const [category, setCategory] = useState(null);
-  const [realAccount, setRealAccount] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
+  const [accounts, setAccounts] = useState([]);
+  const [customers, setCustomers] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [paymentMethodResponse, customerResponse, accountResponse] =
+        const [paymethodResponse, clientRespponse, accountResponse] =
           await Promise.all([
-            axios.get(`${import.meta.env.VITE_BASE_URL}/paymethods`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-            axios.get(`${import.meta.env.VITE_BASE_URL}/accounts`),
+            axiosInstance.get(`/paymethods`),
+            axiosInstance.get(`/customers`),
+            axiosInstance.get(`/accounts`),
           ]);
-        setCustomers(customerResponse.data);
-        setPaymentMethod(paymentMethodResponse.data);
+
+        setPaymentMethod(paymethodResponse.data);
+        setCustomers(clientRespponse.data);
         setAccounts(accountResponse.data);
       } catch (error) {
-        console.error("Error fetching payment methods:", error);
-        // Consider displaying an error message to the user
-      } finally {
-        setIsLoading(false); // Data loaded, set isLoading to false
+        console.log(error);
       }
     };
     fetchData();
-  }, []); // Empty dependency array ensures this runs once on component mount
-
-  if (!paymentMethod) {
-    return;
-  }
-
-  if (!customers) {
-    return;
-  }
+  }, []);
 
   const ref = generateExpenseReference();
 
   const handleFormSubmit = async (event) => {
     const ref = generateExpenseReference();
-    const payment = {
-      transactionDate,
-      amount,
-      reference,
-      description,
-      method: paymentMethodId,
-      payee,
-      category,
-      referenceNumber: ref,
-      realAccount,
-    };
+
     const transaction = {
       type: "expense",
       transactionDate,
@@ -91,32 +63,13 @@ const ExpenseForm = ({ open, setOpen }) => {
     event.preventDefault();
 
     try {
-      const [expenseResponse, transactionResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BASE_URL}/expenses`, {
-          method: "post",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payment),
-        }),
-        ,
-        fetch(`${import.meta.env.VITE_BASE_URL}/transactions`, {
-          method: "post",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(transaction),
-        }),
-      ]);
-
-      if (!expenseResponse.ok) throw new Error("Error creating expense");
-      if (!transactionResponse.ok)
-        throw new Error("Error creating transaction");
-      toaster.push(
+      const response = await axiosInstance.post(
+        `/transactions`,
+        JSON.stringify(transaction)
+      );
+      await toaster.push(
         <Notification type="success" header="Success">
-          Expense successfully created
+          {response.data.message}
         </Notification>,
         {
           duration: 5000,
@@ -127,7 +80,7 @@ const ExpenseForm = ({ open, setOpen }) => {
     } catch (error) {
       toaster.push(
         <Notification type="error" header="Error">
-          {error.message}
+          {error.response.data.message}
         </Notification>,
         {
           duration: 5000,
@@ -147,133 +100,143 @@ const ExpenseForm = ({ open, setOpen }) => {
         <Modal.Title>New Expense</Modal.Title>
       </Modal.Header>
       <Modal.Body style={{ width: "100%" }}>
-        <form action="" className="flex flex-col gap-4 w-full">
-          <div className="flex gap-4 items-center">
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="transaction-date">Transaction Date</label>
-              <input
-                type="text"
-                placeholder="dd-mm-yyyy"
-                id="transaction-date"
-                value={transactionDate}
-                onChange={(event) => settransactionDate(event.target.value)}
-                className="w-full p-1 text-sm outline-none border rounded"
-              />
-            </div>
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="amount">Amount</label>
-              <input
-                type="text"
-                placeholder="Amount"
-                id="amount"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                className="w-full p-1 text-sm outline-none border rounded"
-              />
-            </div>
-          </div>
-          <div className="flex gap-4 items-center">
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="category">Category</label>
-              <select
-                id="category"
-                required
-                className="border p-1 outline-none rounded"
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-              >
-                <option value="">Select Category</option>
-                <option value="sale">Sale</option>
-                <option value="buy">Buy</option>
-              </select>
-            </div>
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="real-account">Real Account</label>
-              <select
-                id="real-account"
-                required
-                className="border p-1 outline-none rounded"
-                value={realAccount}
-                onChange={(event) => setRealAccount(event.target.value)}
-              >
-                <option value="" disabled selected>
-                  Select Account
-                </option>
-                {accounts.map((account) => (
-                  <option value={account.id}>{account.name}</option>
-                ))}
-                <option value="purchases">purchase</option>
-                <option value="expenses">expense</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-4 items-center">
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="payee">Payee</label>
-              <select
-                required
-                className="border p-1 outline-none rounded"
-                value={payee}
-                onChange={(event) => setPayee(event.target.value)}
-              >
-                <option value="" disabled>
-                  Select payee
-                </option>
-                {customers?.map((payee) => (
-                  <option key={payee._id} value={payee._id}>
-                    {payee.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="pay-method">Payement Method</label>
-              <select
-                className="border p-1 outline-none rounded"
-                required
-                value={paymentMethodId}
-                onChange={(event) => setPaymentMethodId(event.target.value)}
-              >
-                <option value="">Select Payment Method</option>
-                {paymentMethod.map((method) => (
-                  <option value={method._id}>{method.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-4 items-center">
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="cheque">Cheque Number</label>
-              <input
-                type="text"
-                placeholder="Chque Number"
-                id="cheque"
-                value={reference}
-                onChange={(event) => setReference(event.target.value)}
-              />
-            </div>
-          </div>
-          <div className="row">
-            <div className="flex flex-1 flex-col gap-1">
-              <label htmlFor="Description">Description</label>
-              <textarea
-                name="text"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-              >
-                Description
-              </textarea>
-              <div className="flex flex-row-reverse gap-4 mt-4">
-                <Button onClick={() => setOpen(false)} appearance="subtle">
-                  Cancel
-                </Button>
-                <Button onClick={handleFormSubmit} appearance="primary">
-                  Ok
-                </Button>
+        <Formik
+          initialValues={{
+            date: null,
+            amount: "0.0",
+            reference: "",
+            description: "",
+            category: "",
+            payee: "",
+            account: "",
+          }}
+        >
+          {({ values }) => (
+            <Form>
+              <div className="flex gap-4 items-center mb-6">
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="transaction-date">Transaction Date</label>
+                  <Field
+                    type="datetime-local"
+                    id="transaction-date"
+                    className="w-full p-1 text-sm outline-none border rounded"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="amount">Amount</label>
+                  <Field
+                    id="amount"
+                    name="amount"
+                    value={values.amount}
+                    className="w-full p-1 text-sm outline-none border rounded"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-        </form>
+              <div className="flex gap-4 items-center mb-6">
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="category">Category</label>
+                  <Field
+                    as="select"
+                    id="category"
+                    name="category"
+                    required
+                    className="border p-1 outline-none rounded"
+                    value={values.category}
+                  >
+                    <option value="">Select Category</option>
+                    <option value="sale">Sale</option>
+                    <option value="buy">Buy</option>
+                  </Field>
+                </div>
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="real-account">Real Account</label>
+                  <Field
+                    as="select"
+                    id="real-account"
+                    name="account"
+                    value={values.account}
+                    required
+                    className="border p-1 outline-none rounded"
+                  >
+                    <option value="" disabled selected>
+                      Select Account
+                    </option>
+                    {accounts?.map((account) => (
+                      <option key={account._id} value={account._id}>
+                        {account.name}
+                      </option>
+                    ))}
+                  </Field>
+                </div>
+              </div>
+              <div className="flex gap-4 items-center mb-6">
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="payee">Payee</label>
+                  <Field
+                    as="select"
+                    required
+                    name="payee"
+                    className="border p-1 outline-none rounded"
+                    value={values.payee}
+                    onChange={(event) => setPayee(event.target.value)}
+                  >
+                    <option value="" disabled>
+                      Select payee
+                    </option>
+                    {customers?.map((payee) => (
+                      <option key={payee._id} value={payee._id}>
+                        {payee.name}
+                      </option>
+                    ))}
+                  </Field>
+                </div>
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="pay-method">Payement Method</label>
+                  <Field
+                    as="select"
+                    className="border p-1 outline-none rounded"
+                    required
+                  >
+                    <option value="">Select Payment Method</option>
+                    {paymentMethod.map((method) => (
+                      <option value={method._id}>{method.name}</option>
+                    ))}
+                  </Field>
+                </div>
+              </div>
+              <div className="flex gap-4 items-center">
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="cheque">Cheque Number</label>
+                  <input
+                    type="text"
+                    placeholder="Chque Number"
+                    id="cheque"
+                    onChange={(event) => setReference(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="row">
+                <div className="flex flex-1 flex-col gap-1">
+                  <label htmlFor="Description">Description</label>
+                  <textarea
+                    name="text"
+                    onChange={(event) => setDescription(event.target.value)}
+                  >
+                    Description
+                  </textarea>
+                  <div className="flex flex-row-reverse gap-4 mt-4">
+                    <Button onClick={() => setOpen(false)} appearance="subtle">
+                      Cancel
+                    </Button>
+                    <Button onClick={handleFormSubmit} appearance="primary">
+                      Ok
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Form>
+          )}
+        </Formik>
       </Modal.Body>
     </Modal>
   );

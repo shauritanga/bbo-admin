@@ -36,6 +36,7 @@ import * as XLSX from "xlsx";
 import { Pagination, Stack } from "@mui/material";
 import { RotatingLines } from "react-loader-spinner";
 import { OrderDataTable } from "@/components/orders/table";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 const Orders = () => {
   const [clients, setClients] = useState(null);
@@ -83,19 +84,20 @@ const Orders = () => {
           securityResponse,
           executionResponse,
         ] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BASE_URL}/customers`),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/orders`),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/securities`),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/executions`),
+          axiosInstance.get(`/customers`),
+          axiosInstance.get(`/orders`),
+          axiosInstance.get(`/securities`),
+          axiosInstance.get(`/executions`),
         ]);
         setExecutions(executionResponse.data);
         setAllOrders(orderResponse.data);
         setClients(clientResponse.data);
         setSecurities(securityResponse.data);
       } catch (err) {
+        console.log(err);
         toaster.push(
-          <Notification header="Error">
-            Failed to fetch data: {err.message}
+          <Notification header="Error" type="error">
+            {err.response.data.message}
           </Notification>,
           { duration: 5000, placement: "topCenter" }
         );
@@ -137,6 +139,8 @@ const Orders = () => {
   if (status === "failed") {
     return <div>{error}</div>;
   }
+
+  console.log({ allOrders });
 
   const totalOrders = allOrders?.length;
   const newOrders = allOrders?.filter(
@@ -263,24 +267,26 @@ const Orders = () => {
     XLSX.writeFile(workbook, "Orders.xlsx");
   };
 
-  const orderTableData = allOrders?.map((order) => {
-    const customer = clients.filter((client) => client._id === order.userId)[0];
-    const security = securities?.filter(
-      (security) => security._id === order.securityId
-    )[0];
-    return {
-      id: order.uid ?? "",
-      orderId: order._id,
-      name: customer?.name,
-      status: order.status,
-      security: security?.name,
-      amount: order.amount,
-      type: order.type,
-      date: order.date,
-      volume: order.volume,
-      balance: order.volume - order.executed,
-    };
-  });
+  // const orderTableData = allOrders?.map((order) => {
+  //   const customer = clients.filter((client) => client._id === order.userId)[0];
+  //   const security = securities?.filter(
+  //     (security) => security._id === order.securityId
+  //   )[0];
+  //   return {
+  //     id: order.uid ?? "",
+  //     orderId: order._id,
+  //     name: customer?.name,
+  //     status: order.status,
+  //     security: security?.name,
+  //     amount: order.amount,
+  //     type: order.type,
+  //     date: order.date,
+  //     price: order.price,
+  //     volume: order.volume,
+  //     holding: order.holding,
+  //     balance: order.volume - order.executed,
+  //   };
+  // });
 
   return (
     <div className="flex flex-col gap-4 min-h-screen mb-4">
@@ -325,7 +331,7 @@ const Orders = () => {
           </FilterButton>
         </Filters>
       </TopFilters>
-      <div className="flex gap-4">
+      <div className="flex gap-4 mb-6">
         {summary.map((item, index) => (
           <SummaryCard
             key={index}
@@ -336,119 +342,8 @@ const Orders = () => {
           />
         ))}
       </div>
-      <OrderAction>
-        <InputPicker
-          data={customers}
-          style={{ width: 250, marginRight: "auto" }}
-          placeholder="Select Client"
-          onChange={(value) => dispatch(setNameSearch(value))}
-        />
-
-        <Dropdown renderToggle={renderButton}>
-          <Dropdown.Item>Export PDF</Dropdown.Item>
-          <Dropdown.Item onClick={exportToExcel}>Export EXCELL</Dropdown.Item>
-        </Dropdown>
-        <Button
-          style={{
-            color: "#fff",
-            backgroundColor: "hsl(243deg, 50%, 50%)",
-          }}
-          onClick={() => setIsOrderModalOpen(true)}
-        >
-          New Order
-        </Button>
-      </OrderAction>
       <TableWrapper>
-        <OrderDataTable orders={orderTableData} />
-        <Table>
-          <TableHeaderRow>
-            <TableHeaderCell>id</TableHeaderCell>
-            <TableHeaderCell>date</TableHeaderCell>
-            <TableHeaderCell>customer</TableHeaderCell>
-            <TableHeaderCell>security</TableHeaderCell>
-            <TableHeaderCell>type</TableHeaderCell>
-            <TableHeaderCell>amount</TableHeaderCell>
-            <TableHeaderCell>volume</TableHeaderCell>
-            <TableHeaderCell>balance</TableHeaderCell>
-            <TableHeaderCell>status</TableHeaderCell>
-          </TableHeaderRow>
-          {status === "loading" ? (
-            <TableDataRow>
-              <TableDataCell colSpan={9} rowSpan={10}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flex: 1,
-                  }}
-                >
-                  <RotatingLines width="22" />
-                </div>
-              </TableDataCell>
-            </TableDataRow>
-          ) : (
-            orderData.data?.map((order, index) => {
-              const orderSecurity = securities?.filter(
-                (security) => security._id === order.securityId
-              );
-
-              const orderClient = clients?.filter(
-                (client) => client._id === order.userId
-              );
-
-              return (
-                <TableDataRow key={index}>
-                  <TableDataCell>{order.uid}</TableDataCell>
-                  <TableDataCell>
-                    {dayjs(order.date).format("DD-MM-YYYY")}
-                  </TableDataCell>
-                  <TableDataCell
-                    onClick={() => {
-                      navigate(`/customers/${orderClient[0]?._id}`, {
-                        state: orderClient[0],
-                      });
-                    }}
-                  >
-                    {orderClient[0]?.name}
-                  </TableDataCell>
-                  <TableDataCell>{orderSecurity[0]?.name}</TableDataCell>
-                  <TableDataCell>{toTitleCase(order.type)}</TableDataCell>
-                  <TableDataCell>{order.amount}</TableDataCell>
-                  <TableDataCell>{order.volume}</TableDataCell>
-                  <TableDataCell>{order.volume - order.executed}</TableDataCell>
-                  <TableDataCell
-                    onClick={() =>
-                      navigate(`/orders/${order._id}`, {
-                        state: {
-                          order: order,
-                          client: orderClient[0],
-                          security: orderSecurity[0],
-                        },
-                      })
-                    }
-                  >
-                    {toTitleCase(order.status)}
-                  </TableDataCell>
-                </TableDataRow>
-              );
-            })
-          )}
-        </Table>
-        <PaginationWrapper>
-          <Counter>{orders.totalDocuments} total orders</Counter>
-          <Stack spacing={2}>
-            {/* <Pagination count={10} shape="rounded" /> */}
-            <Pagination
-              count={orders.totalPages}
-              variant="outlined"
-              shape="rounded"
-              color="primary"
-              page={currentPage}
-              onChange={handleChange}
-            />
-          </Stack>
-        </PaginationWrapper>
+        <OrderDataTable orders={allOrders} />
       </TableWrapper>
       <ModalView
         title="Select Date Range"

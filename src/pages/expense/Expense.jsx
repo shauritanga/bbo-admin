@@ -3,14 +3,13 @@ import "./expense.css";
 import Search from "../../components/search/Search";
 import CheckBox from "../../components/checkbox/CheckBox";
 import styled from "styled-components";
-import Select from "../../components/select";
 import ExpenseForm from "../../components/forms/expense/ExpenseForm";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { Pagination, Stack } from "@mui/material";
 import dayjs from "dayjs";
 import { Button } from "@/components/ui/button";
-import { DialogDemo } from "@/components/dialog";
+import { axiosInstance } from "@/utils/axiosConfig";
 
 function Expense() {
   const [query, setQuery] = useState("");
@@ -31,18 +30,10 @@ function Expense() {
 
   const updatePayment = async (selected, status) => {
     for (let item in selected) {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/expenses/${selected[item]._id}`,
-        {
-          method: "POST",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(status),
-        }
+      const response = await axiosInstance.patch(
+        `/expenses/${selected[item]._id}`,
+        JSON.stringify(status)
       );
-      const json = await response.json();
     }
   };
 
@@ -66,14 +57,12 @@ function Expense() {
     const fetchData = async () => {
       try {
         const [expenseResponse, clientResponse] = await Promise.all([
-          axios(`${import.meta.env.VITE_BASE_URL}/expenses`),
-          axios(`${import.meta.env.VITE_BASE_URL}/customers`),
+          axiosInstance.get(`/transactions/expenses`),
+          axiosInstance.get(`/customers`),
         ]);
-        const data = expenseResponse.data;
-        setExpenses(data?.data); // Assuming API returns { items: [...], totalPages: ... }
-        setTotalPages(data.totalPages);
+
+        setExpenses(expenseResponse.data); // Assuming API returns { items: [...], totalPages: ... }
         setClients(clientResponse.data);
-        setTotalDocuments(data.totalDocuments);
       } catch (error) {
         // Handle error
       }
@@ -92,9 +81,7 @@ function Expense() {
 
   const exportToExcel = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/expenses/all`
-      );
+      const response = await axiosInstance.get(`/transactions/expenses`);
       const data = response.data;
 
       //xlsx

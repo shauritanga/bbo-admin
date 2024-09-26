@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -14,9 +15,7 @@ const initialState = {
 export const fetchEmployees = createAsyncThunk(
   "employees/fetchEmployees",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/employees`
-    );
+    const response = await axiosInstance.get(`/employees`);
     return response.data;
   }
 );

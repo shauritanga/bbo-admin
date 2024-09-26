@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -13,9 +14,7 @@ const initialState = {
 export const fetchCategories = createAsyncThunk(
   "categories/fetchCategories",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/categories`
-    );
+    const response = await axiosInstance.get(`/categories`);
     return response.data;
   }
 );
@@ -23,7 +22,7 @@ export const fetchCategories = createAsyncThunk(
 export const addCategory = createAsyncThunk(
   "categories/addCategory",
   async (category) => {
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       `${import.meta.env.VITE_BASE_URL}/categories`,
       category
     );

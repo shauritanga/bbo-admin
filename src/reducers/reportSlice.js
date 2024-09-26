@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/utils/axiosConfig";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -13,9 +14,7 @@ const initialState = {
 export const fetchReports = createAsyncThunk(
   "reports/fetchReports",
   async () => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/reports`
-    );
+    const response = await axiosInstance.get(`/reports`);
     return response.data;
   }
 );
@@ -23,8 +22,8 @@ export const fetchReports = createAsyncThunk(
 export const addReport = createAsyncThunk(
   "reports/addReport",
   async (report) => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/emails/send-report-email`,
+    const response = await axiosInstance.post(
+      `/emails/send-report-email`,
       report
     );
     return response.data;
@@ -34,7 +33,7 @@ export const addReport = createAsyncThunk(
 export const deleteReport = createAsyncThunk(
   "reports/deleteReport",
   async (reportId) => {
-    await axios.delete(`${import.meta.env.VITE_BASE_URL}/reports/${reportId}`);
+    await axiosInstance.delete(`/reports/${reportId}`);
     return reportId;
   }
 );

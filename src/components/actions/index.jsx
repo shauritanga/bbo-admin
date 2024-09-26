@@ -1,44 +1,48 @@
 import { useData } from "@/context/userContext";
 import { Button } from "@/components/ui/button";
 
-import { Calendar } from "@/components/ui/calendar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import axios from "axios";
-import { DateRangePicker, Modal } from "rsuite";
+
+import { Modal } from "rsuite";
+import { axiosInstance } from "@/utils/axiosConfig";
+import { ErrorMessage, Field, Form, Formik } from "formik";
 
 const ActionLinks = ({ customerId }) => {
-  const { statements } = useData();
-  const [date, setDate] = useState();
+  const [transactions, setTransactions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  let globalBalance = 0;
 
   const handleSelect = (selectedDate) => {
     setDate(selectedDate);
   };
 
-  const handlePrint = async () => {
-    const { from, to } = date;
-
-    await axios.get(
-      `${
-        import.meta.env.VITE_BASE_URL
-      }/statements/admin/${customerId}?from=${from}&to=${to}`
-    );
-    setIsOpen(false);
-    // Here you can perform the print action with the selected date range
-
-    console.log("Printing", "for date range:", from, to);
+  const handleSubmit = async (values, { setSubmitting }) => {
+    try {
+      const response = await axiosInstance.get(
+        `/transactions/admin/${customerId}?from=${values.from}&to=${values.to}`
+      );
+      setTransactions(response.data);
+      setIsOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  const statements = transactions?.map((transaction) => {
+    const credit = transaction.credit;
+    const debit = transaction.debit;
+
+    // Update the global balance
+    globalBalance += credit - debit;
+
+    // Add the balance to the transaction
+    return {
+      ...transaction,
+      balance: globalBalance,
+    };
+  });
+
+  console.log({ statements });
 
   return (
     <>
@@ -53,55 +57,50 @@ const ActionLinks = ({ customerId }) => {
         backdrop="static"
         keyboard={false}
         open={isOpen}
-        onClose={() => {}}
+        onClose={() => setIsOpen(false)}
       >
         <Modal.Header>
-          <Modal.Title>Modal Title</Modal.Title>
+          <Modal.Title>Date Range</Modal.Title>
         </Modal.Header>
 
         <Modal.Body>
-          <p>Hello</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => {}} appearance="primary">
-            Ok
-          </Button>
-          <Button onClick={() => {}} appearance="subtle">
-            Cancel
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <AlertDialogContent className="sm:max-w-[600px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Select Date Range for Statement</AlertDialogTitle>
-            <AlertDialogDescription>
-              Choose the start and end date for your statement print.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <DateRangePicker defaultOpen={true} className="z-50" />
-          {/* <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={handleSelect}
-            showTimePicker
-            numberOfMonths={2}
-            className="rounded-md border"
-          /> */}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handlePrint}
-              disabled={!date?.from || !date?.to}
+          <div className="w-full flex flex-col">
+            <p>Select range of dates you want to get statement</p>
+            <Formik
+              initialValues={{ from: null, to: null }}
+              onSubmit={handleSubmit}
             >
-              Print
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {({ values }) => (
+                <Form>
+                  <div className="w-full flex gap-4 mt-4 bg-gray-300 p-3 rounded">
+                    <div className="w-full flex flex-col">
+                      <label htmlFor="from">From</label>
+                      <Field
+                        name="from"
+                        type="datetime-local"
+                        value={values.from}
+                        className="rounded p-2"
+                      />
+                      <ErrorMessage name="from" component={"div"} />
+                    </div>
+                    <div className="w-full flex flex-col">
+                      <label htmlFor="to">To</label>
+                      <Field
+                        name="to"
+                        value={values.to}
+                        type="datetime-local"
+                        className="rounded p-2"
+                      />
+                      <ErrorMessage name="to" component={"div"} />
+                    </div>
+                  </div>
+                  <Button type="subbmit">Ok</Button>
+                </Form>
+              )}
+            </Formik>
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };

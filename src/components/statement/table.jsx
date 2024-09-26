@@ -30,142 +30,88 @@ import {
 } from "@/components/ui/table";
 import { Navigate, useNavigate } from "react-router";
 import { toCapitalize } from "@/utils/sentenseCase";
-import CustomerForm from "../forms/customer/CustomerForm";
 import dayjs from "dayjs";
 import ReceiptForm from "../forms/receipt/ReceiptForm";
 import { Checkbox } from "../ui/checkbox";
 
-export function ReceiptDataTable({ customers }) {
+export function StatementDataTable({ statements }) {
   const [openForm, setOpenForm] = React.useState(false);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const data = customers;
+  const data = statements;
 
   const navigate = useNavigate();
 
   const columns = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-
-    {
-      accessorKey: "uid",
-      header: "ID",
-    },
-    {
-      accessorKey: "date",
+      accessorKey: "transactionDate",
       header: "Date",
       cell: ({ row }) => {
-        const date = row.getValue("date");
+        const date = row.getValue("transactionDate");
         const formatted = dayjs(date).format("DD-MM-YYYY");
         return <div>{formatted}</div>;
       },
     },
     {
-      accessorKey: "name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const name = row.original.user?.name;
-        const formatted = toCapitalize(name);
-        return <div>{formatted}</div>;
-      },
+      accessorKey: "action",
+      header: "Type",
     },
     {
       accessorKey: "description",
-      header: "Description",
+      header: "Particulars",
     },
     {
-      accessorKey: "amount",
-      header: "Amount",
+      accessorKey: "quantity",
+      header: "Quantity",
+    },
+    {
+      accessorKey: "price",
+      header: "Price (TZS)",
       cell: ({ row }) => {
-        const amount = row.original.amount;
+        const price = row.original.price;
+        const formmater = Intl.NumberFormat("sw-TZ", {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        });
+        return <div className="capitalize">{formmater.format(price)}</div>;
+      },
+    },
+    {
+      accessorKey: "debit",
+      header: "Debit (TZS)",
+      cell: ({ row }) => {
+        const debit = row.original.debit;
+        const formmater = Intl.NumberFormat("sw-TZ", {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        });
+        return <div className="capitalize">{formmater.format(debit)}</div>;
+      },
+    },
+    {
+      accessorKey: "credit",
+      header: "Credit (TZS)",
+      cell: ({ row }) => {
+        const credit = row.original.credit;
+        const formmater = Intl.NumberFormat("sw-TZ", {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        });
+        return <div className="capitalize">{formmater.format(credit)}</div>;
+      },
+    },
+    {
+      accessorKey: "balance",
+      header: "Balance (TZS)",
+      cell: ({ row }) => {
+        const amount = row.original.balance;
         const formmater = Intl.NumberFormat("sw-TZ", {
           maximumFractionDigits: 2,
           minimumFractionDigits: 2,
         });
         return <div className="capitalize">{formmater.format(amount)}</div>;
-      },
-    },
-
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.status;
-        return (
-          <div
-            className={`capitalize ${
-              status === "approved" ? "text-green-500" : "text-orange-400"
-            }`}
-          >
-            {row.getValue("status")}
-          </div>
-        );
-      },
-    },
-    {
-      header: "Actions",
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const payment = row.original;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() =>
-                  navigate(`/customers/${row.original._id}`, {
-                    state: {
-                      customer: row.original,
-                    },
-                  })
-                }
-                className="cursor-pointer"
-              >
-                View
-              </DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
       },
     },
   ];
@@ -191,46 +137,7 @@ export function ReceiptDataTable({ customers }) {
 
   return (
     <div className="w-full p-4 bg-white rounded shadow-sm">
-      <div className="flex items-center py-4 gap-4">
-        <Input
-          placeholder="Search Client..."
-          value={table.getColumn("name")?.getFilterValue() ?? ""}
-          onChange={(event) => {
-            console.log(event.target.value);
-            table.getColumn("name")?.setFilterValue(event.target.value);
-          }}
-          className="w-[300px]"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button onClick={() => setOpenForm(true)} className="bg-blue-950">
-          New Receipt
-        </Button>
-      </div>
+      <div className="flex items-center py-4 gap-4">Statement</div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -305,12 +212,6 @@ export function ReceiptDataTable({ customers }) {
           </Button>
         </div>
       </div>
-      <ReceiptForm
-        open={openForm}
-        setOpen={setOpenForm}
-        size={750}
-        title="New Receipt"
-      />
     </div>
   );
 }

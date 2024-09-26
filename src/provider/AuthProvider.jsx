@@ -1,48 +1,30 @@
+import { jwtDecode } from "jwt-decode";
 import React, { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(localStorage.getItem("user") || null);
-  const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [user, setUser] = useState(null);
+
   const navigate = useNavigate();
 
-  const loginAction = async (data) => {
-    const postData = {
-      username: data,
-    };
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/auth/login/employees`,
-        {
-          method: "post",
-          body: JSON.stringify(postData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) throw new Error("Error fetching orders");
-      const result = await response.json();
-
-      setUser(result.user);
-      setToken(result.token);
-      localStorage.setItem("user", JSON.stringify(result.user));
-      localStorage.setItem("token", result.token);
-      navigate("/dashboard");
-    } catch (error) {}
+  const setUserToken = (token) => {
+    const decodedUser = jwtDecode(token);
+    setUser(decodedUser);
+    localStorage.setItem("token", token);
+    navigate("/dashboard");
   };
 
   const logOut = () => {
     setUser(null);
     setToken("");
-    localStorage.removeItem("site");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loginAction, logOut }}>
+    <AuthContext.Provider value={{ user, setUserToken, logOut }}>
       {children}
     </AuthContext.Provider>
   );

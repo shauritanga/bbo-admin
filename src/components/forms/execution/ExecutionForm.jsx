@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
-import { Modal, Notification, toaster } from "rsuite";
+import { DatePicker, Modal, Notification, toaster } from "rsuite";
 import axios from "axios";
 import { calculateFees } from "../../../utils/getFees";
 import { Formik, Field, ErrorMessage, Form } from "formik";
 import { Button } from "@/components/ui/button";
+import { axiosInstance } from "@/utils/axiosConfig";
+import { date } from "yup";
 
 const ExecutionForm = ({
   open,
@@ -13,27 +15,14 @@ const ExecutionForm = ({
   balance,
   security,
 }) => {
+  const tradingDate = new Date(order.date);
+  const settlementDate = new Date(tradingDate);
+  settlementDate.setDate(settlementDate.getDate() + 3);
+
   const handleSubmit = async (values, { setsubmitting }) => {
-    const fees = calculateFees(parseFloat(values.amount));
-
-    values.total =
-      Math.round((fees.totalConsideration + Number.EPSILON) * 100) / 100;
-
-    values.dse = Math.round((fees.dseFee + Number.EPSILON) * 100) / 100;
-    values.cds = Math.round((fees.cdsFee + Number.EPSILON) * 100) / 100;
-    values.cmsa = Math.round((fees.cmsaFee + Number.EPSILON) * 100) / 100;
-    values.fidelity =
-      Math.round((fees.fidelityFee + Number.EPSILON) * 100) / 100;
-    values.vat = Math.round((fees.vat + Number.EPSILON) * 100) / 100;
-    values.brokerage =
-      Math.round((fees.totalCommission + Number.EPSILON) * 100) / 100;
-
-    // alert(JSON.stringify(values, null, 2));
+    alert(JSON.stringify(values, null, 2));
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/executions`,
-        values
-      );
+      const response = await axiosInstance.post(`/transactions`, values);
       await toaster.push(
         <Notification header="Success" type="success">
           {response.data.message}
@@ -60,17 +49,17 @@ const ExecutionForm = ({
   return (
     <Modal backdrop="static" open={open} onClose={() => setOpen(false)}>
       <Modal.Header>
-        <Modal.Title>New Execution{balance}</Modal.Title>
+        <Modal.Title>New Execution: {balance}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Formik
           initialValues={{
-            tradingDate: "",
-            settlementDate: "",
+            tradingDate: new Date(order?.date),
+            settlementDate: settlementDate,
             executed: "",
-            security: security,
+            security: order.security,
             slip: "",
-            price: "",
+            price: order.price,
             amount: "",
             type: order?.type,
             userId: customerId,
@@ -92,6 +81,8 @@ const ExecutionForm = ({
             }
             if (!values.executed) {
               errors.executed = "Please enter volume executed";
+            } else if (parseInt(values.executed) > balance) {
+              errors.executed = "You can not execute more than order balance";
             }
             return errors;
           }}
@@ -107,9 +98,10 @@ const ExecutionForm = ({
                 <div className="flex w-fulln gap-4 mb-4">
                   <div className="w-full flex flex-col gap-1">
                     <label htmlFor="tradingDate">Trading Date</label>
-                    <Field
+                    <DatePicker
                       name="tradingDate"
                       value={values.tradingDate}
+                      format="dd-MM-yyyy"
                       type="datetime-local"
                       className="w-full border rounded p-2"
                     />
@@ -121,10 +113,11 @@ const ExecutionForm = ({
                   </div>
                   <div className="w-full flex flex-col gap-1">
                     <label htmlFor="settlementDate">Settlement Date</label>
-                    <Field
+                    <DatePicker
                       name="settlementDate"
                       value={values.settlementDate}
                       type="datetime-local"
+                      format="dd-MM-yyyy"
                       className="w-full border rounded p-2"
                     />
                     <ErrorMessage
@@ -168,6 +161,7 @@ const ExecutionForm = ({
                     <Field
                       name="executed"
                       placeholder="slip number"
+                      max={balance}
                       className="w-full border rounded p-2"
                     />
                     <ErrorMessage
