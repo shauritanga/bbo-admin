@@ -229,7 +229,7 @@ export function PaymentDataTable({ customers }) {
           </DropdownMenuContent>
         </DropdownMenu>
         <Button onClick={() => setOpenForm(true)} className="bg-blue-950">
-          New Receipt
+          New Payment
         </Button>
       </div>
       <div className="rounded-md border">

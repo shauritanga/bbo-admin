@@ -53,7 +53,7 @@ import {
 import { Notification, toaster } from "rsuite";
 import { axiosInstance } from "@/utils/axiosConfig";
 
-export function OrderDataTable({ orders }) {
+export function DealingDataTable({ orders }) {
   const [openForm, setOpenForm] = React.useState(false);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
@@ -315,9 +315,6 @@ export function OrderDataTable({ orders }) {
         </DropdownMenu>
         <Button onClick={() => {}} className="bg-blue-950">
           Export
-        </Button>
-        <Button onClick={() => setOpenForm(true)} className="bg-blue-950">
-          New Order
         </Button>
       </div>
       <div className="rounded-md border">

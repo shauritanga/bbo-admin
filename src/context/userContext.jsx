@@ -10,7 +10,6 @@ export const useData = () => useContext(DataContext);
 const fetcher = (url) => axiosInstance.get(url).then((res) => res.data);
 
 export const DataProvider = ({ children, customerId }) => {
-  console.log(customerId);
   const { data, error } = useSWR(
     [`/transactions/${customerId}`, `/executions/clients/${customerId}`],
     async (urls) => {
@@ -22,10 +21,8 @@ export const DataProvider = ({ children, customerId }) => {
   );
 
   if (error) return <div>Error loading data:{error.message}</div>;
-  if (!data) return <div>Loading...</div>;
+  if (!data) return <div>Loading</div>;
   const { transactions, executions } = data;
-  console.log({ executions });
-  console.log({ transactions });
 
   return (
     <DataContext.Provider value={{ transactions, executions }}>

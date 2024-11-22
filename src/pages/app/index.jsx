@@ -14,7 +14,7 @@ import Customers from "../customers/Customers";
 import Dashboard from "../dashboard/Dashboard";
 import DealingSheet from "../dealing/DealingSheet";
 import DealingView from "@/views/dealing/DealingView";
-import CustomerView from "@/views/customer/Customer";
+import CustomerWrapper from "@/views/customer/CustomerWrapper";
 import Department from "../department/Department";
 import Employee from "../employee/Employee";
 import EmployeeView from "@/views/employee/EmployeeView";
@@ -65,7 +65,10 @@ const AppContent = () => {
             <Route path="/business" element={<Business />} />
             <Route path="/categories" element={<Category />} />
             <Route path="/customers" element={<Customers />} />
-            <Route path="/customers/:customerId" element={<CustomerView />} />
+            <Route
+              path="/customers/:customerId"
+              element={<CustomerWrapper />}
+            />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dealing" element={<DealingSheet />} />
             <Route path="/dealing/:dealingId" element={<DealingView />} />

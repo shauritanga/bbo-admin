@@ -5,7 +5,6 @@ import { calculateFees } from "../../../utils/getFees";
 import { Formik, Field, ErrorMessage, Form } from "formik";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/utils/axiosConfig";
-import { date } from "yup";
 
 const ExecutionForm = ({
   open,
@@ -20,7 +19,6 @@ const ExecutionForm = ({
   settlementDate.setDate(settlementDate.getDate() + 3);
 
   const handleSubmit = async (values, { setsubmitting }) => {
-    alert(JSON.stringify(values, null, 2));
     try {
       const response = await axiosInstance.post(`/transactions`, values);
       await toaster.push(
@@ -54,7 +52,7 @@ const ExecutionForm = ({
       <Modal.Body>
         <Formik
           initialValues={{
-            tradingDate: new Date(order?.date),
+            tradingDate: tradingDate,
             settlementDate: settlementDate,
             executed: "",
             security: order.security,
@@ -102,6 +100,7 @@ const ExecutionForm = ({
                       name="tradingDate"
                       value={values.tradingDate}
                       format="dd-MM-yyyy"
+                      onChange={(value) => setFieldValue("tradingDate", value)}
                       type="datetime-local"
                       className="w-full border rounded p-2"
                     />
@@ -118,6 +117,9 @@ const ExecutionForm = ({
                       value={values.settlementDate}
                       type="datetime-local"
                       format="dd-MM-yyyy"
+                      onChange={(value) =>
+                        setFieldValue("settlementDate", value)
+                      }
                       className="w-full border rounded p-2"
                     />
                     <ErrorMessage

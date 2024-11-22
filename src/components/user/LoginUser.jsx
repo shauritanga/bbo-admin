@@ -1,5 +1,6 @@
 import { Dropdown, Avatar } from "rsuite";
 import { jwtDecode } from "jwt-decode";
+import { useAuth } from "@/provider/AuthProvider";
 
 const renderToggle = (props) => (
   <Avatar
@@ -11,7 +12,9 @@ const renderToggle = (props) => (
 );
 
 const LoginUser = () => {
+  const { logOut } = useAuth();
   const user = jwtDecode(localStorage.getItem("token"));
+
   return (
     <Dropdown renderToggle={renderToggle} placement="bottomEnd">
       <Dropdown.Item

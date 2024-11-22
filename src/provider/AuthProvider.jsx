@@ -17,8 +17,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const logOut = () => {
-    setUser(null);
-    setToken("");
+    console.log("its called");
     localStorage.removeItem("token");
     navigate("/login");
   };

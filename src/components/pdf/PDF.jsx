@@ -1,20 +1,34 @@
 import { PDFViewer } from "@react-pdf/renderer";
-import React, { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import Statement from "./Statement";
 
 const PDF = () => {
-  const location = useLocation();
+  const [data, setData] = useState(null);
 
-  const { transactions, customer } = location.state;
-  console.log({ transactions });
   useEffect(() => {
     document.title = "CLIENT STATEMENT ACCOUNT";
+
+    const storedData = localStorage.getItem("statements");
+
+    if (storedData) {
+      const statements = JSON.parse(storedData);
+      console.log({ statements });
+      setData(statements);
+      localStorage.removeItem("statements"); // Optional: Clean up if data is only needed once
+    }
   }, []);
+
+  if (data === null) {
+    return <p>loading</p>;
+  }
+
+  console.log({ data });
   return (
-    <PDFViewer width="100%" height="100%">
-      <Statement data={transactions} customer={customer} />
-    </PDFViewer>
+    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+      <PDFViewer style={{ flex: 1, height: "100%", width: "100%" }}>
+        <Statement data={data} />
+      </PDFViewer>
+    </div>
   );
 };
 

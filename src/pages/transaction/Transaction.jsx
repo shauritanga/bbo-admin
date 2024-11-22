@@ -241,18 +241,11 @@ function Transaction() {
                   </TableDataCell>
                   <TableDataCell>
                     <span
-                      style={{
-                        backgroundColor:
-                          transaction.status === "approved"
-                            ? "var(--color-approve)"
-                            : transaction.status === "disapproved"
-                            ? "var(--color-disapprove)"
-                            : "none",
-                        padding: "6px 10px",
-                        borderRadius: "999px",
-                        color: "black",
-                        cursor: "pointer",
-                      }}
+                      className={`flex items-center justify-center w-max py-0 px-2 text-white ${
+                        transaction.status === "pending"
+                          ? "bg-slate-500/50"
+                          : "bg-destructive"
+                      } cursor-pointer rounded-xl`}
                       onClick={() =>
                         navigate(`/transactions/${transaction._id}`, {
                           state: { transaction, payee },

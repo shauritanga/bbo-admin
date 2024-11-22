@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Notification, toaster } from "rsuite";
-import "./expense.css";
-import axios from "axios";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/utils/axiosConfig";
 import { Formik, Field, ErrorMessage, Form } from "formik";
@@ -47,47 +38,8 @@ const ExpenseForm = ({ open, setOpen }) => {
 
   const ref = generateExpenseReference();
 
-  const handleFormSubmit = async (event) => {
+  const handleFormSubmit = async (values, { setSubimitting }) => {
     const ref = generateExpenseReference();
-
-    const transaction = {
-      type: "expense",
-      transactionDate,
-      amount,
-      referenceNumber: ref,
-      description,
-      method: paymentMethodId,
-      payee,
-      status: "pending",
-    };
-    event.preventDefault();
-
-    try {
-      const response = await axiosInstance.post(
-        `/transactions`,
-        JSON.stringify(transaction)
-      );
-      await toaster.push(
-        <Notification type="success" header="Success">
-          {response.data.message}
-        </Notification>,
-        {
-          duration: 5000,
-          placement: "topCenter",
-        }
-      );
-      setOpen(false);
-    } catch (error) {
-      toaster.push(
-        <Notification type="error" header="Error">
-          {error.response.data.message}
-        </Notification>,
-        {
-          duration: 5000,
-          placement: "topCenter",
-        }
-      );
-    }
   };
   return (
     <Modal
@@ -110,9 +62,10 @@ const ExpenseForm = ({ open, setOpen }) => {
             payee: "",
             account: "",
           }}
+          onSubmit={handleFormSubmit}
         >
           {({ values }) => (
-            <Form>
+            <Form className="w-full">
               <div className="flex gap-4 items-center mb-6">
                 <div className="flex flex-1 flex-col gap-1">
                   <label htmlFor="transaction-date">Transaction Date</label>
@@ -169,32 +122,30 @@ const ExpenseForm = ({ open, setOpen }) => {
                   </Field>
                 </div>
               </div>
-              <div className="flex gap-4 items-center mb-6">
-                <div className="flex flex-1 flex-col gap-1">
-                  <label htmlFor="payee">Payee</label>
+              <div className="w-full flex gap-4">
+                <div className="flex-1">
                   <Field
                     as="select"
-                    required
+                    id="payee"
                     name="payee"
-                    className="border p-1 outline-none rounded"
                     value={values.payee}
-                    onChange={(event) => setPayee(event.target.value)}
+                    required
+                    className="w-full border p-1 rounded"
                   >
-                    <option value="" disabled>
+                    <option value="" disabled selected>
                       Select payee
                     </option>
-                    {customers?.map((payee) => (
-                      <option key={payee._id} value={payee._id}>
-                        {payee.name}
+                    {customers?.map((account) => (
+                      <option key={account._id} value={account._id}>
+                        {account.name}
                       </option>
                     ))}
                   </Field>
                 </div>
-                <div className="flex flex-1 flex-col gap-1">
-                  <label htmlFor="pay-method">Payement Method</label>
+                <div className="flex-1">
                   <Field
                     as="select"
-                    className="border p-1 outline-none rounded"
+                    className="w-full border p-1 outline-none rounded"
                     required
                   >
                     <option value="">Select Payment Method</option>
@@ -204,30 +155,28 @@ const ExpenseForm = ({ open, setOpen }) => {
                   </Field>
                 </div>
               </div>
+
               <div className="flex gap-4 items-center">
                 <div className="flex flex-1 flex-col gap-1">
                   <label htmlFor="cheque">Cheque Number</label>
-                  <input
-                    type="text"
-                    placeholder="Chque Number"
+                  <Field
                     id="cheque"
-                    onChange={(event) => setReference(event.target.value)}
+                    name="cheque"
+                    className="border rounded p-1 w-full"
                   />
                 </div>
               </div>
               <div className="row">
                 <div className="flex flex-1 flex-col gap-1">
                   <label htmlFor="Description">Description</label>
-                  <textarea
+                  <Field
+                    as="textarea"
                     name="text"
-                    onChange={(event) => setDescription(event.target.value)}
+                    className="p-2 border rounded"
                   >
                     Description
-                  </textarea>
+                  </Field>
                   <div className="flex flex-row-reverse gap-4 mt-4">
-                    <Button onClick={() => setOpen(false)} appearance="subtle">
-                      Cancel
-                    </Button>
                     <Button onClick={handleFormSubmit} appearance="primary">
                       Ok
                     </Button>

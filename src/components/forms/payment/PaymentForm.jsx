@@ -34,7 +34,6 @@ const PaymentForm = ({ open, setOpen }) => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      alert(JSON.stringify(values, null, 2));
       const response = await axiosInstance.post(`/transactions`, values);
       toaster.push(
         <Notification header="success" type="success">

@@ -141,7 +141,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="CDS Account"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="cdsAccount" component="div" />
+                  <ErrorMessage
+                    name="cdsAccount"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="customer">Full Name</label>
@@ -152,7 +156,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Customer Name"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="name" component="div" />
+                  <ErrorMessage
+                    name="name"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
 
@@ -169,7 +177,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     <option value="business">Business</option>
                     <option value="government">Government</option>
                   </Field>
-                  <ErrorMessage name="category" component="div" />
+                  <ErrorMessage
+                    name="category"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="nationality">Nationality</label>
@@ -186,7 +198,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                       </option>
                     ))}
                   </Field>
-                  <ErrorMessage name="nationality" component="div" />
+                  <ErrorMessage
+                    name="nationality"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -199,7 +215,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder=""
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="dob" component="div" />
+                  <ErrorMessage
+                    name="dob"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="occupation">Occupation</label>
@@ -210,7 +230,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="e.g Teacher"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="occupation" component="div" />
+                  <ErrorMessage
+                    name="occupation"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -223,7 +247,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Phone Number"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="phone" component="div" />
+                  <ErrorMessage
+                    name="phone"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="id">Identity Type</label>
@@ -239,7 +267,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                       </option>
                     ))}
                   </Field>
-                  <ErrorMessage name="idType" component="div" />
+                  <ErrorMessage
+                    name="idType"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -252,7 +284,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="ID Number"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="idNumber" component="div" />
+                  <ErrorMessage
+                    name="idNumber"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="email">Email</label>
@@ -263,7 +299,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Email Address"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="email" component="div" />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -276,7 +316,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Fupi St Basihaya, Bunju, Kinondoni, Dare es salaam"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="address" component="div" />
+                  <ErrorMessage
+                    name="address"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="region">Region</label>
@@ -287,7 +331,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Your region"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="region" component="div" />
+                  <ErrorMessage
+                    name="region"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <span className="font-semibold">Bank Account Details</span>
@@ -301,7 +349,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Bank Name"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="bankName" component="div" />
+                  <ErrorMessage
+                    name="bankName"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="account">Account Number</label>
@@ -312,7 +364,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Account Number"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="bankAccountNumber" component="div" />
+                  <ErrorMessage
+                    name="bankAccountNumber"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <span className="font-semibold">Next of Kin</span>
@@ -326,7 +382,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Name"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="nextOfKinName" component="div" />
+                  <ErrorMessage
+                    name="nextOfKinName"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="nextOfKinRelation">Relationship</label>
@@ -337,7 +397,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Your relation"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="nextOfKinRelation" component="div" />
+                  <ErrorMessage
+                    name="nextOfKinRelation"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -350,7 +414,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Residence"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="nextOfKinResidence" component="div" />
+                  <ErrorMessage
+                    name="nextOfKinResidence"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="nextOfKinRegion">Region</label>
@@ -361,7 +429,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Region"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="nextOfKinRegion" component="div" />
+                  <ErrorMessage
+                    name="nextOfKinRegion"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -374,7 +446,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Mobile"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="nextOfKinPhone" component="div" />
+                  <ErrorMessage
+                    name="nextOfKinPhone"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
                 <div className="flex flex-col w-full gap-1">
                   <label htmlFor="nextOfKinEmail">Email</label>
@@ -385,7 +461,11 @@ const CustomerForm = ({ open, setOpen, size, title }) => {
                     placeholder="Email"
                     className="border rounded p-1 text-sm outline-none"
                   />
-                  <ErrorMessage name="nextOfKinEmail" component="div" />
+                  <ErrorMessage
+                    name="nextOfKinEmail"
+                    component="div"
+                    className="text-destructive"
+                  />
                 </div>
               </div>
               <div>

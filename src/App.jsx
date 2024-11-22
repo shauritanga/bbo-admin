@@ -6,13 +6,14 @@ import { RotatingLines } from "react-loader-spinner";
 import "rsuite/dist/rsuite.min.css";
 import AppContent from "./pages/app";
 
+/*
 const AccountingReports = lazy(() =>
   import("./pages/reports/AccountingReports")
 );
 const Business = lazy(() => import("./pages/business/Business"));
 const Category = lazy(() => import("./pages/category/Category"));
 const Customers = lazy(() => import("./pages/customers/Customers"));
-const CustomerView = lazy(() => import("./views/customer/Customer"));
+const CustomerView = lazy(() => import("./views/customer/CustomeView"));
 const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"));
 const DealingSheet = lazy(() => import("./pages/dealing/DealingSheet"));
 const DealingView = lazy(() => import("./views/dealing/DealingView"));
@@ -42,84 +43,12 @@ const Transaction = lazy(() => import("./pages/transaction/Transaction"));
 const TransactionView = lazy(() =>
   import("./views/transaction/TransactionView")
 );
+*/
 
 function App() {
   return (
     <>
       <Router>
-        {/* <Suspense
-            fallback={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flex: 1,
-                }}
-              >
-                <RotatingLines width="22" />
-              </div>
-            }
-          >
-            <Routes>
-              <Route path="login" element={<Register />} />
-              <Route path="/otp" element={<Otp />} />
-              <Route
-                path="/reset-password-request"
-                element={<RequestPassword />}
-              />
-              <Route path="/reset-password" element={<PasswordReset />} />
-              <Route element={<Layout />}>
-                <Route
-                  path="/"
-                  element={<Navigate to="/dashboard" replace />}
-                />
-                <Route path="/accounting/expenses" element={<Expense />} />
-                <Route path="/accounting/payments" element={<Payment />} />
-                <Route path="/accounting/receipts" element={<Receipt />} />
-                <Route
-                  path="/accounting/reports"
-                  element={<AccountingReports />}
-                />
-                <Route
-                  path="/accounting/transactions"
-                  element={<Transaction />}
-                />
-                <Route path="/business" element={<Business />} />
-                <Route path="/categories" element={<Category />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route
-                  path="/customers/:customerId"
-                  element={<CustomerView />}
-                />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/dealing" element={<DealingSheet />} />
-                <Route path="/dealing/:dealingId" element={<DealingView />} />
-                <Route path="/departments" element={<Department />} />
-                <Route path="/employees" element={<Employee />} />
-                <Route
-                  path="/employees/:employeeId"
-                  element={<EmployeeView />}
-                />
-                <Route path="/files" element={<Files />} />
-                <Route path="/orders" element={<Orders />} />
-                <Route path="/orders/:orderId" element={<OrderView />} />
-                <Route path="/reports" element={<MarketReports />} />
-                <Route path="/resources" element={<HumanResource />} />
-                <Route path="/roles" element={<Role />} />
-                <Route
-                  path="/securities"
-                  element={<Security backgroundColor="var(--color-white)" />}
-                />
-                <Route
-                  path="/transactions/:transactionId"
-                  element={<TransactionView />}
-                />
-              </Route>
-              <Route path="/contract" element={<PrintContractPDF />} />
-              <Route path="/statement" element={<PDF />} />
-            </Routes>
-          </Suspense> */}
         <AppContent />
       </Router>
     </>

@@ -41,19 +41,6 @@ const OrderForm = ({ open, setOpen, size, title }) => {
     const client = customers?.filter(
       (customer) => customer.id === values.client_id
     );
-    // if (values.type.toLowerCase() === "buy") {
-    //   if (client[0].wallet < values.total) {
-    //     alert(
-    //       `You don't have enough balance to carry this transaction, your current balance is ${client[0].wallet}`
-    //     );
-    //     return;
-    //   }
-    //   dispatch(addOrder(values));
-    //   setOpen(false);
-    //   return;
-    // }
-
-    // alert(JSON.stringify(values, null, 2));
     try {
       setSubmitting(true);
       const response = await axiosInstance.post(`/orders`, values);

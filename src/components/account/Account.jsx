@@ -26,7 +26,7 @@ const Account = ({ customer }) => {
       );
     } catch (error) {
       toaster.push(
-        <Notification hrader="Error" type="error">
+        <Notification header="Error" type="error">
           {error.response.data.message}
         </Notification>,
         {
@@ -140,7 +140,9 @@ const Account = ({ customer }) => {
                   Select country
                 </option>
                 {nationalities.map((country) => (
-                  <option value={country.nationality}>{country.country}</option>
+                  <option key={country.nationality} value={country.nationality}>
+                    {country.country}
+                  </option>
                 ))}
               </Field>
             </FormGroup>
@@ -217,7 +219,7 @@ const Account = ({ customer }) => {
                   borderRadius: "5px",
                 }}
               >
-                {isSubmitting ? "Updating..." : "Update"}
+                {isSubmitting ? "Updating..." : "Update customer"}
               </button>
             </FormGroup>
           </Form>

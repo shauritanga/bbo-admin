@@ -1,48 +1,49 @@
-import { useData } from "@/context/userContext";
 import { Button } from "@/components/ui/button";
 
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useData } from "@/context/userContext";
 
 import { Modal } from "rsuite";
 import { axiosInstance } from "@/utils/axiosConfig";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import dayjs from "dayjs";
 
-const ActionLinks = ({ customerId }) => {
-  const [transactions, setTransactions] = useState([]);
+const ActionLinks = ({ customerId, statements }) => {
+  //const [transactions, setTransactions] = useState([]);
+
   const [isOpen, setIsOpen] = useState(false);
-  let globalBalance = 0;
-
-  const handleSelect = (selectedDate) => {
-    setDate(selectedDate);
-  };
+  const navigate = useNavigate();
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    try {
-      const response = await axiosInstance.get(
-        `/transactions/admin/${customerId}?from=${values.from}&to=${values.to}`
-      );
-      setTransactions(response.data);
-      setIsOpen(false);
-    } catch (error) {
-      console.log(error);
-    }
+    const startDate = new Date(values.from);
+    const endDate = new Date(values.to);
+    const filteredStatements = filterStatementsByDateRange(
+      statements,
+      startDate,
+      endDate
+    );
+    console.log({ filteredStatements });
+    handleOpenNewTabWithData(filteredStatements);
+    setIsOpen(false);
   };
 
-  const statements = transactions?.map((transaction) => {
-    const credit = transaction.credit;
-    const debit = transaction.debit;
+  const handleOpenNewTabWithData = (state) => {
+    const data = state;
+    localStorage.setItem("statements", JSON.stringify(data));
+    window.open(`${window.location.origin}/statement`, "_blank");
+  };
 
-    // Update the global balance
-    globalBalance += credit - debit;
-
-    // Add the balance to the transaction
-    return {
-      ...transaction,
-      balance: globalBalance,
-    };
-  });
-
-  console.log({ statements });
+  const filterStatementsByDateRange = (statements, startDate, endDate) => {
+    console.log({ statements });
+    return statements.filter((statement) => {
+      const transactionDate = dayjs(statement.transactionDate);
+      return (
+        transactionDate.isAfter(dayjs(startDate).subtract(1, "day")) &&
+        transactionDate.isBefore(dayjs(endDate).add(1, "day"))
+      );
+    });
+  };
 
   return (
     <>

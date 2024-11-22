@@ -199,7 +199,6 @@ export function CustomerDataTable({ customers }) {
           placeholder="Search Client..."
           value={table.getColumn("name")?.getFilterValue() ?? ""}
           onChange={(event) => {
-            console.log(event.target.value);
             table.getColumn("name")?.setFilterValue(event.target.value);
           }}
           className="w-[300px]"
